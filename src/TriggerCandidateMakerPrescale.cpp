@@ -10,9 +10,7 @@
 
 #include "TRACE/trace.h"
 #define TRACE_NAME "TriggerCandidateMakerPrescale"
-
 #include <vector>
-
 using namespace triggeralgs;
 
 void

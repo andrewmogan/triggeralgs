@@ -10,46 +10,46 @@
 #define TRIGGERALGS_SRC_TRIGGERALGS_MICHEL_TRIGGERACTIVITYMAKERMICHEL_HPP_
 
 #include "triggeralgs/TriggerActivityMaker.hpp"
-
-#include <algorithm>
 #include <limits>
 #include <vector>
 
 namespace triggeralgs {
 class TriggerActivityMakerMichel : public TriggerActivityMaker
 {
-
-  /// This activity maker makes an activity with all the trigger primitives
-  inline bool is_time_consistent(const TriggerPrimitive& input_tp) const
-  {
-
-    int64_t tend = input_tp.time_start + input_tp.time_over_threshold;
-
-    bool is_close_to_edge = (m_time_tolerance > abs(input_tp.time_start - m_time_end) ||
-                             m_time_tolerance > abs(input_tp.time_start - m_time_start) ||
-                             m_time_tolerance > abs(tend - m_time_end) || m_time_tolerance > abs(tend - m_time_start));
-
-    bool is_in_between_edge = ((tend > m_time_start && tend < m_time_end) ||
-                               (input_tp.time_start > m_time_start && input_tp.time_start < m_time_end));
-
-    return is_in_between_edge || is_close_to_edge;
-  }
-
-  inline bool is_channel_consistent(const TriggerPrimitive& input_tp) const
-  {
-
-    bool is_close_to_edge = (m_channel_tolerance > abs((int16_t)input_tp.channel - (int16_t)m_channel_end) ||
-                             m_channel_tolerance > abs((int16_t)input_tp.channel - (int16_t)m_channel_start));
-
-    bool is_in_between_edge = (input_tp.channel > m_channel_start && input_tp.channel < m_channel_end);
-
-    return is_in_between_edge || is_close_to_edge;
-  }
-
 public:
-  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) override;
+  TriggerActivityMakerMichel() {
+    
+    //Time slices to divide the collection plane channels
+    //for(int timeind=3200; timeind <= 7800; timeind+=boxwidtime){
+    //  timeind_vec.push_back(timeind);
+    //}
+        
+    //Channel slices to divide the collection plane channels
+    //for(int chnlind=ColPlStartChnl; chnlind<(ColPlEndChnl+boxwidch); chnlind+=boxwidch){ 
+    //  chnlind_vec.push_back(chnlind);                                                                                                
+    // }
 
-  void flush(timestamp_t, std::vector<TriggerActivity>& tas) override { tas.push_back(MakeTriggerActivity()); }
+  }
+  
+  static bool compare_channel(const TriggerPrimitive& ch_a, const TriggerPrimitive& ch_b) 
+  { 
+    //smallest comes first                                                                                                      
+    return ch_a.channel < ch_b.channel ; // and (ch_a.time_start < ch_b.time_start));                                           
+  }
+
+  static int getIndex(std::vector<uint16_t> v, uint16_t K){
+    auto it = find(v.begin(), v.end(), K);
+    if (it != v.end())
+    {   
+      int index = it - v.begin();
+      return index;   
+    }
+    else {
+      return -99;  
+    }
+  }
+
+  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) override;
 
 protected:
   int64_t m_time_tolerance =
@@ -58,29 +58,93 @@ protected:
     2; /// Maximum tolerated channel number difference between two primitives to form an activity
 
 private:
-  TriggerActivity MakeTriggerActivity() const
-  {
-    TriggerActivity ta{ m_time_start,  m_time_end,     m_time_peak,    m_time_activity, m_channel_start,
-                        m_channel_end, m_channel_peak, m_adc_integral, m_adc_peak,      m_detid,
-                        m_type,        m_algorithm,    m_version,      m_tp_list };
-    return ta;
-  }
+  
 
-  int64_t m_time_start = 0;
-  int64_t m_time_end = 0;
-  int64_t m_time_peak = 0;
-  int64_t m_time_activity = 0;
-  uint16_t m_channel_start = 0; // NOLINT(build/unsigned)
-  uint16_t m_channel_end = 0;   // NOLINT(build/unsigned)
-  uint16_t m_channel_peak = 0;  // NOLINT(build/unsigned)
-  uint64_t m_adc_integral = 0;  // NOLINT(build/unsigned)
-  uint16_t m_adc_peak = 0;      // NOLINT(build/unsigned)
-  uint16_t m_detid = 0;         // NOLINT(build/unsigned)
-  uint16_t m_type = 0;          // NOLINT(build/unsigned)
-  uint16_t m_algorithm = 0;     // NOLINT(build/unsigned)
-  uint16_t m_version = 0;       // NOLINT(build/unsigned)
+  bool activate_algorithm = false;
 
-  std::vector<TriggerPrimitive> m_tp_list;
+  //For the creation of the trigger activity
+  
+  int64_t timewindow_start;
+  int64_t timewindow_end;
+  uint16_t channel_start;
+  uint16_t channel_end;
+
+  uint32_t ch_init = 0;
+  int maxadcindex;
+  int maxadcind;
+  uint16_t maxadc =0;
+  uint32_t chnlwid = 0;
+  int64_t timewid=0;
+  int64_t time_window = 0;
+  int64_t minimum_time = 0;
+  int64_t maximum_time = 0;
+  int counting = 0;
+  int trigtot;
+  int64_t TPvol, TPdensity;
+  int time_diff = 30;
+  uint16_t braggE = 27500; //  27500 is used in uB based on incoming muon angle vs maxadc                   
+  uint32_t chnl_maxadc;
+  int64_t time_max, this_time_max, prev_time_max, horiz_tt;
+  int64_t temp_t;
+  int64_t time_min, this_time_min, prev_time_min, horiz_tb;
+  float slopecm_scale = 0.04/0.3; //time ticks to cm = 1/25, channels to cm = 0.3                            
+  bool frontfound = false;
+  bool hitfound = false;
+  int TPcount=0;
+  int braggcnt=0;
+  int chcnt=0;
+  int horiz_noise_cnt = 0;
+  int horiz_tolerance = 8;
+  int tracklen=26;
+  float radTodeg=180/3.14;
+  int64_t y2,y1,y3,y4;
+  uint32_t x2,x1,x3,x4;
+  float bky1,bky2,bky3,bky4, bkpy1,bkpy2,bkpy3,bkpy4;
+  float frontangle_top, frontangle_mid, frontangle_bottom, backangle_top, backangle_mid, backangle_bottom;
+  float slope, frontslope_top, frontslope_mid, frontslope_bottom, backslope_top, backslope_mid, backslope_bottom;
+  int ColPlStartChnl = 0; // from DUNE 0                                                                                    
+  int ColPlEndChnl = 2560; //from DUNE 2560 for uBooNE 479                                                                                      
+  int boxchcnt = 1;
+  uint32_t prev_chnl, next_chnl, sf_chnl;
+  int64_t prev_tstart, next_tstart, sf_tstart;
+  int32_t prev_tot, next_tot, sf_tot;
+  int contiguous_tolerance = 16;
+  
+  
+  std::vector<TriggerPrimitive> tp_for_next_time_window;
+
+
+  int64_t boxwidtime=1150;
+  std::vector<int64_t> timeind_vec;
+  int  boxwidch=96; //We might want to change this based on how many channels we have                                                                                                    
+  std::vector<uint32_t> chnlind_vec;
+
+  std::vector<TriggerPrimitive> tp_list;
+  std::vector<TriggerPrimitive> tp_list_time_shifted; 
+  std::vector<TriggerPrimitive> tp_only;
+  std::vector<TriggerPrimitive> tp_list_maxadc;
+  std::vector<TriggerPrimitive> tp_list_this;
+  std::vector<TriggerPrimitive> tp_list_prev;
+  std::vector<TriggerPrimitive> tp_list_next;
+  std::vector<TriggerPrimitive> tp_list_sf;
+  std::vector<TriggerPrimitive> tp_list_sb;
+  std::vector<TriggerPrimitive> tmpchnl_vec;
+  std::vector<TriggerPrimitive> sublist;
+  std::vector<TriggerPrimitive> final_tp_list;
+  std::vector<int>  maxadcindex_vec;
+  std::vector<uint16_t> initialvec_adc;
+  std::vector<TriggerPrimitive> test;
+
+  int64_t  time_start;
+  int32_t  time_over_threshold;
+  int64_t  time_peak;
+  uint32_t channel ;
+  uint16_t adc_integral ;
+  uint16_t adc_integralN ;
+  uint16_t adc_peak;
+  uint32_t detid;
+  uint32_t type;
+
 };
 } // namespace triggeralgs
 

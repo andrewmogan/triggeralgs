@@ -12,7 +12,6 @@
 #include <chrono>
 #include <limits>
 #include <vector>
-
 using namespace triggeralgs;
 using pd_clock = std::chrono::duration<double, std::ratio<1, 50'000'000>>;
 
