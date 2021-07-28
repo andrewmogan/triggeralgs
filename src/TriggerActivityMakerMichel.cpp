@@ -102,23 +102,18 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
       std::cout << "   " << tp_list[i].channel << "   \t   " <<  tp_list[i].time_start <<  "   \t   " <<  tp_list[i].time_over_threshold << "   \t   " <<  tp_list[i].adc_integral << "   \t   " << tp_list[i].adc_peak << "\t\t" << i <<  "\n";    
       }
     }
-
-
-    //Algorithm always stops at the second to last trigger primitive,
-    //so we need to pad it with one tempty rigger primitive
-    TriggerPrimitive empty_tp;
-    tp_list.push_back(empty_tp);
     
     //Finding maxADC
     for (int i=0; i<tp_list.size(); ++i){ 
       
       //changes channel box
-      if (tp_list[i].channel > chnlind_vec[boxchcnt] or i==tp_list.size()-1){
-        while(tp_list[i].channel > chnlind_vec[boxchcnt]){
-	      boxchcnt+=1;
-	}
-      
-      if (tmpchnl_vec.size() != 0 or i==tp_list.size()){      
+      if ((tp_list[i].channel > chnlind_vec[boxchcnt]) or (i==tp_list.size()-1)){
+        if(tmpchnl_vec.size()==0){
+          while(tp_list[i].channel > chnlind_vec[boxchcnt]){
+	    boxchcnt+=1;
+	  }
+      }
+      else{
         for(int time_ind=0; time_ind < timeind_vec.size()-1; time_ind++){
 	  sublist.clear();
 	  for (int tmpch=0; tmpch < tmpchnl_vec.size(); tmpch++){
@@ -126,7 +121,8 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
 	      TriggerPrimitive tp { tmpchnl_vec[tmpch].time_start, 0,  tmpchnl_vec[tmpch].time_over_threshold, tmpchnl_vec[tmpch].channel, tmpchnl_vec[tmpch].adc_integral, tmpchnl_vec[tmpch].adc_peak, 0, 0, 0, 0, 0};
               sublist.push_back(tp);
             }}
-	  if(sublist.size()>0 or i==tp_list.size()){
+          maxadc = 0;
+	  if(sublist.size()>0){
 	    for (int sl=0; sl<sublist.size(); sl++){                             
 	      if (sublist[sl].adc_integral> maxadc) {
 	        maxadc =  sublist[sl].adc_integral;
@@ -135,13 +131,14 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
                   TriggerPrimitive max_tp { sublist[maxadcind].time_start, 0,  sublist[maxadcind].time_over_threshold, sublist[maxadcind].channel, sublist[maxadcind].adc_integral, sublist[maxadcind].adc_peak, 0, 0, 0, 0, 0};
  
 	          tp_list_maxadc.push_back(max_tp);
+                  maxadc = 0;
 	  }}}}
-	  maxadc = 0;
         }
         tmpchnl_vec.clear();
         }
       }
  
+      if (tp_list[i].channel > chnlind_vec[boxchcnt]) boxchcnt+=1;
       if (tp_list[i].channel <= chnlind_vec[boxchcnt] or i==tp_list.size()-1){
         TriggerPrimitive tp {tp_list[i].time_start, 0,  tp_list[i].time_over_threshold, tp_list[i].channel, tp_list[i].adc_integral, tp_list[i].adc_peak, 0, 0, 0, 0, 0};
         tmpchnl_vec.push_back(tp);
