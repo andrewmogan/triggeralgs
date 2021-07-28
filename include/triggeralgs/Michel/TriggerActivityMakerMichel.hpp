@@ -18,16 +18,20 @@ class TriggerActivityMakerMichel : public TriggerActivityMaker
 {
 public:
   TriggerActivityMakerMichel() {
+
+    //Clear before filling
+    timeind_vec.clear();
+    chnlind_vec.clear();
     
     //Time slices to divide the collection plane channels
-    //for(int timeind=3200; timeind <= 7800; timeind+=boxwidtime){
-    //  timeind_vec.push_back(timeind);
-    //}
-        
+    for(int timeind= 0; timeind <= 4500; timeind+=boxwidtime){
+      timeind_vec.push_back(timeind);
+    }
+    
     //Channel slices to divide the collection plane channels
-    //for(int chnlind=ColPlStartChnl; chnlind<(ColPlEndChnl+boxwidch); chnlind+=boxwidch){ 
-    //  chnlind_vec.push_back(chnlind);                                                                                                
-    // }
+    for(int chnlind=ColPlStartChnl; chnlind<(ColPlEndChnl+boxwidch); chnlind+=boxwidch){ 
+      chnlind_vec.push_back(chnlind);       
+     }
 
   }
   
@@ -37,7 +41,7 @@ public:
     return ch_a.channel < ch_b.channel ; // and (ch_a.time_start < ch_b.time_start));                                           
   }
 
-  static int getIndex(std::vector<uint16_t> v, uint16_t K){
+  static int getIndex(std::vector<uint32_t> v, uint32_t K){
     auto it = find(v.begin(), v.end(), K);
     if (it != v.end())
     {   
@@ -48,6 +52,22 @@ public:
       return -99;  
     }
   }
+
+  
+  void refresh() {
+    boxchcnt = 1;
+    braggcnt=0;
+    trigtot = 0;
+    horiz_noise_cnt = 0;
+    initialvec_adc.clear();
+    tp_list_maxadc.clear();
+    tp_list_this.clear();
+    tp_list_prev.clear();
+    tp_list_next.clear();
+    tp_list_sf.clear();
+    tp_list_sb.clear();
+    final_tp_list.clear();
+  } 
 
   void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) override;
 
@@ -63,7 +83,6 @@ private:
   bool activate_algorithm = false;
 
   //For the creation of the trigger activity
-  
   int64_t timewindow_start;
   int64_t timewindow_end;
   uint16_t channel_start;
@@ -82,7 +101,7 @@ private:
   int trigtot;
   int64_t TPvol, TPdensity;
   int time_diff = 30;
-  uint16_t braggE = 27500; //  27500 is used in uB based on incoming muon angle vs maxadc                   
+  uint16_t braggE = 4500; //  27500 is used in uB based on incoming muon angle vs maxadc                   
   uint32_t chnl_maxadc;
   int64_t time_max, this_time_max, prev_time_max, horiz_tt;
   int64_t temp_t;
@@ -95,7 +114,7 @@ private:
   int chcnt=0;
   int horiz_noise_cnt = 0;
   int horiz_tolerance = 8;
-  int tracklen=26;
+  int tracklen=6;//26
   float radTodeg=180/3.14;
   int64_t y2,y1,y3,y4;
   uint32_t x2,x1,x3,x4;
@@ -132,7 +151,7 @@ private:
   std::vector<TriggerPrimitive> sublist;
   std::vector<TriggerPrimitive> final_tp_list;
   std::vector<int>  maxadcindex_vec;
-  std::vector<uint16_t> initialvec_adc;
+  std::vector<uint32_t> initialvec_adc;    //Maybe change this back to original type?
   std::vector<TriggerPrimitive> test;
 
   int64_t  time_start;
