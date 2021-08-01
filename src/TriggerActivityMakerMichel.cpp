@@ -170,7 +170,7 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
     }
 //\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\     ONLY FOCUS ON BELOW    /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
-    stc:cout << "Now we begin calculating slopes created by the contiguous channels for each selected TP!\n\n";
+    stc:cout << "Now we begin calculating slopes created by the contiguous channels for each selected TP!\n\n\n";
 
     for (int imaxadc=0; imaxadc<tp_list_maxadc.size(); imaxadc++){
 
@@ -185,24 +185,45 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
       tp_list_sf = tp_list_this;
       tp_list_sb = tp_list_this;   
 
+
+
+      // Initialize again some of the required variables here after starting a loop over maxADC TP
       frontfound = false;
       hitfound = false;
+      braggcnt=0;
+      slope = 0;
+      horiz_noise_cnt = 0;
+      frontslope_top = 0;
+      backslope_top = 0;
+      frontslope_mid = 0;
+      backslope_mid = 0;
+      frontslope_bottom = 0;
+      backslope_bottom = 0;
+      frontangle_top = 0;
+      frontangle_mid = 0;
+      frontangle_bottom = 0;
+      backangle_top=0;
+      backangle_mid=0;
+      backangle_bottom=0;
+      horiz_tb = 0;
+      horiz_tt = 0;
+
       maxadcindex =  getIndex(initialvec_adc, tp_list_maxadc[imaxadc].adc_integral);
 
-
-      std::cout << "Analyzing channels FORWARD to channel " << tp_list_maxadc[imaxadc].channel << " with adc integral " << tp_list_maxadc[imaxadc].adc_integral << " and index " << maxadcindex << "...\n"  <<  std::endl;
+      //std::cout << "\nAnalyzing channels FORWARD to channel " << tp_list_maxadc[imaxadc].channel << " with adc integral " << tp_list_maxadc[imaxadc].adc_integral << " and index " << maxadcindex << "...\n"  <<  std::endl;
 
 ///////////////////////////////////////////////////////////////////////////Checking Forward Channels///////////////////////////////////////////////////////////////////////////////////////
+
       for (int icheck=maxadcindex; icheck<tp_list.size(); icheck++) {   
         
         //These are the adjacent channels 
-        std::cout << "\t/index:    " << icheck << std::endl;
-        std::cout << "\t|channel:  " << tp_list[icheck].channel << std::endl;
-        std::cout << "\t\\braggcnt: " << braggcnt << std::endl;
-        std::cout << "\tWas a hit found in the previous run? ==> " << hitfound << "\n" << std::endl;
+        //std::cout << "\n\t/index:    " << icheck << std::endl;
+        //std::cout << "\t|channel:  " << tp_list[icheck].channel << std::endl;
+        //std::cout << "\t\\braggcnt: " << braggcnt << std::endl;
+
         //If we've found a front, we move on to the second part of the code
         if (frontfound == true){
-          std::cout << "FRONT FOUND" << std::endl;
+          std::cout << "\n\nFRONT FOUND -- ";
           break;
         }
 
@@ -210,30 +231,29 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
         if(tp_list[icheck].channel >= (chnl_maxadc+2)){//I changed 2 to 5 here
           chnl_maxadc = tp_list_next[icheck].channel;
  
-          std::cout << "\tCurrent Channel:    "  <<  tp_list_maxadc[imaxadc].channel << "    Next Channel:    " << tp_list_next[imaxadc].channel << std::endl;
+          //std::cout << "\tCurrent Channel:    "  <<  tp_list_maxadc[imaxadc].channel << "    Next Channel:    " << tp_list_next[imaxadc].channel << std::endl;
+          
           if (hitfound == false) break;
 
           if (hitfound == true){
             braggcnt+=1;
-            std::cout << "\tSince a HIT was found, so the braggcnt is now:     " << braggcnt << std::endl;  
+            //std::cout << "\tSince a HIT was found, so the braggcnt is now:     " << braggcnt << std::endl;  
       	    if (braggcnt==3){
               tp_list_sf = tp_list_next; 
-              std::cout << "\nThe braggcnt is now 3" << std::endl;
+              //std::cout << "\tThe braggcnt is now 3" << std::endl;
             }
 
             if (braggcnt >= tracklen/2){
               frontfound = true;
-                    std::cout << "next tmin, tmax" << tp_list_next[icheck].time_start << " , " << (tp_list_next[icheck].time_start + tp_list_next[icheck].time_over_threshold) <<  "sf tmin, tmax"<< tp_list_sf[icheck].time_start <<  " , " << (tp_list_sf[icheck].time_start + tp_list_sf[icheck].time_over_threshold) <<  std::endl;
- 
-        	    frontslope_top = (tp_list_next[icheck].time_start + tp_list_next[icheck].time_over_threshold - tp_list_sf[icheck].time_start - tp_list_sf[icheck].time_over_threshold)/(tp_list_next[icheck].channel - tp_list_sf[icheck].channel);
+              int denf = (tp_list_next[imaxadc].channel - tp_list_sf[imaxadc].channel);
+              if (denf!=0){
+        	    frontslope_top = float(tp_list_next[imaxadc].time_start + tp_list_next[imaxadc].time_over_threshold - tp_list_sf[imaxadc].time_start - tp_list_sf[imaxadc].time_over_threshold)/ denf; 
 
-                    frontslope_mid = (tp_list_next[icheck].time_start + (tp_list_next[imaxadc].time_over_threshold)/2 -tp_list_sf[icheck].time_start - (tp_list_sf[icheck].time_over_threshold)/2)/(tp_list_next[icheck].channel - tp_list_sf[icheck].channel);
+                    frontslope_mid = float(tp_list_next[imaxadc].time_start + (tp_list_next[imaxadc].time_over_threshold)/2 -tp_list_sf[imaxadc].time_start - (tp_list_sf[imaxadc].time_over_threshold)/2)/ denf ;
 
-        	    frontslope_bottom = (tp_list_next[icheck].time_start - tp_list_sf[icheck].time_start)/(tp_list_next[icheck].channel - tp_list_sf[icheck].channel);
-
-                    std::cout << "front slope top, mid, bottom " << frontslope_top << " , " << frontslope_mid << " , " << frontslope_bottom << std::endl;
+		    frontslope_bottom = float(tp_list_next[imaxadc].time_start - tp_list_sf[imaxadc].time_start)/ denf; 
             }
-
+            }
             tp_list_prev = tp_list_next;
           }
         //MIGHT NEED TO MOVE THIS INTO ANOTHER BLOCK
@@ -246,51 +266,39 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
 
 
         if(   (tp_list[icheck].channel == (chnl_maxadc+1)) or    (tp_list[icheck].channel == (chnl_maxadc+2)) or    (tp_list[icheck].channel == (chnl_maxadc+3)) or    (tp_list[icheck].channel == (chnl_maxadc+4)) ){
-          std::cout << "\tChecking if time condition has been satisfied for (This Time, Previous Time) = ("<< this_time_min << ", " << tp_list_prev[icheck].time_start <<")" << std::endl;
-          std::cout << "\tHere is the correspondingtplist icheck channel: " << tp_list[icheck].channel << " , " << chnl_maxadc << std::endl; //Change later?
+          //std::cout << "\n\tChecking if time condition has been satisfied for (This Time, Previous Time) = ("<< this_time_min << ", " << tp_list_prev[icheck].time_start <<")" << std::endl;
           this_time_max = tp_list[icheck].time_start + tp_list[icheck].time_over_threshold;
           this_time_min =  tp_list[icheck].time_start;
           prev_time_max = tp_list_prev[imaxadc].time_start + tp_list_prev[imaxadc].time_over_threshold;
           prev_time_min =tp_list_prev[imaxadc].time_start;	
 
           if ((this_time_min>=prev_time_min and this_time_min<=prev_time_max) or (this_time_max>=prev_time_min and this_time_max<=prev_time_max) or (prev_time_max<=this_time_max and prev_time_min>=this_time_min) ){
-            std::cout << "\t\tTime Condition PASSED:    " << prev_time_min << " , " << prev_time_max  << std::endl;
-            std::cout << "\t\tHorizontal Noise Count: : " << horiz_noise_cnt << std::endl;
+            //std::cout << "\tTime Condition: True"  << std::endl;
             if (horiz_noise_cnt == 0){
               horiz_tb = prev_time_min;
               horiz_tt = prev_time_max;
-              std::cout <<"\t\t\thoriz_tb: " << horiz_tb <<" , horiz_tt: " << horiz_tt << std::endl;	
             }
 
             if (tp_list[icheck].channel == tp_list_next[icheck].channel) break;
             hitfound = true;
-            std::cout << "HIT HAS BEEN FOUND in channel " << tp_list[icheck].channel << std::endl;
+            //std::cout << "\n\t///////////////////\n\tHIT HAS BEEN FOUND in channel " << tp_list[icheck].channel << "\n\t///////////////////" << std::endl;
             tp_list_next[imaxadc].channel = tp_list[icheck].channel;   
             tp_list_next[imaxadc].time_start = tp_list[icheck].time_start;
             tp_list_next[imaxadc].adc_integral = tp_list[icheck].adc_integral;
             tp_list_next[imaxadc].adc_peak = tp_list[icheck].adc_peak;
             tp_list_next[imaxadc].time_over_threshold = tp_list[icheck].time_over_threshold;
  
-            std::cout << "Sanity Check -- Is hitfound labelled as TRUE? ==> " << hitfound << std::endl;
-
-            std::cout << "nchnl and jchnl: " << tp_list_next[imaxadc].channel << ", " << tp_list[imaxadc].channel << std::endl;
-            std::cout << "time difference: " << abs(this_time_min - horiz_tb) << " , " << abs(this_time_max - horiz_tt) << std::endl;
-
 
             if (abs(this_time_min - horiz_tb) <=1 or abs(this_time_max - horiz_tt) <=1){
               horiz_noise_cnt+=1;
-              std::cout << "horiz_noise_cnt: " << horiz_noise_cnt << std::endl;
               if (horiz_noise_cnt>horiz_tolerance) break;   
             }
             else{
                horiz_noise_cnt = 0;
-               std::cout << "in else: horiz_noise_cnt:" << horiz_noise_cnt << std::endl;
         	  }
 
             if (this_time_max > time_max) time_max = this_time_max;
             if (this_time_min < time_min) time_min = this_time_min;
-
-            std::cout << "Time max: " << this_time_max  << " , Time Min: " << this_time_min << std::endl;
 
           }
         }
@@ -307,8 +315,13 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
       hitfound = false;
       
       if (frontfound == true){
-        for (int icheckb=maxadcindex; icheckb>=0; --icheckb){
-          if(tp_list[icheckb].channel <= (chnl_maxadc+2)){
+        std::cout << "BACKWARDS PART OF ALGORITHM ACTIVATED" << std::endl;
+
+        for (int icheckb=maxadcindex; icheckb>=0; icheckb--){
+          std::cout << "\tMICHEL TRIGGER PROCESSING" << std::endl;
+ 
+
+          if(tp_list[icheckb].channel <= (chnl_maxadc-2)){
     	      chnl_maxadc = tp_list_next[imaxadc].channel;
     	      if (hitfound == false) break;
     	      if (hitfound == true) {
@@ -316,34 +329,42 @@ TriggerActivityMakerMichel::operator()(const TriggerPrimitive& input_tp, std::ve
     	        if (braggcnt == tracklen/2+3){
     	          tp_list_sb = tp_list_next;
     	        }
-    	        if (braggcnt >= tracklen){
 
-                    bky1=tp_list_next[imaxadc].time_start;
-                    bky2=tp_list_next[imaxadc].time_over_threshold;
-                    bky3=tp_list_sb[imaxadc].time_start;
-                    bky4=tp_list_sb[imaxadc].time_over_threshold;
-                    backslope_top = float(bky1+bky2-bky3-bky4)/float(tp_list_next[imaxadc].channel-tp_list_sb[imaxadc].channel);
-                    backslope_mid = float(bky1+bky2/2-bky3-bky4/2)/float(tp_list_next[imaxadc].channel-tp_list_sb[imaxadc].channel);
-                    backslope_bottom = float(bky1-bky3)/float(tp_list_next[imaxadc].channel-tp_list_sb[imaxadc].channel);
+    	       if (braggcnt >= tracklen){
+              	bky1=tp_list_next[imaxadc].time_start;
+                bky2=tp_list_next[imaxadc].time_over_threshold;
+                bky3=tp_list_sb[imaxadc].time_start;
+                bky4=tp_list_sb[imaxadc].time_over_threshold;
 
-                    frontangle_top = (atan(slopecm_scale*float(frontslope_top)))*radTodeg;
-                    backangle_top = (atan(slopecm_scale*float(backslope_top)))*radTodeg;
-                    frontangle_mid = (atan(slopecm_scale*float(frontslope_mid)))*radTodeg;
-                    backangle_mid = (atan(slopecm_scale*float(backslope_mid)))*radTodeg;
-                    frontangle_bottom = (atan(slopecm_scale*float(frontslope_bottom)))*radTodeg;
-                    backangle_bottom = (atan(slopecm_scale*float(backslope_bottom)))*radTodeg;
+  		float num = float(bky1+bky2-(bky3+bky4));
+  	       	int den = (tp_list_next[imaxadc].channel - tp_list_sb[imaxadc].channel);
+		if(den!=0){
+  	          backslope_top = (bky1+bky2-(bky3+bky4)) / den; 
+                  backslope_mid = (bky1+(bky2/2)-(bky3+(bky4/2))) / den; 
+  	          backslope_bottom = (bky1-bky3) / den; 
+  		  frontangle_top = (atan(slopecm_scale*float(frontslope_top)))*radTodeg;
+                  backangle_top = (atan(slopecm_scale*float(backslope_top)))*radTodeg;
+                  frontangle_mid = (atan(slopecm_scale*float(frontslope_mid)))*radTodeg;
+                  backangle_mid = (atan(slopecm_scale*float(backslope_mid)))*radTodeg;
+                  frontangle_bottom = (atan(slopecm_scale*float(frontslope_bottom)))*radTodeg;
+                  backangle_bottom = (atan(slopecm_scale*float(backslope_bottom)))*radTodeg;
+		  if (abs(frontangle_mid-backangle_mid)>30 or abs(frontangle_top-backangle_top)>30 or abs(frontangle_bottom-backangle_bottom)>30){
+                    trigtot += 1;
+		    //std::cout <<" Trigger: " << trigtot << std::endl;
+                    TriggerPrimitive tp_final {tp_list_maxadc[imaxadc].time_start, 0,  tp_list_maxadc[imaxadc].time_over_threshold, tp_list_maxadc[imaxadc].channel, tp_list_maxadc[imaxadc].adc_integral, tp_list_maxadc[imaxadc].adc_peak, 0, 0, 0, 0, 0};
+                    std::cout << "\t\tMICHEL TRIGGER FINALIZED" << std::endl;
+                    final_tp_list.push_back(tp_final);  
+		    //std::cout <<" Trigger AT (bragg peak found at ): " << tp_list_maxadc[imaxadc].channel << " , " << tp_list_maxadc[imaxadc].time_start << " , "<< tp_list_maxadc[imaxadc].adc_integral << std::endl;
+		  }
+                  else {
+                    break;
+                  }
+	        }
+              } 
 
-    		        if (abs(frontangle_mid-backangle_mid)>50 and abs(frontangle_top-backangle_top)>50 and abs(frontangle_bottom-backangle_bottom)>50){
-    		          trigtot += 1;
-                          TriggerPrimitive tp_final {tp_list_maxadc[imaxadc].time_start, 0,  tp_list_maxadc[imaxadc].time_over_threshold, tp_list_maxadc[imaxadc].channel, tp_list_maxadc[imaxadc].adc_integral, tp_list_maxadc[imaxadc].adc_peak, 0, 0, 0, 0, 0};
-                          final_tp_list.push_back(tp_final);
-    		        }
-    		        else {
-    		          break;
-    		        }
-    	        }
-    		      tp_list_prev = tp_list_next;
-    	      }
+    	      tp_list_prev = tp_list_next;
+
+    	    }
           //Might need to move this into another block
           hitfound ==false;
           this_time_max = 0;

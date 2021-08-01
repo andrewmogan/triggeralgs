@@ -12,14 +12,17 @@
 #include <chrono>
 #include <limits>
 #include <vector>
+#include <iostream>
+
+
 
 using namespace triggeralgs;
-
+using namespace std;
 void
 TriggerCandidateMakerMichel::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 {
   if (!activity.tp_list.empty()){
-
+    std::cout << "\t\t\t\t\tCANDIDATE DETECTED" << std::endl;
     std::vector<uint16_t> detid_vector;
     detid_vector.push_back(activity.detid);
 
