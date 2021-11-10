@@ -1,18 +1,105 @@
-#pragma once
+/**
+ * @file TriggerDecisionMaker.hpp
+ *
+ * This is part of the DUNE DAQ Application Framework, copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
+ */
+
+#ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERPRIMITIVE_HPP_
+#define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERPRIMITIVE_HPP_
+
+#include "triggeralgs/Types.hpp"
+
+#include <cstddef>
 #include <cstdint>
+#include <bitset>
+#include <iostream>
+#include <type_traits>
 
 namespace triggeralgs {
-  struct TriggerPrimitive {
-    int64_t  time_start          = {0};
-    int64_t  time_peak           = {0};
-    int32_t  time_over_threshold = {0};
-    uint16_t channel             = {0};
-    uint32_t adc_integral        = {0};
-    uint16_t adc_peak            = {0};
-    uint16_t detid               = {0};
-    uint16_t type                = {0};
-    uint16_t algorithm           = {0};
-    uint16_t version             = {0};
-    uint32_t flag                = {0};
+
+/**
+ * @brief A single energy deposition on a TPC or PDS channel
+ */
+struct TriggerPrimitive
+{
+  /**
+   * @brief The type of a TriggerPrimitive
+   */
+  enum class Type {
+    kUnknown = 0,
+    kTPC = 1,
+    kPDS = 2,
   };
+  
+  /**
+   * @brief The algorithm used to form a TriggerPrimitive
+   */
+  enum class Algorithm {
+    kUnknown = 0,
+    kTPCDefault = 1
+  };
+
+  /**
+   * @brief A bitmask of flags from PrimitiveFlagsBits OR'ed together
+   *
+   * (a std::bitset<> would be nicer, but we don't have code to serialize it yet)
+   */
+  using Flags = uint16_t;
+
+  timestamp_t time_start = INVALID_TIMESTAMP;
+  timestamp_t time_peak = INVALID_TIMESTAMP;
+  timestamp_t time_over_threshold = INVALID_TIMESTAMP;
+  channel_t channel = INVALID_CHANNEL;
+  uint32_t adc_integral = { 0 }; // NOLINT(build/unsigned)
+  uint16_t adc_peak = { 0 };     // NOLINT(build/unsigned)
+  detid_t detid = INVALID_DETID;
+  Type type = Type::kUnknown;
+  Algorithm algorithm = Algorithm::kUnknown;
+  version_t version = INVALID_VERSION;      // NOLINT(build/unsigned)
+  Flags flag = 0;
+};
+
+/**
+ * Names for each of the bits in the TriggerPrimitive Flags
+ */
+namespace FlagBits {
+using Flags = TriggerPrimitive::Flags;
+
+constexpr Flags kSomehowBad = static_cast<Flags>(1) << 0;
+constexpr Flags kUnassigned1 = static_cast<Flags>(1) << 1;
+constexpr Flags kUnassigned2 = static_cast<Flags>(1) << 2;
+constexpr Flags kUnassigned3 = static_cast<Flags>(1) << 3;
+constexpr Flags kUnassigned4 = static_cast<Flags>(1) << 4;
+constexpr Flags kUnassigned5 = static_cast<Flags>(1) << 5;
+constexpr Flags kUnassigned6 = static_cast<Flags>(1) << 6;
+constexpr Flags kUnassigned7 = static_cast<Flags>(1) << 7;
+constexpr Flags kUnassigned8 = static_cast<Flags>(1) << 8;
+constexpr Flags kUnassigned9 = static_cast<Flags>(1) << 9;
+constexpr Flags kUnassigned10 = static_cast<Flags>(1) << 10;
+constexpr Flags kUnassigned11 = static_cast<Flags>(1) << 11;
+constexpr Flags kUnassigned12 = static_cast<Flags>(1) << 12;
+constexpr Flags kUnassigned13 = static_cast<Flags>(1) << 13;
+constexpr Flags kUnassigned14 = static_cast<Flags>(1) << 14;
+constexpr Flags kUnassigned15 = static_cast<Flags>(1) << 15;
+
 }
+
+inline std::istream& operator>>(std::istream& is, TriggerPrimitive::Type& t)
+{
+  std::underlying_type<TriggerPrimitive::Type>::type tmp;
+  is >> tmp;
+  t = static_cast<TriggerPrimitive::Type>(tmp);
+  return is;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const TriggerPrimitive::Type& t)
+{
+  using underlying_t = std::underlying_type<TriggerPrimitive::Type>::type;
+  return os << static_cast<underlying_t>(t);
+}
+
+} // namespace triggeralgs
+
+#endif // TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERPRIMITIVE_HPP_
