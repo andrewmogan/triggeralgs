@@ -74,7 +74,7 @@ TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json &config)
 TriggerActivity
 TriggerActivityMakerADCSimpleWindow::construct_ta() const
 {
-  TLOG_DEBUG(TRACE_NAME) << "I am constructing a trigger activity!";
+  TLOG(TLVL_DEBUG_1) << "I am constructing a trigger activity!";
   //TLOG_DEBUG(TRACE_NAME) << m_current_window;
 
   TriggerPrimitive latest_tp_in_window = m_current_window.tp_list.back();

@@ -20,7 +20,7 @@ TriggerCandidateMakerPrescale::operator()(const TriggerActivity& activity, std::
 { 
   if ((m_activity_count++) % m_prescale == 0)
   {
-    TLOG_DEBUG(TRACE_NAME) << "Emitting prescaled TriggerCandidate " << (m_activity_count-1);
+    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerCandidate " << (m_activity_count-1);
     std::vector<detid_t> detid_vector;
     detid_vector.push_back(activity.detid);
     std::vector<TriggerActivity> ta_list;

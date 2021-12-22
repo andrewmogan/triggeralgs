@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(triggeralgs VERSION 0.3.1)
+project(triggeralgs VERSION 0.3.3)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)

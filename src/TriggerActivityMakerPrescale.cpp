@@ -20,7 +20,7 @@ TriggerActivityMakerPrescale::operator()(const TriggerPrimitive& input_tp, std::
 {
   if ((m_primitive_count++) % m_prescale == 0)
   {
-    TLOG_DEBUG(TRACE_NAME) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
+    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
     std::vector<TriggerPrimitive> tp_list;
     tp_list.push_back(input_tp);
     TriggerActivity ta {

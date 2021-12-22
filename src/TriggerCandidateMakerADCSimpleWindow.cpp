@@ -25,7 +25,7 @@ TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity
   std::vector<detid_t> detid_vector = {activity.detid};
   std::vector<TriggerActivity> ta_list = {activity};
 
-  TLOG_DEBUG(TRACE_NAME) << "Emitting an ADCSimpleWindow TriggerCandidate " << (m_activity_count-1);
+  TLOG(TLVL_DEBUG_1) << "Emitting an ADCSimpleWindow TriggerCandidate " << (m_activity_count-1);
   TriggerCandidate tc {
       activity.time_start, 
       activity.time_end,  
