@@ -10,7 +10,7 @@
 #define TRIGGERALGS_SRC_TRIGGERALGS_SUPERNOVA_TRIGGERDECISIONMAKERSUPERNOVA_HPP_
 
 #include "triggeralgs/TriggerDecisionMaker.hpp"
-#include "triggeralgs/Types.hpp"
+#include "detdataformats/trigger/Types.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -28,19 +28,19 @@ public:
 
 protected:
   std::vector<TriggerCandidate> m_candidate;
-  /// Slinding time window to count activities
-  std::atomic<timestamp_t> m_time_window = { 500'000'000 };
+  /// Sliding time window to count activities
+  std::atomic<dunedaq::detdataformats::trigger::timestamp_t> m_time_window = { 500'000'000 };
   /// Minimum number of activities in the time window to issue a trigger
   std::atomic<uint16_t> m_threshold = { 1 }; // NOLINT(build/unsigned)
   /// Minimum number of primities in an activity
   std::atomic<uint16_t> m_hit_threshold = { 1 }; // NOLINT(build/unsigned)
 
   /// this function gets rid of the old activities
-  void FlushOldCandidate(timestamp_t time_now)
+  void FlushOldCandidate(dunedaq::detdataformats::trigger::timestamp_t time_now)
   {
-    timestamp_diff_t how_far = time_now - m_time_window;
+    dunedaq::detdataformats::trigger::timestamp_diff_t how_far = time_now - m_time_window;
     auto end = std::remove_if(
-                              m_candidate.begin(), m_candidate.end(), [how_far, this](auto& c) -> bool { return (static_cast<timestamp_diff_t>(c.time_start) < how_far); });
+                              m_candidate.begin(), m_candidate.end(), [how_far, this](auto& c) -> bool { return (static_cast<dunedaq::detdataformats::trigger::timestamp_diff_t>(c.time_start) < how_far); });
     m_candidate.erase(end, m_candidate.end());
   }
 };

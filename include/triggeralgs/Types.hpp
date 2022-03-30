@@ -9,51 +9,17 @@
 #ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TYPES_HPP_
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TYPES_HPP_
 
-#include <cstdint>
-#include <limits>
+#include "detdataformats/trigger/Types.hpp"
 
 namespace triggeralgs {
 
-// A data timestamp in timing system clock ticks (50 MHz for
-// ProtoDUNE-I, 62.5 MHz for ProtoDUNE-II and DUNE FD). If/when we
-// depend on daqdataformats, we can get these from there
-using timestamp_t = uint64_t; // NOLINT
-
-constexpr timestamp_t INVALID_TIMESTAMP = std::numeric_limits<timestamp_t>::max();
-
-using timestamp_diff_t = int64_t;
-
-// A logical region of the detector from which DS objects may be
-// formed, eg an APA or a module
-//
-// TODO P. Rodrigues 2021-06-01: it would be nice to have this be just
-// daqdataformats::GeoID, if/when we can depend on the daqdataformats
-// package
-using detid_t = uint16_t;
-
-constexpr detid_t INVALID_DETID = std::numeric_limits<detid_t>::max();
-
-// A detid representing a request to read out the whole detector
-constexpr detid_t WHOLE_DETECTOR = INVALID_DETID-1;
-
-// A trigger number
-// TODO P. Rodrigues 2021-06-14: it would be nice to have this be just
-// daqdataformats::trigger_number_t, if/when we can depend on the daqdataformats
-// package
-using trigger_number_t = uint64_t;
-
-constexpr trigger_number_t INVALID_TRIGGER_NUMBER = std::numeric_limits<trigger_number_t>::max();
-
-// A channel number
-using channel_t = int32_t;
-
-constexpr channel_t INVALID_CHANNEL = std::numeric_limits<channel_t>::max();
-
-// A version number of an object
-using version_t = uint16_t;
-
-constexpr version_t INVALID_VERSION = std::numeric_limits<version_t>::max();
+using timestamp_t = dunedaq::detdataformats::trigger::timestamp_t;
+using timestamp_diff_t = dunedaq::detdataformats::trigger::timestamp_diff_t;
+using detid_t = dunedaq::detdataformats::trigger::detid_t;
+using trigger_number_t = dunedaq::detdataformats::trigger::trigger_number_t;
+using channel_t = dunedaq::detdataformats::trigger::channel_t;
+using version_t = dunedaq::detdataformats::trigger::version_t;
 
 } // namespace triggeralgs
 
-#endif // TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERCANDIDATEMAKER_HPP_
+#endif // TRIGGERALGS_INCLUDE_TRIGGERALGS_TYPES_HPP_

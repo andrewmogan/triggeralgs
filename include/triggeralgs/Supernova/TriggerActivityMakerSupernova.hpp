@@ -22,7 +22,6 @@ class TriggerActivityMakerSupernova : public TriggerActivityMaker
   /// This activity maker makes an activity with all the trigger primitives
   inline bool is_time_consistent(const TriggerPrimitive& input_tp) const
   {
-
     timestamp_t tend = input_tp.time_start + input_tp.time_over_threshold;
 
     bool is_close_to_edge = (m_time_tolerance > abs(timestamp_diff_t(input_tp.time_start) - timestamp_diff_t(m_time_end))) ||
@@ -61,9 +60,22 @@ protected:
 private:
   TriggerActivity MakeTriggerActivity() const
   {
-    TriggerActivity ta{ m_time_start,  m_time_end,     m_time_peak,    m_time_activity, m_channel_start,
-                        m_channel_end, m_channel_peak, m_adc_integral, m_adc_peak,      m_detid,
-                        m_type,        m_algorithm,    m_version,      m_tp_list };
+    TriggerActivity ta;
+    ta.time_start = m_time_start;
+    ta.time_end = m_time_end;
+    ta.time_peak = m_time_peak;
+    ta.time_activity = m_time_activity;
+    ta.channel_start = m_channel_start;
+
+    ta.channel_end = m_channel_end;
+    ta.channel_peak = m_channel_peak;
+    ta.adc_integral = m_adc_integral;
+    ta.adc_peak = m_adc_peak;
+    ta.detid = m_detid;
+
+    ta.type = m_type;
+    ta.algorithm = m_algorithm;
+    ta.inputs = m_tp_list;
     return ta;
   }
 
@@ -79,7 +91,6 @@ private:
   detid_t m_detid = 0;         // NOLINT(build/unsigned)
   TriggerActivity::Type m_type = TriggerActivity::Type::kTPC;
   TriggerActivity::Algorithm m_algorithm = TriggerActivity::Algorithm::kSupernova;
-  version_t m_version = 0;
 
   std::vector<TriggerPrimitive> m_tp_list;
 };

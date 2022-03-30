@@ -10,6 +10,7 @@
 #define TRIGGERALGS_ADCSIMPLEWINDOW_TRIGGERACTIVITYMAKERADCSIMPLEWINDOW_HPP_
 
 #include "triggeralgs/TriggerActivityMaker.hpp"
+#include "triggeralgs/Types.hpp"
 
 #include <vector>
 

@@ -80,19 +80,19 @@ TriggerActivityMakerADCSimpleWindow::construct_ta() const
   TriggerPrimitive latest_tp_in_window = m_current_window.tp_list.back();
   // The time_peak, time_activity, channel_* and adc_peak fields of this TA are irrelevent
   // for the purpose of this trigger alg.
-  TriggerActivity ta{m_current_window.time_start, 
-                     latest_tp_in_window.time_start+latest_tp_in_window.time_over_threshold,
-                     latest_tp_in_window.time_peak,
-                     latest_tp_in_window.time_peak,
-                     latest_tp_in_window.channel,
-                     latest_tp_in_window.channel,
-                     latest_tp_in_window.channel,
-                     m_current_window.adc_integral, 
-                     latest_tp_in_window.adc_peak,
-                     latest_tp_in_window.detid,
-                     TriggerActivity::Type::kTPC,
-                     TriggerActivity::Algorithm::kADCSimpleWindow, 
-                     0,
-                     m_current_window.tp_list}; 
+  TriggerActivity ta;
+  ta.time_start = m_current_window.time_start;
+  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
+  ta.time_peak = latest_tp_in_window.time_peak;
+  ta.time_activity = latest_tp_in_window.time_peak;
+  ta.channel_start = latest_tp_in_window.channel;
+  ta.channel_end = latest_tp_in_window.channel;
+  ta.channel_peak = latest_tp_in_window.channel;
+  ta.adc_integral = m_current_window.adc_integral;
+  ta.adc_peak = latest_tp_in_window.adc_peak;
+  ta.detid = latest_tp_in_window.detid;
+  ta.type = TriggerActivity::Type::kTPC;
+  ta.algorithm = TriggerActivity::Algorithm::kADCSimpleWindow;
+  ta.inputs = m_current_window.tp_list;
   return ta;
 }

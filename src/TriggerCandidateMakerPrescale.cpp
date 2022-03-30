@@ -21,21 +21,20 @@ TriggerCandidateMakerPrescale::operator()(const TriggerActivity& activity, std::
   if ((m_activity_count++) % m_prescale == 0)
   {
     TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerCandidate " << (m_activity_count-1);
-    std::vector<detid_t> detid_vector;
-    detid_vector.push_back(activity.detid);
-    std::vector<TriggerActivity> ta_list;
-    ta_list.push_back(activity);
+
+    std::vector<TriggerActivity::TriggerActivityData> ta_list;
+    ta_list.push_back(static_cast<TriggerActivity::TriggerActivityData>(activity));
     
-    TriggerCandidate tc {
-      activity.time_start, 
-      activity.time_end,  
-      activity.time_start,
-      detid_vector,
-      TriggerCandidate::Type::kPrescale,
-      TriggerCandidate::Algorithm::kPrescale,
-      0,
-      ta_list
-    };
+    TriggerCandidate tc;
+    tc.time_start = activity.time_start;
+    tc.time_end = activity.time_end;
+    tc.time_candidate = activity.time_start;
+    tc.detid = activity.detid;
+    tc.type = TriggerCandidate::Type::kPrescale;
+    tc.algorithm = TriggerCandidate::Algorithm::kPrescale;
+
+    tc.inputs = ta_list;
+
     cand.push_back(tc);
   }
 }

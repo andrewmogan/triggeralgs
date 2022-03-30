@@ -23,22 +23,23 @@ TriggerActivityMakerPrescale::operator()(const TriggerPrimitive& input_tp, std::
     TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
     std::vector<TriggerPrimitive> tp_list;
     tp_list.push_back(input_tp);
-    TriggerActivity ta {
-      input_tp.time_start,
-      input_tp.time_start+input_tp.time_over_threshold,
-      input_tp.time_peak,
-      /*time_activity*/ 0,
-      input_tp.channel,
-      input_tp.channel,
-      input_tp.channel,
-      input_tp.adc_integral,
-      input_tp.adc_peak,
-      input_tp.detid,
-      TriggerActivity::Type::kTPC,
-      TriggerActivity::Algorithm::kPrescale,
-      0,
-      tp_list
-    };
+
+    TriggerActivity ta;
+    ta.time_start = input_tp.time_start;
+    ta.time_end = input_tp.time_start + input_tp.time_over_threshold;
+    ta.time_peak = input_tp.time_peak;
+    ta.time_activity = 0;
+    ta.channel_start = input_tp.channel;
+    ta.channel_end = input_tp.channel;
+    ta.channel_peak = input_tp.channel;
+    ta.adc_integral = input_tp.adc_integral;
+    ta.adc_peak = input_tp.adc_peak;
+    ta.detid = input_tp.detid;
+    ta.type = TriggerActivity::Type::kTPC;
+    ta.algorithm = TriggerActivity::Algorithm::kPrescale;
+
+    ta.inputs = tp_list;
+
     output_ta.push_back(ta);
   }
 }

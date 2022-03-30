@@ -10,6 +10,7 @@
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERDECISION_HPP_
 
 #include "triggeralgs/TriggerCandidate.hpp"
+#include "triggeralgs/Types.hpp"
 
 #include <cstdint>
 #include <vector>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(triggeralgs VERSION 0.3.3)
+project(triggeralgs VERSION 1.0.0)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -7,6 +7,7 @@ set(CMAKE_INSTALL_CMAKEDIR   ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake )
 
 find_package(nlohmann_json REQUIRED)
 find_package(TRACE REQUIRED)
+find_package(detdataformats REQUIRED)
 
 # We follow the daq-cmake convention of building one main library for
 # the package. In our case, we include all of the available trigger
@@ -35,7 +36,7 @@ target_include_directories(triggeralgs PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json detdataformats::detdataformats)
 install(TARGETS triggeralgs EXPORT triggeralgsTargets)
 
 CONFIGURE_PACKAGE_CONFIG_FILE(cmake/triggeralgsConfig.cmake.in

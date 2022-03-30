@@ -9,44 +9,16 @@
 #ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERACTIVITY_HPP_
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERACTIVITY_HPP_
 
-#include "triggeralgs/Types.hpp"
+#include "detdataformats/trigger/TriggerActivityData.hpp"
 #include "triggeralgs/TriggerPrimitive.hpp"
-#include <cstdint>
+
 #include <vector>
 
 namespace triggeralgs {
 
-
-struct TriggerActivity
+struct TriggerActivity : public dunedaq::detdataformats::trigger::TriggerActivityData
 {
-  enum class Type {
-    kUnknown = 0,
-    kTPC = 1,
-    kPDS = 2,
-  };
-
-  enum class Algorithm {
-    kUnknown = 0,
-    kSupernova = 1,
-    kPrescale = 2,
-    kADCSimpleWindow = 3
-  };
-
-  timestamp_t time_start = INVALID_TIMESTAMP;
-  timestamp_t time_end = INVALID_TIMESTAMP;
-  timestamp_t time_peak = INVALID_TIMESTAMP;
-  timestamp_t time_activity = INVALID_TIMESTAMP;
-  channel_t channel_start = INVALID_CHANNEL; // NOLINT(build/unsigned)
-  channel_t channel_end = INVALID_CHANNEL;   // NOLINT(build/unsigned)
-  channel_t channel_peak = INVALID_CHANNEL;  // NOLINT(build/unsigned)
-  uint64_t adc_integral =  0;  // NOLINT(build/unsigned)
-  uint16_t adc_peak = 0;      // NOLINT(build/unsigned)
-  detid_t detid = INVALID_DETID;         // NOLINT(build/unsigned)
-  Type type = Type::kUnknown;          // NOLINT(build/unsigned)
-  Algorithm algorithm = Algorithm::kUnknown;     // NOLINT(build/unsigned)
-  version_t version = INVALID_VERSION;       // NOLINT(build/unsigned)
-
-  std::vector<TriggerPrimitive> tp_list;
+  std::vector<TriggerPrimitive> inputs;
 };
 
 } // namespace triggeralgs
