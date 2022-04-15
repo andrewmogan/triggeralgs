@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(triggeralgs VERSION 1.0.0)
+project(triggeralgs VERSION 1.1.0)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -26,11 +26,15 @@ find_package(detdataformats REQUIRED)
 add_library(triggeralgs SHARED
   src/TriggerActivityMakerADCSimpleWindow.cpp
   src/TriggerCandidateMakerADCSimpleWindow.cpp
+  src/TriggerActivityMakerHorizontalMuon.cpp
+  src/TriggerCandidateMakerHorizontalMuon.cpp
   src/TriggerActivityMakerPrescale.cpp
   src/TriggerCandidateMakerPrescale.cpp
   src/TriggerActivityMakerSupernova.cpp
   src/TriggerCandidateMakerSupernova.cpp
   src/TriggerDecisionMakerSupernova.cpp)
+
+
 target_include_directories(triggeralgs PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
