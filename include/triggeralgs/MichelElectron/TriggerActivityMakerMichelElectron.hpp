@@ -1,20 +1,20 @@
 /**
- * @file TriggerActivityMakerHorizontalMuon.hpp
+ * @file TriggerActivityMakerMichelElectron.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#ifndef TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
-#define TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
+#ifndef TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_
+#define TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_
 
 #include "triggeralgs/TriggerActivityMaker.hpp"
 #include <fstream>
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerHorizontalMuon : public TriggerActivityMaker
+class TriggerActivityMakerMichelElectron : public TriggerActivityMaker
 {
 
 public:
@@ -139,4 +139,4 @@ private:
 };
 } // namespace triggeralgs
 
-#endif // TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
+#endif // TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_

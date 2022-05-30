@@ -1,34 +1,29 @@
 /**
- * @file TriggerActivityMakerHorizontalMuon.cpp
+ * @file TriggerActivityMakerMichelElectron.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/HorizontalMuon/TriggerActivityMakerHorizontalMuon.hpp"
+#include "triggeralgs/MichelElectron/TriggerActivityMakerMichelElectron.hpp"
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerHorizontalMuon"
+#define TRACE_NAME "TriggerActivityMakerMichelElectron"
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
+TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
-  // dump_tp(input_tp); // For debugging
-
-  // 0) FIRST TP =============================================================================================
   // The first time operator() is called, reset the window object.
+  // dump_tp(input_tp); // For debugging
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
     m_primitive_count++;
     return;
   }
-
-  // FIX ME: Only want to call this if running in debug mode.
-  // add_window_to_record(m_current_window);
 
   // If the difference between the current TP's start time and the start of the window
   // is less than the specified window size, add the TP to the window.
@@ -36,41 +31,10 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     m_current_window.add(input_tp);
   }
 
-  // 1) ADC THRESHOLD EXCEEDED ===============================================================================
-  // If the addition of the current TP to the window would make it longer specified
-  // window length, don't add it but check whether the ADC integral if the existing
-  // window is above the configured threshold. If it is, and we are triggering on ADC,
-  // make a TA and start a fresh window with the current TP.
-  else if (m_current_window.adc_integral > m_adc_threshold && m_trigger_on_adc) {
-    output_ta.push_back(construct_ta());
-    m_current_window.reset(input_tp);
-  }
-
-  // 2) N UNQIUE CHANNELS EXCEEDED ===========================================================================
-  // If the addition of the current TP to the window would make it longer than the
-  // specified window length, don't add it but check whether the number of hit channels
-  // in the existing window is above the specified threshold. If it is, and we are
-  // triggering on channel multiplicity, make a TA and start a fresh window with the current TP.
-  else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
-
-    // add_window_to_record(m_current_window); // For debugging
-    // dump_window_record(); // For debugging
-    // TLOG(1) << "Emitting multiplicity trigger."; // For debugging
-
-    output_ta.push_back(construct_ta());
-    m_current_window.reset(input_tp);
-  }
-
-  // 3) ADJACENCY THRESHOLD EXCEEDED =========================================================================
-  // If the addition of the current TP to the window would make it longer than the
-  // specified window length, don't add it but check whether the adjacency of the
-  // current window exceeds the configured threshold. If it does, and we are triggering
-  // on adjacency, then create a TA and reset the window with the new/current TP.
-  else if (check_adjacency() > m_adjacency_threshold &&  m_trigger_on_adjacency) {
- 
-    // Overloading the check_adjacency so it can modify the start and end channels 
-    uint16_t start = 0;
-    uint16_t end = 0;   
+  // Adjacency Threshold Exceeded ============================================================================
+  // We've filled the window, and first attempt to identify a track using the adjacency checker from the HMA.
+  // When this condition is met, we proceed to check the running mean of the ADC of the TPs of that 'track'.
+  else if (check_adjacency() > m_adjacency_threshold && m_trigger_on_adjacency) { 
 
     auto adjacency = check_adjacency();
     if (adjacency > m_max_adjacency) {
@@ -79,12 +43,14 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     }
 
     if (adjacency > m_adjacency_threshold) {
+
+     // Debugging things    
+     // TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
+     add_window_to_record(m_current_window);
+     dump_window_record(); 
     
-     // Debugging functions
-     TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
-     add_window_to_record(m_current_window); // For debugging
-     dump_window_record(); // For debugging
-     dump_adjacency_channels(); // Function to dump start and end channels of tracks leading to TA
+     // Function to dump start and end channels of tracks leading to TA. Also does the running mean ADC checking
+     check_running_adc();
 
      output_ta.push_back(construct_ta());
      m_current_window.reset(input_tp);
@@ -102,7 +68,7 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
 }
 
 void
-TriggerActivityMakerHorizontalMuon::configure(const nlohmann::json& config)
+TriggerActivityMakerMichelElectron::configure(const nlohmann::json& config)
 {
   // FIX ME: Use some schema here. Also can't work out how to pass booleans.
   if (config.is_object()) {
@@ -128,7 +94,7 @@ TriggerActivityMakerHorizontalMuon::configure(const nlohmann::json& config)
 }
 
 TriggerActivity
-TriggerActivityMakerHorizontalMuon::construct_ta() const
+TriggerActivityMakerMichelElectron::construct_ta() const
 {
 
   TriggerPrimitive latest_tp_in_window = m_current_window.inputs.back();
@@ -145,7 +111,7 @@ TriggerActivityMakerHorizontalMuon::construct_ta() const
   ta.adc_peak = latest_tp_in_window.adc_peak;
   ta.detid = latest_tp_in_window.detid;
   ta.type = TriggerActivity::Type::kTPC;
-  ta.algorithm = TriggerActivity::Algorithm::kHorizontalMuon;
+  ta.algorithm = TriggerActivity::Algorithm::kMichelElectron;
   ta.inputs = m_current_window.inputs;
 
   /*  TriggerActivity ta{m_current_window.time_start,
@@ -159,14 +125,68 @@ TriggerActivityMakerHorizontalMuon::construct_ta() const
                        latest_tp_in_window.adc_peak,
                        latest_tp_in_window.detid,
                        TriggerActivity::Type::kTPC,
-                       TriggerActivity::Algorithm::kHorizontalMuon,
+                       TriggerActivity::Algorithm::kMichelElectron,
                        0,
                        m_current_window.inputs};*/
   return ta;
 }
 
+/*void TriggerActivityMakerMichelElectron::check_running_adc()
+{
+  // Idea here is to loop over the TPs in the track (we have a track since adjacency has been met at this point)
+  // and make a running average of their ADC integral. Add these running averages to a list, and search that list
+  // for a spike indicating a bragg peak later on
+  
+  std::vector<int> mean_adc_list;
+  
+  // create a channel ordered list of tps, their channel and adc values
+    struct hit {
+    int chan;
+    uint32_t adc;
+  };
+  std::vector<hit> hitList;
+  for (auto tp : m_current_window.inputs) {
+     hitList.push_back({tp.channel, tp.adc_integral});
+  }
+  std::sort(hitList.begin(), hitList.end(), [](hit a, hit b) {
+                return a.chan < b.chan; });
+
+  // Loop through this list, checking adcs 1 behind, 1 inront and averaging
+  float adc_mean = 1;
+  uint16_t max = 0;
+  unsigned int current_adc = 0;
+  unsigned int next_adc = 0;
+  unsigned int next = 0;
+  unsigned int prev = 0 ;
+  unsigned int prev_adc = 0;
+
+  for(unsigned int i = 0; i < hitList.size(); ++i){
+    next = (i+1) % hitList.size();
+    prev = (i-1) % hitList.size();
+    current_adc = hitList.at(i).adc;
+    next_adc = hitList.at(next).adc;   
+    prev_adc = hitList.at(prev).adc;
+
+    mean_adc_list.push_back((current_adc + prev_adc + next_adc)/3);
+
+  }
+
+  std::ofstream outfile;
+  outfile.open("running_adc_means.csv", std::ios_base::app);
+
+  for (auto a : mean_adc_list){
+    outfile << a << ",";
+  } 
+  outfile << "0" << std::endl; // end the line with fake value 0, move to next window
+  outfile.close();
+
+  TLOG(1) << "List of running average ADCs created. Length of the list is: " << mean_adc_list.size();
+  return;
+}*/
+
+
 uint16_t
-TriggerActivityMakerHorizontalMuon::check_adjacency() const
+TriggerActivityMakerMichelElectron::check_adjacency() const
 {
   // This function returns the adjacency value for the current window, where adjacency
   // is defined as the maximum number of consecutive wires containing hits. It accepts
@@ -192,9 +212,9 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
   std::sort(chanList.begin(), chanList.end());
 
   // ADAJACENCY METHOD 1 ===========================================================================================
-  // ====================================================================================================
-  // Adjcancency Tolerance = Number of times willing to skip a single missed wire before
-  // resetting the adjacency count. This accounts for things like dead channels / missed TPs.
+  // ===============================================================================================================
+  // Adjcancency Tolerance = Number of wires we're willing to skip before resetting the adjacency count.
+  // This accounts for things like dead channels / missed TPs. Modifiied from HMA, will skip up to 3 consecutive wires.
   for (unsigned int i = 0; i < chanList.size(); ++i) {
 
     next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
@@ -220,6 +240,18 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     // increase adjacency but also tally up with the tolerance counter.
     else if ((next_channel == channel + 2) && (tol_count < m_adj_tolerance)) {
       ++adj;
+      ++tol_count;
+    }
+    else if ((next_channel == channel + 3) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;    
+      ++tol_count;
+    }
+    // So we're allowing up to 3 missed hits now, but each missed hit tolls up!
+    else if ((next_channel == channel + 4) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
       ++tol_count;
     }
 
@@ -266,7 +298,7 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerActivityMakerHorizontalMuon::add_window_to_record(Window window)
+TriggerActivityMakerMichelElectron::add_window_to_record(Window window)
 {
   m_window_record.push_back(window);
   return;
@@ -275,7 +307,7 @@ TriggerActivityMakerHorizontalMuon::add_window_to_record(Window window)
 
 // Function to dump the details of the TA window currently on record
 void
-TriggerActivityMakerHorizontalMuon::dump_window_record()
+TriggerActivityMakerMichelElectron::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -301,9 +333,10 @@ TriggerActivityMakerHorizontalMuon::dump_window_record()
   return;
 }
 
-// Function to dump the start and end channels of the track triggered on
+// Function to dump the start and end channels of the track triggered on. Also checks the running
+// mean of ADC for a spike, i.e. searching for a Bragg peak for decaying muon.
 void
-TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
+TriggerActivityMakerMichelElectron::check_running_adc()
 {
  
  // Copy of the adjacency method 1
@@ -327,12 +360,17 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
   // Generate a channelID ordered list of hit channels for this window
   struct hit {
     int chan;
-    long unsigned int startTime; 
-  };  
-  std::vector<hit> chanList; 
+    long unsigned int startTime;
+    uint32_t adc; 
+  };
+  
+  std::vector<hit> chanList;  // Full list of hits to loop through
+  std::vector<hit> trackHits; // List of all hits that contribute to the trakc/adjacency 
+  std::vector<hit> finalHits; // Final list of hits that make up track
   for (auto tp : m_current_window.inputs) {
-     chanList.push_back({tp.channel, tp.time_start});
+     chanList.push_back({tp.channel, tp.time_start, tp.adc_integral});
   }
+  // sort chanList by the channel number, since we want to find the largest consecutive chain of them
   std::sort(chanList.begin(), chanList.end(), [](hit a, hit b) {
 		return a.chan < b.chan;	});
 
@@ -340,7 +378,7 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
   // ====================================================================================================
   // Adjcancency Tolerance = Number of times willing to skip a single missed wire before
   // resetting the adjacency count. This accounts for things like dead channels / missed TPs.
-  s = chanList.at(0).chan; // Initialise start channel 
+  s = chanList.at(0).chan; 
   st = chanList.at(0).startTime;
 
   for (unsigned int i = 0; i < chanList.size(); ++i) {
@@ -348,6 +386,11 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
     next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
     channel = chanList.at(i).chan;
     next_channel = chanList.at(next).chan; // Next channel with a hit
+    
+    // Initialise the vector
+    if (trackHits.size() == 0){
+	trackHits.push_back(chanList.at(i));
+    }
 
     // End of vector condition
     if (next_channel == 0) {
@@ -356,15 +399,23 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
 
     // Skip same channel hits
     if (next_channel == channel) {
+      // But if the same channel hit is within few 100 ticks, accept it's ADC contribution to the track
+      int diff = chanList.at(next).startTime - chanList.at(i).startTime;
+      if(std::abs(diff) < 200){
+      trackHits.push_back(chanList.at(next)); // Still want this hits ADC contribution!
+      // Idea here is that two hits generated on the same wire, very close in time are
+      // likely coming from the same particle/track activity.
+      }
       continue;
     }
 
-    // If next hit is on next channel, increment the adjacency count (and update endChannel:debugging)
+    // If next hit is on next channel, increment the adjacency count
     else if (next_channel == channel + 1) {
       ++adj;
       e = next_channel;
       et = chanList.at(next).startTime;
-    }
+      trackHits.push_back(chanList.at(next));
+     }
 
     // If next channel is not on the next hit, but the 'second next',
     // increase adjacency but also tally up with the tolerance counter.
@@ -373,7 +424,28 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
       ++tol_count;
       e = next_channel;
       et = chanList.at(next).startTime;
+      trackHits.push_back(chanList.at(next));
     }
+
+    else if ((next_channel == channel + 3) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      e = next_channel;
+      et = chanList.at(next).startTime;
+      trackHits.push_back(chanList.at(next));
+    }
+
+    else if ((next_channel == channel + 4) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+      e = next_channel;
+      et = chanList.at(next).startTime;
+      trackHits.push_back(chanList.at(next));
+    }
+
 
     // If next hit isn't within our reach, end adj count and check for a new max
     // Also finalise the start and end channels of the adjacency of this window
@@ -384,12 +456,14 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
 	fe = e;
         fst = st;
         fet = et; 
-      }
+        finalHits = trackHits; // final hits are the ones we use to print out the info to a file
+       }
       // 
       adj = 1;
       tol_count = 0;
       s = next_channel; // Set the start channel to the next TP channel in the list, not the count is broken
       st = chanList.at(next).startTime;
+      trackHits.clear(); // This stops it happening on the next loop for the size 0 condition OR just wipe it here?
     } 
  }  // End of loop through the hit channels
 
@@ -397,13 +471,17 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
   // Output the start and end channel of this window to the debugging file
   std::ofstream outfile;
   outfile.open("adjacnecy_start_end_tps.csv", std::ios_base::app);
-
-  outfile << fs << ",";
-  outfile << fe   << ",";
-  outfile << fst << ",";
-  outfile << fet   << std::endl;
-
+  outfile << fs << "," << fe  << "," << fst << "," << fet << std::endl;
   outfile.close();
+
+  // Write out the Chan, Time & ADC values of TPs that contributed to the track
+  std::ofstream outfile2;
+  outfile2.open("track_tps.csv", std::ios_base::app);
+  for(auto h : finalHits){
+    outfile2 << h.chan << "," << h.startTime << "," <<  h.adc << std::endl;;
+  }
+  outfile2.close();
+  // TLOG(1) << "Written all track TPs ADCs contribution to file, number of hits in track (including same chans): " << finalHits.size();
 
   return;
 }
@@ -411,7 +489,7 @@ TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
 
 // Function to add current TP details to a text file for testing and debugging.
 void
-TriggerActivityMakerHorizontalMuon::dump_tp(TriggerPrimitive const& input_tp)
+TriggerActivityMakerMichelElectron::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
   outfile.open("coldbox_tps.txt", std::ios_base::app);
@@ -431,7 +509,7 @@ TriggerActivityMakerHorizontalMuon::dump_tp(TriggerPrimitive const& input_tp)
 }
 
 int
-TriggerActivityMakerHorizontalMuon::check_tot() const
+TriggerActivityMakerMichelElectron::check_tot() const
 {
   // Here, we just want to sum up all the tot values for each TP within window, and return this tot of the window.
   int window_tot = 0; // The window TOT, which this function returns
@@ -445,7 +523,7 @@ TriggerActivityMakerHorizontalMuon::check_tot() const
 
 /*
 void
-TriggerActivityMakerHorizontalMuon::flush(timestamp_t, std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerMichelElectron::flush(timestamp_t, std::vector<TriggerActivity>& output_ta)
 {
   // Check the status of the current window, construct TA if conditions are met. Regardless
   // of whether the conditions are met, reset the window.
