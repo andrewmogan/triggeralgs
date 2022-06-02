@@ -116,6 +116,7 @@ private:
   bool m_trigger_on_adc = false;
   bool m_trigger_on_n_channels = false;
   bool m_trigger_on_adjacency = true;    // Default use of the horizontal muon triggering
+  bool debug = false;                    // Use to control whether functions write out useful info
   uint16_t m_adjacency_threshold = 15;   // Default is 15 for trigger
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
   uint32_t m_adc_threshold = 3000000;    // Not currently triggering on this
@@ -134,7 +135,7 @@ private:
   void dump_window_record();
   void dump_tp(TriggerPrimitive const& input_tp);
   void dump_adjacency_channels();  // Essentially a copy of the adjacency checker but dumps chanels to file
-  void check_running_adc(); // Currently just creates a list of running ADC mean for 3 TPs
+  bool check_bragg_peak(); // provides a yes/no answer if the longest track in the window has (potentially) a bragg peak
   std::vector<Window> m_window_record;
 };
 } // namespace triggeralgs

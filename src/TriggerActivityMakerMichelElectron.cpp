@@ -10,6 +10,7 @@
 #include "TRACE/trace.h"
 #define TRACE_NAME "TriggerActivityMakerMichelElectron"
 #include <vector>
+#include <algorithm>
 
 using namespace triggeralgs;
 
@@ -18,7 +19,6 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
   // The first time operator() is called, reset the window object.
-  // dump_tp(input_tp); // For debugging
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
     m_primitive_count++;
@@ -32,29 +32,20 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
   }
 
   // Adjacency Threshold Exceeded ============================================================================
-  // We've filled the window, and first attempt to identify a track using the adjacency checker from the HMA.
-  // When this condition is met, we proceed to check the running mean of the ADC of the TPs of that 'track'.
-  else if (check_adjacency() > m_adjacency_threshold && m_trigger_on_adjacency) { 
+  // We've filled the window, now require a sufficient length track AND that the track has a potential Bragg P.
+  else if (check_adjacency() > m_adjacency_threshold && m_trigger_on_adjacency && check_bragg_peak() ) { 
 
-    auto adjacency = check_adjacency();
-    if (adjacency > m_max_adjacency) {
-      TLOG(TLVL_DEBUG) << "New max adjacency: previous was " << m_max_adjacency << ", new " << adjacency;
-      m_max_adjacency = adjacency;
-    }
+     // Flip debug switch to write out useful info - eg. for plotting what we trigger on
+     debug=true;
+     check_bragg_peak();
+     debug=false;
 
-    if (adjacency > m_adjacency_threshold) {
-
-     // Debugging things    
-     // TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
+     // Generate a TA with the current window of TPs
      add_window_to_record(m_current_window);
-     dump_window_record(); 
-    
-     // Function to dump start and end channels of tracks leading to TA. Also does the running mean ADC checking
-     check_running_adc();
-
+     dump_window_record();
      output_ta.push_back(construct_ta());
      m_current_window.reset(input_tp);
-    }
+    
   }
 
   // Otherwise, slide the window along using the current TP.
@@ -90,7 +81,6 @@ TriggerActivityMakerMichelElectron::configure(const nlohmann::json& config)
       m_adjacency_threshold = config["adjacency_threshold"];
   }
 
-  // m_conf = config.get<dunedaq::triggeralgs::triggeractivitymakerhorizontalmuon::ConfParams>();
 }
 
 TriggerActivity
@@ -114,76 +104,8 @@ TriggerActivityMakerMichelElectron::construct_ta() const
   ta.algorithm = TriggerActivity::Algorithm::kMichelElectron;
   ta.inputs = m_current_window.inputs;
 
-  /*  TriggerActivity ta{m_current_window.time_start,
-                       latest_tp_in_window.time_start+latest_tp_in_window.time_over_threshold,
-                       latest_tp_in_window.time_peak,
-                       latest_tp_in_window.time_peak,
-                       latest_tp_in_window.channel,
-                       latest_tp_in_window.channel,
-                       latest_tp_in_window.channel,
-                       m_current_window.adc_integral,
-                       latest_tp_in_window.adc_peak,
-                       latest_tp_in_window.detid,
-                       TriggerActivity::Type::kTPC,
-                       TriggerActivity::Algorithm::kMichelElectron,
-                       0,
-                       m_current_window.inputs};*/
   return ta;
 }
-
-/*void TriggerActivityMakerMichelElectron::check_running_adc()
-{
-  // Idea here is to loop over the TPs in the track (we have a track since adjacency has been met at this point)
-  // and make a running average of their ADC integral. Add these running averages to a list, and search that list
-  // for a spike indicating a bragg peak later on
-  
-  std::vector<int> mean_adc_list;
-  
-  // create a channel ordered list of tps, their channel and adc values
-    struct hit {
-    int chan;
-    uint32_t adc;
-  };
-  std::vector<hit> hitList;
-  for (auto tp : m_current_window.inputs) {
-     hitList.push_back({tp.channel, tp.adc_integral});
-  }
-  std::sort(hitList.begin(), hitList.end(), [](hit a, hit b) {
-                return a.chan < b.chan; });
-
-  // Loop through this list, checking adcs 1 behind, 1 inront and averaging
-  float adc_mean = 1;
-  uint16_t max = 0;
-  unsigned int current_adc = 0;
-  unsigned int next_adc = 0;
-  unsigned int next = 0;
-  unsigned int prev = 0 ;
-  unsigned int prev_adc = 0;
-
-  for(unsigned int i = 0; i < hitList.size(); ++i){
-    next = (i+1) % hitList.size();
-    prev = (i-1) % hitList.size();
-    current_adc = hitList.at(i).adc;
-    next_adc = hitList.at(next).adc;   
-    prev_adc = hitList.at(prev).adc;
-
-    mean_adc_list.push_back((current_adc + prev_adc + next_adc)/3);
-
-  }
-
-  std::ofstream outfile;
-  outfile.open("running_adc_means.csv", std::ios_base::app);
-
-  for (auto a : mean_adc_list){
-    outfile << a << ",";
-  } 
-  outfile << "0" << std::endl; // end the line with fake value 0, move to next window
-  outfile.close();
-
-  TLOG(1) << "List of running average ADCs created. Length of the list is: " << mean_adc_list.size();
-  return;
-}*/
-
 
 uint16_t
 TriggerActivityMakerMichelElectron::check_adjacency() const
@@ -217,9 +139,9 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
   // This accounts for things like dead channels / missed TPs. Modifiied from HMA, will skip up to 3 consecutive wires.
   for (unsigned int i = 0; i < chanList.size(); ++i) {
 
-    next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
+    next = (i + 1) % chanList.size(); // End of vec loop
     channel = chanList.at(i);
-    next_channel = chanList.at(next); // Next channel with a hit
+    next_channel = chanList.at(next);
 
     // End of vector condition
     if (next_channel == 0) {
@@ -231,7 +153,7 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
       continue;
     }
 
-    // If next hit is on next channel, increment the adjacency count (and update endChannel:debugging)
+    // If next hit is on next channel, increment the adjacency count
     else if (next_channel == channel + 1) {
       ++adj;
     }
@@ -247,7 +169,7 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
       ++tol_count;    
       ++tol_count;
     }
-    // So we're allowing up to 3 missed hits now, but each missed hit tolls up!
+    // So we're allowing up to 3 missed hits now, but each missed hit tolls up
     else if ((next_channel == channel + 4) && (tol_count < m_adj_tolerance)) {
       ++adj;
       ++tol_count;
@@ -296,52 +218,21 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
   return max;
 }
 
-// Functions below this line are for debugging purposes.
-void
-TriggerActivityMakerMichelElectron::add_window_to_record(Window window)
+
+// Function contains same functionality as the adjacency checker. The difference is that
+// it goes on to use those track hits to try and identify a Bragg peak via a running
+// mean average of the ADC values. We use the running mean as it's less susceptible to
+// spikes of activity that might trick the algorithm. We establish a baseline, then
+// count up clusters of charge deposition above that baseline. If the largest is at
+// one of the ends of the track, signal a potential Bragg peak.
+bool
+TriggerActivityMakerMichelElectron::check_bragg_peak()
 {
-  m_window_record.push_back(window);
-  return;
-}
+  // To trigger or not to trigger? The variable which this lengthy function returns
+  bool michel = false; 
 
-
-// Function to dump the details of the TA window currently on record
-void
-TriggerActivityMakerMichelElectron::dump_window_record()
-{
-  // FIX ME: Need to index this outfile in the name by detid or something similar.
-  std::ofstream outfile;
-  outfile.open("window_record_tam.csv", std::ios_base::app);
-
-  for (auto window : m_window_record) {
-    outfile << window.time_start << ",";
-    outfile << window.inputs.back().time_start << ",";
-    outfile << window.inputs.back().time_start - window.time_start << ","; // window_length - from TP start times
-    outfile << window.adc_integral << ",";
-    outfile << window.n_channels_hit() << ",";       // Number of unique channels with hits
-    outfile << window.inputs.size() << ",";          // Number of TPs in Window
-    outfile << window.inputs.back().channel << ",";  // Last TP Channel ID
-    outfile << window.inputs.front().channel << ","; // First TP Channel ID
-    outfile << check_adjacency() << ",";             // New adjacency value for the window
-    outfile << check_tot() << std::endl;             // Summed window TOT
-  }
-
-  outfile.close();
-
-  m_window_record.clear();
-
-  return;
-}
-
-// Function to dump the start and end channels of the track triggered on. Also checks the running
-// mean of ADC for a spike, i.e. searching for a Bragg peak for decaying muon.
-void
-TriggerActivityMakerMichelElectron::check_running_adc()
-{
- 
- // Copy of the adjacency method 1
   int adj = 1;
-  int max = 0; // Maximum adjacency of window, which this function returns
+  int max = 0; 
   unsigned int channel = 0;
   unsigned int next_channel = 0;
   unsigned int next = 0;
@@ -357,20 +248,20 @@ TriggerActivityMakerMichelElectron::check_running_adc()
   long unsigned int fst = 0;
   long unsigned int fet = 0;
 
-  // Generate a channelID ordered list of hit channels for this window
+  // Generate a channelID ordered list of hit channels for the current window
   struct hit {
     int chan;
     long unsigned int startTime;
     uint32_t adc; 
   };
   
-  std::vector<hit> chanList;  // Full list of hits to loop through
-  std::vector<hit> trackHits; // List of all hits that contribute to the trakc/adjacency 
-  std::vector<hit> finalHits; // Final list of hits that make up track
+  std::vector<hit> chanList;  // Full list of unique channels with hits
+  std::vector<hit> trackHits; // List of all hits that contribute to the track/adjacency (incs same channel hits)
+  std::vector<hit> finalHits; // Final list of hits that make up track, use at end.
   for (auto tp : m_current_window.inputs) {
      chanList.push_back({tp.channel, tp.time_start, tp.adc_integral});
   }
-  // sort chanList by the channel number, since we want to find the largest consecutive chain of them
+  // sort chanList by the channel ID, since we want to find the largest consecutive chain of them
   std::sort(chanList.begin(), chanList.end(), [](hit a, hit b) {
 		return a.chan < b.chan;	});
 
@@ -383,11 +274,10 @@ TriggerActivityMakerMichelElectron::check_running_adc()
 
   for (unsigned int i = 0; i < chanList.size(); ++i) {
 
-    next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
+    next = (i + 1) % chanList.size(); 
     channel = chanList.at(i).chan;
-    next_channel = chanList.at(next).chan; // Next channel with a hit
+    next_channel = chanList.at(next).chan;
     
-    // Initialise the vector
     if (trackHits.size() == 0){
 	trackHits.push_back(chanList.at(i));
     }
@@ -399,10 +289,10 @@ TriggerActivityMakerMichelElectron::check_running_adc()
 
     // Skip same channel hits
     if (next_channel == channel) {
-      // But if the same channel hit is within few 100 ticks, accept it's ADC contribution to the track
+      // But if the same channel hit is nearby, accept it's ADC contribution to the track
       int diff = chanList.at(next).startTime - chanList.at(i).startTime;
       if(std::abs(diff) < 200){
-      trackHits.push_back(chanList.at(next)); // Still want this hits ADC contribution!
+      trackHits.push_back(chanList.at(next)); 
       // Idea here is that two hits generated on the same wire, very close in time are
       // likely coming from the same particle/track activity.
       }
@@ -456,36 +346,179 @@ TriggerActivityMakerMichelElectron::check_running_adc()
 	fe = e;
         fst = st;
         fet = et; 
-        finalHits = trackHits; // final hits are the ones we use to print out the info to a file
+        finalHits = trackHits; // final hits are the ones we will use for checking a Bragg P
        }
-      // 
+      
+      // Reset checking variables
       adj = 1;
       tol_count = 0;
-      s = next_channel; // Set the start channel to the next TP channel in the list, not the count is broken
+      s = next_channel;
       st = chanList.at(next).startTime;
-      trackHits.clear(); // This stops it happening on the next loop for the size 0 condition OR just wipe it here?
+      trackHits.clear(); 
     } 
- }  // End of loop through the hit channels
+ }  // End of loop through the window hit channels
 
+  // We now have a vector containing all the hits of a 'track' or above-threshold adjacency. Use these
+  // to check for a BP.
+  
+  std::vector<float> adc_means_list1; // Store our values in this
+  std::vector<float> adc_means_list2;
+  std::vector<float> adc_means_list3;
+  std::vector<float> adc_means_list4;
+  std::vector<float> adc_means_list5;
+  uint16_t convolve_value1 = 4;       // Number of TPs to take a mean average over
+  uint16_t convolve_value2 = 6;
+  uint16_t convolve_value3 = 8;
+  uint16_t convolve_value4 = 10;
+  uint16_t convolve_value5 = 15;
+  ;
+  // Loop over the track hits
+  for (uint16_t i = 0; i < finalHits.size(); ++i){
+    float adc_sum = 0;
+    float adc_mean = 0;
 
-  // Output the start and end channel of this window to the debugging file
-  std::ofstream outfile;
-  outfile.open("adjacnecy_start_end_tps.csv", std::ios_base::app);
-  outfile << fs << "," << fe  << "," << fst << "," << fet << std::endl;
-  outfile.close();
+    // Calculate a few sets of ADC running means, using different params for testing.
+    // Obviously we can clean this up when a param has been chosen.
+    
+    for (uint16_t j = i; j < i+convolve_value1; ++j){
+       int hit = (j) % finalHits.size(); 
+       adc_sum += finalHits.at(hit).adc;
+    }
 
-  // Write out the Chan, Time & ADC values of TPs that contributed to the track
-  std::ofstream outfile2;
-  outfile2.open("track_tps.csv", std::ios_base::app);
-  for(auto h : finalHits){
-    outfile2 << h.chan << "," << h.startTime << "," <<  h.adc << std::endl;;
-  }
-  outfile2.close();
-  // TLOG(1) << "Written all track TPs ADCs contribution to file, number of hits in track (including same chans): " << finalHits.size();
+    adc_mean = adc_sum / convolve_value1;
+    adc_means_list1.push_back(adc_mean);
+    adc_sum = 0; 
 
+    // CONV PARAM 2
+    for (uint16_t j = i; j < i+convolve_value2; ++j){
+       int hit = (j) % finalHits.size();  
+       adc_sum += finalHits.at(hit).adc;
+    }
+
+    adc_mean = adc_sum / convolve_value2;
+    adc_means_list2.push_back(adc_mean);
+    adc_sum = 0;
+
+    // CONV PARAM 3
+    for (uint16_t j = i; j < i+convolve_value3; ++j){
+       int hit = (j) % finalHits.size(); 
+       adc_sum += finalHits.at(hit).adc;
+    }
+
+    adc_mean = adc_sum / convolve_value3;
+    adc_means_list3.push_back(adc_mean);
+    adc_sum = 0;
+
+    // CONV PARAM 4
+    for (uint16_t j = i; j < i+convolve_value4; ++j){
+       int hit = (j) % finalHits.size(); 
+       adc_sum += finalHits.at(hit).adc;
+    } 
+
+    adc_mean = adc_sum / convolve_value4;
+    adc_means_list4.push_back(adc_mean);
+    adc_sum = 0; 
+
+    // CONV PARAM 5
+    for (uint16_t j = i; j < i+convolve_value5; ++j){
+       int hit = (j) % finalHits.size();  
+       adc_sum += finalHits.at(hit).adc;
+    }
+
+    adc_mean = adc_sum / convolve_value5;
+    adc_means_list5.push_back(adc_mean);
+    adc_sum = 0; 
+  
+  } 
+
+  // We now have 5 lists of means, for different parameters. We continue with just one here, choosing 8.
+  float ped = std::accumulate(adc_means_list3.begin(), adc_means_list3.end(), 0.0) / adc_means_list3.size();
+  float tot_adc = std::accumulate(adc_means_list3.begin(), adc_means_list3.end(), 0.0);
+  float charge = 0;
+  std::vector<float> charge_dumps; // Add clusters of charge here
+
+  // Now go through the list, picking up clusters of charge above the baseline/ped
+  for (auto a : adc_means_list3){
+    if (a > ped){
+       charge += a;
+    }
+    else if( a < ped && charge !=0 ){
+     charge_dumps.push_back(charge);
+     charge = 0; 
+    } 
+  } 
+
+  // If the maximum of that list of charge dumps is near(at?) either end of it, trigger.
+  float max_charge = *max_element(charge_dumps.begin(), charge_dumps.end()); 
+
+  // If the highest cluster of charge is at either end of the track, then signal potential BP
+  if(max_charge == charge_dumps.front() || max == charge_dumps.back()){
+    michel = true;
+    }
+
+  // This 'debug' is a switch I use once inside the check in operator() - It shouldn't be used
+  // at the condition stage! Tidy this up when Michel trigger is complete.
+  if(debug){
+    // Output the start and end channel of this window to the debugging file
+    std::ofstream outfile;
+    outfile.open("adjacnecy_start_end_tps.csv", std::ios_base::app);
+    outfile << fs << "," << fe  << "," << fst << "," << fet << std::endl;
+    outfile.close();
+
+    // Write out the Chan, Time & ADC values of TPs that contributed to the track
+    std::ofstream outfile2;
+    outfile2.open("track_tps.csv", std::ios_base::app);
+    for(int i = 0 ; i < finalHits.size() ; ++i ){
+      outfile2 << finalHits.at(i).chan << "," << finalHits.at(i).startTime << "," <<  finalHits.at(i).adc
+      << "," << adc_means_list1.at(i) << "," << adc_means_list2.at(i) << "," << adc_means_list3.at(i) << "," 
+      << adc_means_list4.at(i) << "," << adc_means_list5.at(i) << "," << finalHits.size() << std::endl;
+    }
+    outfile2.close(); 
+    }
+   
+  return michel;
+}
+
+// ===============================================================================================
+// ===============================================================================================
+// Functions below this line are for debugging purposes.
+// ===============================================================================================
+
+void
+TriggerActivityMakerMichelElectron::add_window_to_record(Window window)
+{
+  m_window_record.push_back(window);
   return;
 }
 
+
+// Function to dump the details of the TA window currently on record
+void
+TriggerActivityMakerMichelElectron::dump_window_record()
+{
+  // FIX ME: Need to index this outfile in the name by detid or something similar.
+  std::ofstream outfile;
+  outfile.open("window_record_tam.csv", std::ios_base::app);
+
+  for (auto window : m_window_record) {
+    outfile << window.time_start << ",";
+    outfile << window.inputs.back().time_start << ",";
+    outfile << window.inputs.back().time_start - window.time_start << ","; // window_length - from TP start times
+    outfile << window.adc_integral << ",";
+    outfile << window.n_channels_hit() << ",";       // Number of unique channels with hits
+    outfile << window.inputs.size() << ",";          // Number of TPs in Window
+    outfile << window.inputs.back().channel << ",";  // Last TP Channel ID
+    outfile << window.inputs.front().channel << ","; // First TP Channel ID
+    outfile << check_adjacency() << ",";             // New adjacency value for the window
+    outfile << check_tot() << std::endl;             // Summed window TOT
+  }
+
+  outfile.close();
+
+  m_window_record.clear();
+
+  return;
+}
 
 // Function to add current TP details to a text file for testing and debugging.
 void
