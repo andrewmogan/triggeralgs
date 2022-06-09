@@ -18,6 +18,8 @@ void
 TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
+  if(input_tp.channel > 2623 && input_tp.channel < 3200){
+
   // The first time operator() is called, reset the window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
@@ -35,14 +37,10 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
   // We've filled the window, now require a sufficient length track AND that the track has a potential Bragg P.
   else if (check_adjacency() > m_adjacency_threshold && m_trigger_on_adjacency && check_bragg_peak() ) { 
 
-     // Flip debug switch to write out useful info - eg. for plotting what we trigger on
-     debug=true;
-     check_bragg_peak();
-     debug=false;
-
      // Generate a TA with the current window of TPs
-     add_window_to_record(m_current_window);
-     dump_window_record();
+     //add_window_to_record(m_current_window);
+     //dump_window_record();
+     //TLOG(1) << "Emitting a Michel electron trigger!";
      output_ta.push_back(construct_ta());
      m_current_window.reset(input_tp);
     
@@ -54,7 +52,7 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
   }
 
   m_primitive_count++;
-
+ } // End of collection channel filter
   return;
 }
 
@@ -338,6 +336,16 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
       trackHits.push_back(chanList.at(next));
     }
 
+    else if ((next_channel == channel + 5) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+      e = next_channel;
+      et = chanList.at(next).startTime;
+      trackHits.push_back(chanList.at(next));
+    }
 
     // If next hit isn't within our reach, end adj count and check for a new max
     // Also finalise the start and end channels of the adjacency of this window
@@ -363,84 +371,33 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
   // We now have a vector containing all the hits of a 'track' or above-threshold adjacency. Use these
   // to check for a BP.
   
-  std::vector<float> adc_means_list1; // Store our values in this
-  std::vector<float> adc_means_list2;
-  std::vector<float> adc_means_list3;
-  std::vector<float> adc_means_list4;
-  std::vector<float> adc_means_list5;
-  uint16_t convolve_value1 = 4;       // Number of TPs to take a mean average over
-  uint16_t convolve_value2 = 6;
-  uint16_t convolve_value3 = 8;
-  uint16_t convolve_value4 = 10;
-  uint16_t convolve_value5 = 15;
-  ;
+  std::vector<float> adc_means_list;
+  uint16_t convolve_value = 8;
+
   // Loop over the track hits
   for (uint16_t i = 0; i < finalHits.size(); ++i){
     float adc_sum = 0;
     float adc_mean = 0;
 
-    // Calculate a few sets of ADC running means, using different params for testing.
-    // Obviously we can clean this up when a param has been chosen.
-    
-    for (uint16_t j = i; j < i+convolve_value1; ++j){
+    // Calculate running ADC mean of this track 
+    for (uint16_t j = i; j < i+convolve_value; ++j){
        int hit = (j) % finalHits.size(); 
        adc_sum += finalHits.at(hit).adc;
     }
 
-    adc_mean = adc_sum / convolve_value1;
-    adc_means_list1.push_back(adc_mean);
-    adc_sum = 0; 
-
-    // CONV PARAM 2
-    for (uint16_t j = i; j < i+convolve_value2; ++j){
-       int hit = (j) % finalHits.size();  
-       adc_sum += finalHits.at(hit).adc;
-    }
-
-    adc_mean = adc_sum / convolve_value2;
-    adc_means_list2.push_back(adc_mean);
+    adc_mean = adc_sum / convolve_value;
+    adc_means_list.push_back(adc_mean);
     adc_sum = 0;
-
-    // CONV PARAM 3
-    for (uint16_t j = i; j < i+convolve_value3; ++j){
-       int hit = (j) % finalHits.size(); 
-       adc_sum += finalHits.at(hit).adc;
-    }
-
-    adc_mean = adc_sum / convolve_value3;
-    adc_means_list3.push_back(adc_mean);
-    adc_sum = 0;
-
-    // CONV PARAM 4
-    for (uint16_t j = i; j < i+convolve_value4; ++j){
-       int hit = (j) % finalHits.size(); 
-       adc_sum += finalHits.at(hit).adc;
-    } 
-
-    adc_mean = adc_sum / convolve_value4;
-    adc_means_list4.push_back(adc_mean);
-    adc_sum = 0; 
-
-    // CONV PARAM 5
-    for (uint16_t j = i; j < i+convolve_value5; ++j){
-       int hit = (j) % finalHits.size();  
-       adc_sum += finalHits.at(hit).adc;
-    }
-
-    adc_mean = adc_sum / convolve_value5;
-    adc_means_list5.push_back(adc_mean);
-    adc_sum = 0; 
-  
   } 
 
-  // We now have 5 lists of means, for different parameters. We continue with just one here, choosing 8.
-  float ped = std::accumulate(adc_means_list3.begin(), adc_means_list3.end(), 0.0) / adc_means_list3.size();
-  float tot_adc = std::accumulate(adc_means_list3.begin(), adc_means_list3.end(), 0.0);
+  // We now have 1 lists of means, for different parameters. We continue with just one here, choosing 8.
+  float ped = std::accumulate(adc_means_list.begin(), adc_means_list.end(), 0.0) / adc_means_list.size();
+  float tot_adc = std::accumulate(adc_means_list.begin(), adc_means_list.end(), 0.0);
   float charge = 0;
   std::vector<float> charge_dumps; // Add clusters of charge here
 
   // Now go through the list, picking up clusters of charge above the baseline/ped
-  for (auto a : adc_means_list3){
+  for (auto a : adc_means_list){
     if (a > ped){
        charge += a;
     }
@@ -458,7 +415,7 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
     
     // NICHOLAS' CODE STARTS HERE ==========================================================================
     // =====================================================================================================
-    TLOG(1) << "Nicholas' code starting here";
+    //TLOG(1) << "Nicholas' code starting here";
 
     // required parameters, can change these to config later if we want
     int bragg_peak_threshold = 3000;
@@ -721,7 +678,7 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
 	    }
 	  }// if front found clause   
     } // End of loop over max ADC hits, not sure we should be looping here, there's only one? 
-    TLOG(1) << "Nicholas' code ending here";
+    //TLOG(1) << "Nicholas' code ending here";
     // NICHOLAS' CODE ENDS HERE ===========================================================================
     // ====================================================================================================
     // HAVE YOU SET michel BOOL?
@@ -743,8 +700,7 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
     outfile2.open("track_tps.csv", std::ios_base::app);
     for(int i = 0 ; i < finalHits.size() ; ++i ){
       outfile2 << finalHits.at(i).chan << "," << finalHits.at(i).startTime << "," <<  finalHits.at(i).adc
-      << "," << adc_means_list1.at(i) << "," << adc_means_list2.at(i) << "," << adc_means_list3.at(i) << "," 
-      << adc_means_list4.at(i) << "," << adc_means_list5.at(i) << "," << finalHits.size() << std::endl;
+      << "," << adc_means_list.at(i) << "," << finalHits.size() << std::endl;
     }
     outfile2.close(); 
     }

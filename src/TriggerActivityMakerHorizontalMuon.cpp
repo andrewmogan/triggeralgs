@@ -17,7 +17,7 @@ void
 TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
-  // dump_tp(input_tp); // For debugging
+  if(input_tp.channel > 2623 && input_tp.channel < 3200){
 
   // 0) FIRST TP =============================================================================================
   // The first time operator() is called, reset the window object.
@@ -26,9 +26,6 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     m_primitive_count++;
     return;
   }
-
-  // FIX ME: Only want to call this if running in debug mode.
-  // add_window_to_record(m_current_window);
 
   // If the difference between the current TP's start time and the start of the window
   // is less than the specified window size, add the TP to the window.
@@ -54,7 +51,7 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
 
     // add_window_to_record(m_current_window); // For debugging
-    // dump_window_record(); // For debugging
+    //dump_window_record(); // For debugging
     // TLOG(1) << "Emitting multiplicity trigger."; // For debugging
 
     output_ta.push_back(construct_ta());
@@ -67,36 +64,25 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   // current window exceeds the configured threshold. If it does, and we are triggering
   // on adjacency, then create a TA and reset the window with the new/current TP.
   else if (check_adjacency() > m_adjacency_threshold &&  m_trigger_on_adjacency) {
- 
-    // Overloading the check_adjacency so it can modify the start and end channels 
-    uint16_t start = 0;
-    uint16_t end = 0;   
-
-    auto adjacency = check_adjacency();
-    if (adjacency > m_max_adjacency) {
-      TLOG(TLVL_DEBUG) << "New max adjacency: previous was " << m_max_adjacency << ", new " << adjacency;
-      m_max_adjacency = adjacency;
-    }
-
-    if (adjacency > m_adjacency_threshold) {
     
-     // Debugging functions
-     TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
-     add_window_to_record(m_current_window); // For debugging
-     dump_window_record(); // For debugging
-     dump_adjacency_channels(); // Function to dump start and end channels of tracks leading to TA
+    //auto adjacency = check_adjacency();    
 
-     output_ta.push_back(construct_ta());
-     m_current_window.reset(input_tp);
-    }
+   // TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
+    // add_window_to_record(m_current_window); // For debugging
+    // dump_window_record(); // For debugging
+    // dump_adjacency_channels(); // Function to dump start and end channels of tracks leading to TA
+
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
-  // Otherwise, slide the window along using the current TP.
+  // 4) Otherwise, slide the window along using the current TP.
   else {
     m_current_window.move(input_tp, m_window_length);
   }
 
   m_primitive_count++;
+  } // End of collection filter
 
   return;
 }
@@ -200,6 +186,7 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
     channel = chanList.at(i);
     next_channel = chanList.at(next); // Next channel with a hit
+    int gap = 5; // Max number of wires to skip before ending count
 
     // End of vector condition
     if (next_channel == 0) {
@@ -212,7 +199,7 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     }
 
     // If next hit is on next channel, increment the adjacency count (and update endChannel:debugging)
-    else if (next_channel == channel + 1) {
+    else if (next_channel == channel + 1){
       ++adj;
     }
 
@@ -220,6 +207,27 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     // increase adjacency but also tally up with the tolerance counter.
     else if ((next_channel == channel + 2) && (tol_count < m_adj_tolerance)) {
       ++adj;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 3) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 4) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 5) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
       ++tol_count;
     }
 
