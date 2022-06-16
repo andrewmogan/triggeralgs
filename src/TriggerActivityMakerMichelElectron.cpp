@@ -18,7 +18,6 @@ void
 TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
-  if(input_tp.channel > 2623 && input_tp.channel < 3200){
 
   // The first time operator() is called, reset the window object.
   if (m_current_window.is_empty()) {
@@ -35,12 +34,12 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
 
   // Adjacency Threshold Exceeded ============================================================================
   // We've filled the window, now require a sufficient length track AND that the track has a potential Bragg P.
-  else if (check_adjacency() > m_adjacency_threshold && m_trigger_on_adjacency && check_bragg_peak() ) { 
+  else if (  m_trigger_on_adjacency && check_bragg_peak() ) { 
 
      // Generate a TA with the current window of TPs
      //add_window_to_record(m_current_window);
      //dump_window_record();
-     //TLOG(1) << "Emitting a Michel electron trigger!";
+     TLOG(1) << "Emitting a trigger for candidate Michel event!";
      output_ta.push_back(construct_ta());
      m_current_window.reset(input_tp);
     
@@ -52,7 +51,6 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
   }
 
   m_primitive_count++;
- } // End of collection channel filter
   return;
 }
 
@@ -121,8 +119,8 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
   unsigned int tol_count = 0;
 
   // Start and end channels of track - for debugging function
-  uint16_t s = 1;
-  uint16_t e = 1;
+  //uint16_t s = 1;
+  //uint16_t e = 1;
 
   // Generate a channelID ordered list of hit channels for this window
   std::vector<int> chanList;
@@ -174,6 +172,13 @@ TriggerActivityMakerMichelElectron::check_adjacency() const
       ++tol_count;
       ++tol_count;
     }
+    else if ((next_channel == channel + 5) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+    }  
 
     // If next hit isn't within our reach, end adj count and check for a new max
     else {
@@ -255,7 +260,7 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
     uint32_t adc_peak;
   };
   
-  std::vector<hit> chanList;  // Full list of unique channels with hits
+  std::vector<hit> chanList;  // Full list of unique channels with hits - I don't think this is actually unique hits?
   std::vector<hit> trackHits; // List of all hits that contribute to the track/adjacency (incs same channel hits)
   std::vector<hit> finalHits; // Final list of hits that make up track, use at end.
   for (auto tp : m_current_window.inputs) {
@@ -371,6 +376,11 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
   // We now have a vector containing all the hits of a 'track' or above-threshold adjacency. Use these
   // to check for a BP.
   
+  // If we have exceeded the required track length, then proceed to look for a large charge dump at one end of the track and 2 kinks
+  if (max > m_adjacency_threshold){ // Here is the adjacency check now.
+  
+
+  // BRAG PEAK SEACH ==============================================================
   std::vector<float> adc_means_list;
   uint16_t convolve_value = 8;
 
@@ -390,9 +400,9 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
     adc_sum = 0;
   } 
 
-  // We now have 1 lists of means, for different parameters. We continue with just one here, choosing 8.
+  // We now have a list of adc means, for different parameters. 
   float ped = std::accumulate(adc_means_list.begin(), adc_means_list.end(), 0.0) / adc_means_list.size();
-  float tot_adc = std::accumulate(adc_means_list.begin(), adc_means_list.end(), 0.0);
+  //float tot_adc = std::accumulate(adc_means_list.begin(), adc_means_list.end(), 0.0);
   float charge = 0;
   std::vector<float> charge_dumps; // Add clusters of charge here
 
@@ -410,285 +420,59 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
   // If the maximum of that list of charge dumps is near(at?) either end of it, proceed to angle check.
   float max_charge = *max_element(charge_dumps.begin(), charge_dumps.end()); 
 
-  // If the highest cluster of charge is at either end of the track, then signal potential BP
+  // If the highest cluster of charge is at either end of the charge dump vector, potential brag peak and look for two kinks
   if(max_charge == charge_dumps.front() || max == charge_dumps.back()){
-    
-    // NICHOLAS' CODE STARTS HERE ==========================================================================
-    // =====================================================================================================
-    //TLOG(1) << "Nicholas' code starting here";
 
-    // required parameters, can change these to config later if we want
-    int bragg_peak_threshold = 3000;
-    int tracklength = 18;
-    float kink_angle = 30;
+    bool ghostKink = false; // Required to be at earliest part of track - necessarily changes gradient sign
+    bool kink2 = false;  // this is the second kink, that DOES NOT necessarily have a dG sign change
+    std::vector<float> runningGradient;
+    std::vector<float> runningMeanGradient;
 
-    // Do we really need all these?
-    std::vector<hit> pre_tp_list;
-    std::vector<hit> tp_list;
-    std::vector<hit> tp_list_time_shifted;
-    std::vector<hit> tp_only;
-    std::vector<hit> tp_list_maxadc;
-    std::vector<hit> tp_list_this;
-    std::vector<hit> tp_list_prev;
-    std::vector<hit> tp_list_next;
-    std::vector<hit> tp_list_sf;
-    std::vector<hit> tp_list_sb;
-    std::vector<hit> tmpchnl_vec;
-    std::vector<hit> sublist;
-    std::vector<hit> final_tp_list;
-    std::vector<int>  maxadcindex_vec;
-    std::vector<uint32_t> initialvec_adc;
-    std::vector<hit> test;
-
-
-    // sort by time and convert to 2MHz clock
+    // sort hits by time to find time shift
     std::sort(finalHits.begin(), finalHits.end(), [](hit a, hit b) { return a.startTime < b.startTime; });
-    // sort by time and convert to 2MHz clock 
-    int64_t shift = finalHits[0].startTime;
-    for(int i=0; i<finalHits.size();i++){
-	finalHits[i].startTime  = (finalHits[i].startTime - shift)/25;
-	finalHits[i].tot = finalHits[i].tot/25;
+    //int64_t shift = finalHits[0].startTime;
+    // DO NOT sort back to channel order - the reverse of a track later will cause divisions of huge gaps in time
+    //std::sort(finalHits.begin(), finalHits.end(), [](hit a, hit b) { return a.chan < b.chan; });
+
+    // Populate the runningGradient with the track hits. this is in time order now
+    for (int i=0 ; i < finalHits.size(); i++){
+    
+      // End of track condition
+      if (i+1 == finalHits.size()){ 
+        break; } // just stop adding gradients, can do something nicer here later
+    
+      // Skip same channel hits or if the start times are the same - no div by zero! 
+      if (finalHits.at(i+1).chan == finalHits.at(i).chan || (finalHits.at(i+1).startTime == finalHits.at(i).startTime) ) { continue; } //try next one!
+      // grad is just small z distance change over small x distance change, values converted roughly! 
+      float g = ((finalHits.at(i+1).chan - finalHits.at(i).chan)*4.67)/((finalHits.at(i+1).startTime - finalHits.at(i).startTime)*2e-5*1400);
+      runningGradient.push_back(g); 
     }
-
-    // sort back by channel
-    std::sort(finalHits.begin(), finalHits.end(), [](hit a, hit b) { return a.chan < b.chan; }); 
-
-    // bragg peak = TP with highest adc
-    uint32_t max_adc_integral = 0;
-    for(int i=0; i<finalHits.size(); i++){
-      if (finalHits[i].adc > max_adc_integral){
-    	  max_adc_integral = finalHits[i].adc;
-    	  maxadcindex = i;
+  
+    if ( runningGradient.size() > 10 ){
+    // Now lets take a running mean of the gradients between TPs, less susceptible to wild changes due to deltas/etc
+    for(int g=0 ; g < runningGradient.size() ; g++){
+      float gsum = 0;
+      for(int j = g ; j < 3+g ; j++){
+         if(g == runningGradient.size()-2) { break; } // Just skip the end of vector condition for now
+         gsum += runningGradient.at(g);
       }
+      runningMeanGradient.push_back(gsum/3);
     }
-
-    // make vector of (a single?) hit
-    std::vector<hit> finalHits_maxadc;
-    if (max_adc_integral > bragg_peak_threshold){
-    	finalHits_maxadc.push_back(finalHits[maxadcindex]);
-    }
-
-    // no candidate? end the check here and assign michel = false
-    else { michel = false; return 0; }
-
-    // is this a stopping muon? 
-    for (int imaxadc=0; imaxadc<finalHits_maxadc.size(); imaxadc++){
-      chnl_maxadc = finalHits_maxadc[imaxadc].chan;
-      time_max = finalHits_maxadc[imaxadc].startTime + finalHits_maxadc[imaxadc].tot;
-      time_min = finalHits_maxadc[imaxadc].startTime;
-
-      // initialise some required variables, not we are looping through the max ADC TP
-      hit tp_this = {finalHits_maxadc[imaxadc].chan, finalHits_maxadc[imaxadc].startTime, finalHits_maxadc[imaxadc].adc,
-      finalHits_maxadc[imaxadc].tot, finalHits_maxadc[imaxadc].adc_peak };
-      tp_list_this.push_back(tp_this); // Making a list of high ADC TPs?
-      tp_list_prev = tp_list_this;
-      tp_list_next = tp_list_this;
-      tp_list_sf = tp_list_this;
-      tp_list_sb = tp_list_this;
-      // initialise
-      frontfound = false;
-      hitfound = false;
-      braggcnt=0;
-      slope = 0;
-      horiz_noise_cnt = 0;
-      frontslope_top = 0;
-      backslope_top = 0;
-      frontslope_mid = 0;
-      backslope_mid = 0;
-      frontslope_bottom = 0;
-      backslope_bottom = 0;
-      frontangle_top = 0;
-      frontangle_mid = 0;
-      frontangle_bottom = 0;
-      backangle_top=0;
-      backangle_mid=0;
-      backangle_bottom=0;
-      horiz_tb = 0;
-      horiz_tt = 0;
-      
-      //Analyzing Forward Channels
-      for (int icheck=maxadcindex; icheck<finalHits.size(); icheck++) {
-
-	//If we've found a front, we move on to the second part of the code
-	if (frontfound == true){ break; }
-
-	//If current icheck loop is in channel two channels away either from channel 
-        //with max adc or channel next to maxadc channel based on if we find hit in 
-        //next channel (right next to chnl with max adc)
-	if(finalHits[icheck].chan >= (chnl_maxadc+2)){
-	  chnl_maxadc = tp_list_next[imaxadc].chan;
-	  if (hitfound == false) break;
-	  if (hitfound == true){
-	    braggcnt+=1;
-	    //This is for the clope calculation later
-	    if (braggcnt==3){
-	      tp_list_sf = tp_list_next;
-	    }
-
-            //We have detected enough hits along a track to calculate a slope
-	    if (braggcnt >= tracklength/2){
-	      frontfound = true;
-	      int denf = (tp_list_next[imaxadc].chan - tp_list_sf[imaxadc].chan);
-	      if (denf!=0){
-	        frontslope_top = float(tp_list_next[imaxadc].startTime + tp_list_next[imaxadc].tot - tp_list_sf[imaxadc].startTime - tp_list_sf[imaxadc].tot)/ denf;
-	        frontslope_mid = float(tp_list_next[imaxadc].startTime + (tp_list_next[imaxadc].tot)/2 -tp_list_sf[imaxadc].startTime - (tp_list_sf[imaxadc].tot)/2)/ denf ;
-	        frontslope_bottom = float(tp_list_next[imaxadc].startTime - tp_list_sf[imaxadc].startTime)/ denf;
-	      }
-	    }
-            tp_list_prev = tp_list_next;
-          }
-
-	  hitfound = false;
-          this_time_max = 0;
-	  this_time_min = 0;
-          prev_time_max = 0;
-	  prev_time_min = 0;
-         }
-
-	  //Checking the time condition for proximity
-	  if((finalHits[icheck].chan == (chnl_maxadc+1)) or (finalHits[icheck].chan == (chnl_maxadc+2)) or 
-            (finalHits[icheck].chan == (chnl_maxadc+3)) or (finalHits[icheck].chan == (chnl_maxadc+4))){
-
-	    this_time_max = finalHits[icheck].startTime + finalHits[icheck].tot;
-	    this_time_min =  finalHits[icheck].startTime;
-	    prev_time_max = tp_list_prev[imaxadc].startTime + tp_list_prev[imaxadc].tot;
-	    prev_time_min =tp_list_prev[imaxadc].startTime;
-
-	   if ((this_time_min>=prev_time_min and this_time_min<=prev_time_max) or (this_time_max>=prev_time_min and this_time_max<=prev_time_max) or (prev_time_max<=this_time_max and prev_time_min>=this_time_min) ){
-	            
-	      if (horiz_noise_cnt == 0){
-		horiz_tb = prev_time_min;
-		horiz_tt = prev_time_max;
-	      }
-
-	      hitfound = true;
-	      tp_list_next[imaxadc].chan = finalHits[icheck].chan;
-	      tp_list_next[imaxadc].startTime = finalHits[icheck].startTime;
-	      tp_list_next[imaxadc].adc = finalHits[icheck].adc;
-	      tp_list_next[imaxadc].adc_peak = finalHits[icheck].adc_peak;
-	      tp_list_next[imaxadc].tot = finalHits[icheck].tot;
-
-	      if (abs(this_time_min - horiz_tb) <=1 or abs(this_time_max - horiz_tt) <=1){
-		horiz_noise_cnt+=1;
-		if (horiz_noise_cnt>horiz_tolerance) break;
-	      }
-	      else{horiz_noise_cnt = 0; }
-		 
-	      if (this_time_max > time_max) time_max = this_time_max;
-	      if (this_time_min < time_min) time_min = this_time_min;
-	    }
-	  }
-        }
-
-     //reset variables for backwards channels
-     chnl_maxadc = finalHits_maxadc[imaxadc].chan;
-     tp_list_prev = tp_list_this;
-     tp_list_next = tp_list_this;
-     this_time_max =0;
-     this_time_min =0;
-     prev_time_max = 0;
-     prev_time_min =0;
-     slope=0;
-     hitfound = false;
-            
-     // Looking at Backwards channels
-     if (frontfound == true){
-       for (int icheckb=maxadcindex; icheckb>=0; icheckb--){
-	 if(finalHits[icheckb].chan <= (chnl_maxadc-2)){
-	     chnl_maxadc = tp_list_next[imaxadc].chan;
-	     if (hitfound == false) break;
-	     if (hitfound == true) {
-	       braggcnt+=1;
-	       if (braggcnt == (tracklength/2)+3){ tp_list_sb = tp_list_next;}
-	       if (braggcnt >= tracklength){
-	         bky1=tp_list_next[imaxadc].startTime;
-	         bky2=tp_list_next[imaxadc].tot;
-	         bky3=tp_list_sb[imaxadc].startTime;
-	         bky4=tp_list_sb[imaxadc].tot;
-
-	         float num = float(bky1+bky2-(bky3+bky4));
-	         int den = (tp_list_next[imaxadc].chan - tp_list_sb[imaxadc].chan);
-	         if(den!=0){
-	           backslope_top = (bky1+bky2-(bky3+bky4)) / den;
-	           backslope_mid = (bky1+(bky2/2)-(bky3+(bky4/2))) / den;
-	           backslope_bottom = (bky1-bky3) / den;
-
-	           frontangle_top = (atan(slopecm_scale*float(frontslope_top)))*radTodeg;
-	           backangle_top = (atan(slopecm_scale*float(backslope_top)))*radTodeg;
-	           frontangle_mid = (atan(slopecm_scale*float(frontslope_mid)))*radTodeg;
-	           backangle_mid = (atan(slopecm_scale*float(backslope_mid)))*radTodeg;
-	           frontangle_bottom = (atan(slopecm_scale*float(frontslope_bottom)))*radTodeg;
-	           backangle_bottom = (atan(slopecm_scale*float(backslope_bottom)))*radTodeg;   
-
-	           
-                   TLOG(1) << "Made it to the angle calculation stage.";
-                   //Changed Angle from 30 to 50 
-	           if (abs(frontangle_mid-backangle_mid)>kink_angle or abs(frontangle_top-backangle_top)>kink_angle or abs(frontangle_bottom-backangle_bottom)>kink_angle){
-	              michel=true;
-	              hit tp_final {finalHits_maxadc[imaxadc].chan, finalHits_maxadc[imaxadc].startTime, finalHits_maxadc[imaxadc].adc, finalHits_maxadc[imaxadc].tot, finalHits_maxadc[imaxadc].adc_peak};
-	              final_tp_list.push_back(tp_final);
-	               return 1;
-	           }
-	          else {
-	             return 0;
-	          }
-	        }
-               }
-
-	       tp_list_prev = tp_list_next;
-	      }
-
-	  hitfound = false;
-	  this_time_max = 0;
-	  this_time_min = 0;
-	  prev_time_max = 0;
-	  prev_time_min = 0;
-	 }
-
-	 if( (finalHits[icheckb].chan == (chnl_maxadc-1)) or  (finalHits[icheckb].chan == (chnl_maxadc-2)) or (finalHits[icheckb].chan == (chnl_maxadc-3)) or (finalHits[icheckb].chan == (chnl_maxadc-4)) ){
-	        this_time_max = finalHits[icheckb].startTime + finalHits[icheckb].tot;
-	        this_time_min =  finalHits[icheckb].startTime;
-	        prev_time_max = tp_list_prev[imaxadc].startTime + tp_list_prev[imaxadc].tot;
-	        prev_time_min =tp_list_prev[imaxadc].startTime;
-
-	        if ((this_time_min>=prev_time_min and this_time_min<=prev_time_max) or (this_time_max>=prev_time_min and this_time_max<=prev_time_max) or (prev_time_max<=this_time_max and prev_time_min>=this_time_min) ) {
-	          if (horiz_noise_cnt == 0){
-	              horiz_tb = prev_time_min;
-	                    horiz_tt = prev_time_max;
-	            }
-	          hitfound = true;
-
-	          tp_list_next[imaxadc].chan = finalHits[icheckb].chan;
-	          tp_list_next[imaxadc].startTime = finalHits[icheckb].startTime;
-	          tp_list_next[imaxadc].adc = finalHits[icheckb].adc;
-	          tp_list_next[imaxadc].adc_peak = finalHits[icheckb].adc_peak;
-	          tp_list_next[imaxadc].tot = finalHits[icheckb].tot;
-
-	          if (abs(this_time_min - horiz_tb) <=1 or abs(this_time_max - horiz_tt) <=1){
-	            horiz_noise_cnt+=1;
-	            if (horiz_noise_cnt>horiz_tolerance) break;
-	          }
-	          else{
-	            horiz_noise_cnt = 0;
-	          }
-	          if (this_time_max > time_max) time_max = this_time_max;
-	          if (this_time_min < time_min) time_min = this_time_min;
-	          }
-	      }
-	    }
-	  }// if front found clause   
-    } // End of loop over max ADC hits, not sure we should be looping here, there's only one? 
-    //TLOG(1) << "Nicholas' code ending here";
-    // NICHOLAS' CODE ENDS HERE ===========================================================================
-    // ====================================================================================================
-    // HAVE YOU SET michel BOOL?
-  }
-
-
+   
+    // We have a list of gradients, now just demand that the two ends have gradients that differ significantly
+    // from the mean at both ends. This should pick out wesKinks and michelKinks
+    if(runningMeanGradient.size() > 10 ){
+      int end = runningMeanGradient.size();
+    float ped = (std::abs(std::accumulate(runningMeanGradient.begin(), runningMeanGradient.end(), 0.0)))/(runningMeanGradient.size());
+    if((std::abs(runningMeanGradient.front()) + ped > 4*ped)  &&  ((std::abs(runningMeanGradient.back() + ped)) > 4*ped)){
+      michel = true;
+    }   
+    } // Requres mean gradients list to be a decent size
+    } // Require gradients list to be greater than 2...
 
   // This 'debug' is a switch I use once inside the check in operator() - It shouldn't be used
   // at the condition stage! Tidy this up when Michel trigger is complete.
-  if(debug){
+  /*if(debug){
     // Output the start and end channel of this window to the debugging file
     std::ofstream outfile;
     outfile.open("adjacnecy_start_end_tps.csv", std::ios_base::app);
@@ -704,7 +488,9 @@ TriggerActivityMakerMichelElectron::check_bragg_peak()
     }
     outfile2.close(); 
     }
-   
+  }*/
+  }
+ } // ADJACENCY THRESHOLD CONDITION
   // HAVE YOU SET MICHEL? 
   return michel;
 }

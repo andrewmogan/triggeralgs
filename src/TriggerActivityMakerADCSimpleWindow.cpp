@@ -47,6 +47,8 @@ TriggerActivityMakerADCSimpleWindow::operator()(const TriggerPrimitive& input_tp
   else{
     //TLOG_DEBUG(TRACE_NAME) << "Window is at required length but adc threshold not met, shifting window along.";
     m_current_window.move(input_tp, m_window_length);
+    TLOG(1) << "Constructing a TA.";
+    output_ta.push_back(construct_ta());
   }
   
   //TLOG_DEBUG(TRACE_NAME) << m_current_window;

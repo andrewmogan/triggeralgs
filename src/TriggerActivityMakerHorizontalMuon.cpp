@@ -17,8 +17,7 @@ void
 TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
-  if(input_tp.channel > 2623 && input_tp.channel < 3200){
-
+  //if(input_tp.channel > 2623 && input_tp.channel < 3200){
   // 0) FIRST TP =============================================================================================
   // The first time operator() is called, reset the window object.
   if (m_current_window.is_empty()) {
@@ -65,9 +64,9 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   // on adjacency, then create a TA and reset the window with the new/current TP.
   else if (check_adjacency() > m_adjacency_threshold &&  m_trigger_on_adjacency) {
     
-    //auto adjacency = check_adjacency();    
+    auto adjacency = check_adjacency();    
 
-   // TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
+    TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
     // add_window_to_record(m_current_window); // For debugging
     // dump_window_record(); // For debugging
     // dump_adjacency_channels(); // Function to dump start and end channels of tracks leading to TA
@@ -80,9 +79,8 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   else {
     m_current_window.move(input_tp, m_window_length);
   }
-
   m_primitive_count++;
-  } // End of collection filter
+  //} // End of collection filter
 
   return;
 }
@@ -186,7 +184,6 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
     channel = chanList.at(i);
     next_channel = chanList.at(next); // Next channel with a hit
-    int gap = 5; // Max number of wires to skip before ending count
 
     // End of vector condition
     if (next_channel == 0) {

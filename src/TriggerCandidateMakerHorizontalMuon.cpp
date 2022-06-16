@@ -34,8 +34,8 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
 
       // add_window_to_record(m_current_window);
       // dump_window_record();
-      // TLOG(1) << "Constructing trivial TC.";
-
+      TLOG(1) << "Constructing trivial TC.";
+      TLOG(1) << "Activity count: " << m_activity_count;
       TriggerCandidate tc = construct_tc();
       output_tc.push_back(tc);
 
