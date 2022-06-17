@@ -17,8 +17,7 @@ void
 TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
-  // dump_tp(input_tp); // For debugging
-
+  //if(input_tp.channel > 2623 && input_tp.channel < 3200){
   // 0) FIRST TP =============================================================================================
   // The first time operator() is called, reset the window object.
   if (m_current_window.is_empty()) {
@@ -26,9 +25,6 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     m_primitive_count++;
     return;
   }
-
-  // FIX ME: Only want to call this if running in debug mode.
-  // add_window_to_record(m_current_window);
 
   // If the difference between the current TP's start time and the start of the window
   // is less than the specified window size, add the TP to the window.
@@ -54,7 +50,7 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
 
     // add_window_to_record(m_current_window); // For debugging
-    // dump_window_record(); // For debugging
+    //dump_window_record(); // For debugging
     // TLOG(1) << "Emitting multiplicity trigger."; // For debugging
 
     output_ta.push_back(construct_ta());
@@ -68,30 +64,23 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
   // on adjacency, then create a TA and reset the window with the new/current TP.
   else if (check_adjacency() > m_adjacency_threshold &&  m_trigger_on_adjacency) {
     
-    auto adjacency = check_adjacency();
-    if (adjacency > m_max_adjacency) {
-      TLOG(TLVL_DEBUG) << "New max adjacency: previous was " << m_max_adjacency << ", new " << adjacency;
-      m_max_adjacency = adjacency;
-    }
+    auto adjacency = check_adjacency();    
 
-    if (adjacency > m_adjacency_threshold) {
-      TLOG(TLVL_DEBUG) << "Emitting adjacency TA with adjacency " << adjacency;
+    TLOG(1) << "Emitting adjacency TA with adjacency " << adjacency;
+    // add_window_to_record(m_current_window); // For debugging
+    // dump_window_record(); // For debugging
+    // dump_adjacency_channels(); // Function to dump start and end channels of tracks leading to TA
 
-     // Testing Functions
-     //add_window_to_record(m_current_window); // For debugging
-     //dump_window_record(); // For debugging
-
-      output_ta.push_back(construct_ta());
-      m_current_window.reset(input_tp);
-    }
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
-  // Otherwise, slide the window along using the current TP.
+  // 4) Otherwise, slide the window along using the current TP.
   else {
     m_current_window.move(input_tp, m_window_length);
   }
-
   m_primitive_count++;
+  //} // End of collection filter
 
   return;
 }
@@ -160,7 +149,7 @@ TriggerActivityMakerHorizontalMuon::construct_ta() const
   return ta;
 }
 
-int
+uint16_t
 TriggerActivityMakerHorizontalMuon::check_adjacency() const
 {
   // This function returns the adjacency value for the current window, where adjacency
@@ -168,12 +157,16 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
   // a configurable tolerance paramter, which allows up to adj_tolerance single hit misses
   // on adjacent wires before restarting the adjacency count.
 
-  int adj = 1;
-  int max = 0; // Maximum adjacency of window, which this function returns
+  uint16_t adj = 1;
+  uint16_t max = 0; // Maximum adjacency of window, which this function returns
   unsigned int channel = 0;
   unsigned int next_channel = 0;
   unsigned int next = 0;
   unsigned int tol_count = 0;
+
+  // Start and end channels of track - for debugging function
+  uint16_t s = 1;
+  uint16_t e = 1;
 
   // Generate a channelID ordered list of hit channels for this window
   std::vector<int> chanList;
@@ -203,7 +196,7 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     }
 
     // If next hit is on next channel, increment the adjacency count (and update endChannel:debugging)
-    else if (next_channel == channel + 1) {
+    else if (next_channel == channel + 1){
       ++adj;
     }
 
@@ -211,6 +204,27 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
     // increase adjacency but also tally up with the tolerance counter.
     else if ((next_channel == channel + 2) && (tol_count < m_adj_tolerance)) {
       ++adj;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 3) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 4) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
+    }
+
+    else if ((next_channel == channel + 5) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      ++tol_count;
+      ++tol_count;
       ++tol_count;
     }
 
@@ -222,7 +236,8 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
       adj = 1;
       tol_count = 0;
     }
-  }
+
+ }
 
   // ADJACENCY METHOD 2 ==========================================================================================
   // ===================================================================================================
@@ -262,6 +277,8 @@ TriggerActivityMakerHorizontalMuon::add_window_to_record(Window window)
   return;
 }
 
+
+// Function to dump the details of the TA window currently on record
 void
 TriggerActivityMakerHorizontalMuon::dump_window_record()
 {
@@ -288,6 +305,114 @@ TriggerActivityMakerHorizontalMuon::dump_window_record()
 
   return;
 }
+
+// Function to dump the start and end channels of the track triggered on
+void
+TriggerActivityMakerHorizontalMuon::dump_adjacency_channels()
+{
+ 
+ // Copy of the adjacency method 1
+  int adj = 1;
+  int max = 0; // Maximum adjacency of window, which this function returns
+  unsigned int channel = 0;
+  unsigned int next_channel = 0;
+  unsigned int next = 0;
+  unsigned int tol_count = 0; 
+
+  // Start and end channels of track - for debugging function
+  uint16_t s = 1;
+  uint16_t e = 1;
+  uint16_t fs = 1;
+  uint16_t fe = 1;
+  long unsigned int st = 0;
+  long unsigned int et = 0;
+  long unsigned int fst = 0;
+  long unsigned int fet = 0;
+
+  // Generate a channelID ordered list of hit channels for this window
+  struct hit {
+    int chan;
+    long unsigned int startTime; 
+  };  
+  std::vector<hit> chanList; 
+  for (auto tp : m_current_window.inputs) {
+     chanList.push_back({tp.channel, tp.time_start});
+  }
+  std::sort(chanList.begin(), chanList.end(), [](hit a, hit b) {
+		return a.chan < b.chan;	});
+
+  // ADAJACENCY METHOD 1 ===========================================================================================
+  // ====================================================================================================
+  // Adjcancency Tolerance = Number of times willing to skip a single missed wire before
+  // resetting the adjacency count. This accounts for things like dead channels / missed TPs.
+  s = chanList.at(0).chan; // Initialise start channel 
+  st = chanList.at(0).startTime;
+
+  for (unsigned int i = 0; i < chanList.size(); ++i) {
+
+    next = (i + 1) % chanList.size(); // Loops back when outside of channel list range
+    channel = chanList.at(i).chan;
+    next_channel = chanList.at(next).chan; // Next channel with a hit
+
+    // End of vector condition
+    if (next_channel == 0) {
+      next_channel = channel - 1;
+    }
+
+    // Skip same channel hits
+    if (next_channel == channel) {
+      continue;
+    }
+
+    // If next hit is on next channel, increment the adjacency count (and update endChannel:debugging)
+    else if (next_channel == channel + 1) {
+      ++adj;
+      e = next_channel;
+      et = chanList.at(next).startTime;
+    }
+
+    // If next channel is not on the next hit, but the 'second next',
+    // increase adjacency but also tally up with the tolerance counter.
+    else if ((next_channel == channel + 2) && (tol_count < m_adj_tolerance)) {
+      ++adj;
+      ++tol_count;
+      e = next_channel;
+      et = chanList.at(next).startTime;
+    }
+
+    // If next hit isn't within our reach, end adj count and check for a new max
+    // Also finalise the start and end channels of the adjacency of this window
+    else {
+      if (adj > max) {
+        max = adj;
+        fs = s;
+	fe = e;
+        fst = st;
+        fet = et; 
+      }
+      // 
+      adj = 1;
+      tol_count = 0;
+      s = next_channel; // Set the start channel to the next TP channel in the list, not the count is broken
+      st = chanList.at(next).startTime;
+    } 
+ }  // End of loop through the hit channels
+
+
+  // Output the start and end channel of this window to the debugging file
+  std::ofstream outfile;
+  outfile.open("adjacnecy_start_end_tps.csv", std::ios_base::app);
+
+  outfile << fs << ",";
+  outfile << fe   << ",";
+  outfile << fst << ",";
+  outfile << fet   << std::endl;
+
+  outfile.close();
+
+  return;
+}
+
 
 // Function to add current TP details to a text file for testing and debugging.
 void

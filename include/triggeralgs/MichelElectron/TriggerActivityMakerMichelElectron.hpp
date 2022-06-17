@@ -1,20 +1,20 @@
 /**
- * @file TriggerActivityMakerHorizontalMuon.hpp
+ * @file TriggerActivityMakerMichelElectron.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#ifndef TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
-#define TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
+#ifndef TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_
+#define TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_
 
 #include "triggeralgs/TriggerActivityMaker.hpp"
 #include <fstream>
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerHorizontalMuon : public TriggerActivityMaker
+class TriggerActivityMakerMichelElectron : public TriggerActivityMaker
 {
 
 public:
@@ -116,6 +116,7 @@ private:
   bool m_trigger_on_adc = false;
   bool m_trigger_on_n_channels = false;
   bool m_trigger_on_adjacency = true;    // Default use of the horizontal muon triggering
+  bool debug = false;                    // Use to control whether functions write out useful info
   uint16_t m_adjacency_threshold = 15;   // Default is 15 for trigger
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
   uint32_t m_adc_threshold = 3000000;    // Not currently triggering on this
@@ -126,6 +127,59 @@ private:
   uint16_t ta_channels = 0;
   timestamp_t m_window_length = 50000;
 
+  // Nicholas' Parameters - Required for angle check
+  uint32_t ch_init = 0;
+  int maxadcindex;
+  int maxadcind;
+  uint32_t maxadc =0;
+  uint32_t chnlwid = 0;
+  int64_t timewid=0;
+  int64_t time_window = 0;
+  int64_t minimum_time = 0;
+  int64_t maximum_time = 0;
+  int counting = 0;
+  int trigtot;
+  int64_t TPvol, TPdensity;
+  int time_diff = 30;
+  uint32_t chnl_maxadc;
+  int64_t time_max, this_time_max, prev_time_max, horiz_tt;
+  int64_t temp_t;
+  int64_t time_min, this_time_min, prev_time_min, horiz_tb;
+  float slopecm_scale = 0.04/0.3;
+  bool frontfound = false;
+  bool hitfound = false;
+  int TPcount=0;
+  int braggcnt=0;
+  int chcnt=0;
+  int horiz_noise_cnt = 0;
+  int horiz_tolerance = 8;
+  int tracklen=18;
+  float radTodeg=180/3.14;
+  int64_t y2,y1,y3,y4;
+  uint32_t x2,x1,x3,x4;
+  float bky1,bky2,bky3,bky4, bkpy1,bkpy2,bkpy3,bkpy4;
+  float frontangle_top, frontangle_mid, frontangle_bottom, backangle_top, backangle_mid, backangle_bottom;
+  float slope, frontslope_top, frontslope_mid, frontslope_bottom, backslope_top, backslope_mid, backslope_bottom;
+  int ColPlStartChnl = 2624;
+  int ColPlEndChnl = 2725;
+  int boxchcnt = 1;
+  uint32_t prev_chnl, next_chnl, sf_chnl;
+  int64_t prev_tstart, next_tstart, sf_tstart;
+  int32_t prev_tot, next_tot, sf_tot;
+  int contiguous_tolerance = 16;
+  int tracking_Number = 0;
+  int total_Michels = 0;
+  long total_time_elapsed = 0;
+  std::vector<long> distribution;
+  std::vector<int> tpdistribution;
+
+  std::vector<TriggerPrimitive> tp_for_next_time_window;
+  int64_t boxwidtime= 4500;
+  std::vector<int64_t> timeind_vec;
+  int  boxwidch=96;
+  std::vector<uint32_t> chnlind_vec;
+
+
   // Might not be the best type for this map.
   // std::unordered_map<std::pair<detid_t,channel_t>,channel_t> m_channel_map;
 
@@ -134,9 +188,9 @@ private:
   void dump_window_record();
   void dump_tp(TriggerPrimitive const& input_tp);
   void dump_adjacency_channels();  // Essentially a copy of the adjacency checker but dumps chanels to file
-  void check_running_adc(); // Currently just creates a list of running ADC mean for 3 TPs
+  bool check_bragg_peak(); // provides a yes/no answer if the longest track in the window has (potentially) a bragg peak
   std::vector<Window> m_window_record;
 };
 } // namespace triggeralgs
 
-#endif // TRIGGERALGS_HORIZONTALMUON_TRIGGERACTIVITYMAKERHORIZONTALMUON_HPP_
+#endif // TRIGGERALGS_MICHELELECTRON_TRIGGERACTIVITYMAKERMICHELELECTRON_HPP_
