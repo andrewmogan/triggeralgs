@@ -27,8 +27,8 @@ private:
 
   uint64_t m_activity_count = 0;    // NOLINT(build/unsigned)
   uint64_t m_prescale = 1;          // NOLINT(build/unsigned)
-  timestamp_t m_readout_window_ticks_before = 32768; 
-  timestamp_t m_readout_window_ticks_after = 32768;
+  timestamp_t m_readout_window_ticks_before = 0; 
+  timestamp_t m_readout_window_ticks_after = 0;
   
 };
 

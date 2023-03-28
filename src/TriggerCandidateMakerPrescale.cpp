@@ -27,7 +27,7 @@ TriggerCandidateMakerPrescale::operator()(const TriggerActivity& activity, std::
     
     TriggerCandidate tc;
     tc.time_start = activity.time_start - m_readout_window_ticks_before;
-    tc.time_end = activity.time_start + m_readout_window_ticks_after;
+    tc.time_end = activity.time_end + m_readout_window_ticks_after;
     tc.time_candidate = activity.time_start;
     tc.detid = activity.detid;
     tc.type = TriggerCandidate::Type::kPrescale;
