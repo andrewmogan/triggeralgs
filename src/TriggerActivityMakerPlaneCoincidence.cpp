@@ -60,7 +60,7 @@ TriggerActivityMakerPlaneCoincidence::operator()(const TriggerPrimitive& input_t
   else if (collectionComplete && (m_induction1_window.adc_integral + m_induction2_window.adc_integral + m_collection_window.adc_integral)
             > m_adc_threshold && check_adjacency(m_collection_window) >= m_adjacency_threshold){
 
-          TLOG(1) << "Emitting low energy trigger with " << m_induction1_window.adc_integral << " U "
+          TLOG(1) << "Emitting plane coincidence trigger with " << m_induction1_window.adc_integral << " U "
                   << m_induction2_window.adc_integral << " Y induction ADC sums and "
                   << check_adjacency(m_collection_window) << " adjacent collection hits.";
    

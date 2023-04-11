@@ -20,37 +20,26 @@ TriggerCandidateMakerPlaneCoincidence::operator()(const TriggerActivity& activit
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
-  std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
-    activity) };
+  // We're never flushing these vectors, think its' the cause of increase in CPU over time. Blocking for now.
+  //std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(activity) };
 
   // The first time operator is called, reset window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
     // Trivial TC Logic:
-    // If the request has been made to not trigger on number of channels or
-    // total adc, simply construct a trigger candidate from any single activity.
-    if ((!m_trigger_on_adc) && (!m_trigger_on_n_channels)) {
+    TLOG() << "Constructing PlaneCoincidence TC, TC count: " << m_activity_count;
+    TriggerCandidate tc = construct_tc();
+    output_tc.push_back(tc);
 
-      // add_window_to_record(m_current_window);
-      // dump_window_record();
-      TLOG(1) << "Constructing trivial TC.";
-      TLOG(1) << "Activity count: " << m_activity_count;
-      TriggerCandidate tc = construct_tc();
-      output_tc.push_back(tc);
-
-      // Clear the current window (only has a single TA in it)
-      m_current_window.clear();
-    }
+    // Clear the current window (only has a single TA in it)
+    m_current_window.clear();
     return;
-  }
-
-  // FIX ME: Only want to call this if running in debug mode.
-  // add_window_to_record(m_current_window);
+   }
 
   // If the difference between the current TA's start time and the start of the window
   // is less than the specified window size, add the TA to the window.
-  if ((activity.time_start - m_current_window.time_start) < m_window_length) {
+  else if ((activity.time_start - m_current_window.time_start) < m_window_length) {
     // TLOG_DEBUG(TRACE_NAME) << "TAWindow not yet complete, adding the activity to the window.";
     m_current_window.add(activity);
   }

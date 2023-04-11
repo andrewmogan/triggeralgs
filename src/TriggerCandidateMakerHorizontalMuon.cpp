@@ -20,8 +20,9 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
-  std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
-    activity) };
+  // CB: We're never flushing these vectors of activities. Commenting out for now.
+  //std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
+  //  activity) };
 
   // Find the offset for the very first data vs system time measure:
   if (m_activity_count == 0) {
@@ -33,7 +34,7 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
-
+    TLOG() << "Constructing HorizontalMuon TC, TC count: " << m_activity_count;
     TriggerCandidate tc = construct_tc();
     output_tc.push_back(tc);
 
