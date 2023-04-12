@@ -65,12 +65,11 @@ TriggerActivityMakerPlaneCoincidence::operator()(const TriggerPrimitive& input_t
                   << check_adjacency(m_collection_window) << " adjacent collection hits.";
    
           // Initial studies - output the TPs of the collection plane window that caused this trigger
-          add_window_to_record(m_collection_window);
-          dump_window_record();
+          //add_window_to_record(m_collection_window);
+          //dump_window_record();
+          //for(auto tp : m_collection_window.inputs) dump_tp(tp);
           m_window_record.clear();     
 
-          // Initial studies - Also dump the TPs that have contributed to this TA decision
-          for(auto tp : m_collection_window.inputs) dump_tp(tp);
  
           // We have fulfilled our trigger condition, construct a TA and reset/flush the windows
           // to ensure they're all in the same "time zone"!
@@ -216,7 +215,7 @@ void
 TriggerActivityMakerPlaneCoincidence::dump_window_record()
 {
   std::ofstream outfile;
-  outfile.open("window_record_tam.csv", std::ios_base::app);
+  outfile.open("plane_coinc_tam_windows.csv", std::ios_base::app);
 
   for (auto window : m_window_record) {
     outfile << window.time_start << ",";
@@ -244,7 +243,7 @@ void
 TriggerActivityMakerPlaneCoincidence::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
-  outfile.open("triggered_coldbox_tps.txt", std::ios_base::app);
+  outfile.open("plane_coinc_triggered_tps.txt", std::ios_base::app);
 
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";          

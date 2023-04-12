@@ -71,7 +71,7 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
 
     	TLOG(1) << "Emitting multiplicity trigger with " << m_current_window.n_channels_hit() <<
                    " unique channels hit.";
-
+        //for(auto tp : m_current_window.inputs) dump_tp(tp);
         output_ta.push_back(construct_ta());
     	m_current_window.reset(input_tp);
     }
@@ -87,15 +87,15 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     ta_count++;
     if (ta_count % m_prescale == 0){   
 
-        //for (auto tp : m_current_window.inputs){ dump_tp(tp); }
-
     	// Check for a new maximum, display the largest seen adjacency in the log.
     	uint16_t adjacency = check_adjacency();
     	if (adjacency > m_max_adjacency) { m_max_adjacency = adjacency; }
-    	TLOG(1) << "Emitting track and multiplicity TA with adjacency " << check_adjacency() <<
+    	TLOG(1) << "Emitting track TA with adjacency " << check_adjacency() <<
                    " and multiplicity " << m_current_window.n_channels_hit() << ". The ADC integral of this TA is " << 
                    m_current_window.adc_integral << " and the largest longest track seen so far is " << m_max_adjacency;
-
+        //for(auto tp : m_current_window.inputs) dump_tp(tp);
+        //add_window_to_record(m_current_window);
+        //dump_window_record();
         output_ta.push_back(construct_ta());
     	m_current_window.reset(input_tp);
      }
@@ -273,7 +273,7 @@ void
 TriggerActivityMakerHorizontalMuon::dump_window_record()
 {
   std::ofstream outfile;
-  outfile.open("window_record_tam.csv", std::ios_base::app);
+  outfile.open("hma_tam_windows.csv", std::ios_base::app);
 
   for (auto window : m_window_record) {
     outfile << window.time_start << ",";
@@ -299,7 +299,7 @@ void
 TriggerActivityMakerHorizontalMuon::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
-  outfile.open("coldbox_tps.txt", std::ios_base::app);
+  outfile.open("hma_tps.txt", std::ios_base::app);
 
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";          
