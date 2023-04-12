@@ -49,6 +49,8 @@ add_library(triggeralgs SHARED
   src/TriggerActivityMakerDBSCAN.cpp
   src/dbscan/dbscan.cpp
   src/dbscan/Hit.cpp
+  src/TriggerActivityMakerPDS.cpp
+  src/TriggerCandidateMakerPDS.cpp
   )
 
 target_include_directories(triggeralgs PUBLIC
