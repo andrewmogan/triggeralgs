@@ -17,30 +17,30 @@ using namespace triggeralgs;
 
 void
 TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
-{ 
+{
 
   // For now, if there is any single activity from any one detector element, emit
   // a trigger candidate.
   m_activity_count++;
-  std::vector<TriggerActivity::TriggerActivityData> ta_list = {static_cast<TriggerActivity::TriggerActivityData>(activity)};
+  std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
+    activity) };
 
-  TLOG(TLVL_DEBUG_1) << "Emitting an ADCSimpleWindow TriggerCandidate " << (m_activity_count-1);
+  TLOG(TLVL_DEBUG_1) << "Emitting an ADCSimpleWindow TriggerCandidate " << (m_activity_count - 1);
   TriggerCandidate tc;
-  tc.time_start = activity.time_start; 
-  tc.time_end = activity.time_end;  
+  tc.time_start = activity.time_start;
+  tc.time_end = activity.time_end;
   tc.time_candidate = activity.time_activity;
   tc.detid = activity.detid;
   tc.type = TriggerCandidate::Type::kADCSimpleWindow;
   tc.algorithm = TriggerCandidate::Algorithm::kADCSimpleWindow;
 
   tc.inputs = ta_list;
+  tc.regions.insert(activity.region);
 
   cand.push_back(tc);
-
 }
 
 void
-TriggerCandidateMakerADCSimpleWindow::configure(const nlohmann::json &config)
+TriggerCandidateMakerADCSimpleWindow::configure(const nlohmann::json& config)
 {
 }
-

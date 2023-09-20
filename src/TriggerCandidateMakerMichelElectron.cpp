@@ -142,8 +142,8 @@ TriggerCandidateMakerMichelElectron::construct_tc() const
 
   TriggerCandidate tc;
   tc.time_start = m_current_window.time_start - m_readout_window_ticks_before;
-  tc.time_end =
-    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold + m_readout_window_ticks_after;
+  tc.time_end = latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold +
+                m_readout_window_ticks_after;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kMichelElectron;
@@ -154,6 +154,7 @@ TriggerCandidateMakerMichelElectron::construct_tc() const
   // TriggerActivityData, which is the base class of TriggerActivity
   for (auto& ta : m_current_window.inputs) {
     tc.inputs.push_back(ta);
+    tc.regions.insert(ta.region);
   }
 
   return tc;

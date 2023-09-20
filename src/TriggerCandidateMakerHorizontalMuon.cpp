@@ -11,8 +11,8 @@
 #include "TRACE/trace.h"
 #define TRACE_NAME "TriggerCandidateMakerHorizontalMuon"
 
-#include <vector>
 #include <math.h>
+#include <vector>
 using namespace triggeralgs;
 
 void
@@ -26,27 +26,20 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
   // Find the offset for the very first data vs system time measure:
   if (m_activity_count == 0) {
     using namespace std::chrono;
-    m_initial_offset = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - activity.time_start*16*1e-6; 
+    m_initial_offset =
+      duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - activity.time_start * 16 * 1e-6;
   }
 
   // The first time operator is called, reset window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
-
-    TriggerCandidate tc = construct_tc();
-    output_tc.push_back(tc);
-
-    using namespace std::chrono;
-
-    // Update OpMon Variable(s)
-    uint64_t system_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    uint64_t data_time = m_current_window.time_start*16*1e-6;                      // Convert 62.5 MHz ticks to ms    
-    m_data_vs_system_time.store(fabs(system_time - data_time - m_initial_offset)); // Store the difference for OpMon
-    
-    m_current_window.clear();
     return;
   }
+
+  // TriggerCandidate tc = construct_tc();
+  // output_tc.push_back(tc);
+  // m_current_window.clear();
 
   // If the difference between the current TA's start time and the start of the window
   // is less than the specified window size, add the TA to the window.
@@ -54,7 +47,7 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
     // TLOG_DEBUG(TRACE_NAME) << "Window not yet complete, adding the activity to the window.";
     m_current_window.add(activity);
   }
-  
+
   // If the addition of the current TA to the window would make it longer
   // than the specified window length, don't add it but check whether the sum of all adc in
   // the existing window is above the specified threshold. If it is, and we are triggering on ADC,
@@ -79,14 +72,20 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
 
   // If it is not, move the window along.
   else {
-    // TLOG_DEBUG(TRACE_NAME) << "TAWindow is at required length but specified threshold not met, shifting window along.";
+    // TLOG_DEBUG(TRACE_NAME) << "TAWindow is at required length but specified threshold not met, shifting window
+    // along.";
     m_current_window.move(activity, m_window_length);
   }
+
+  // Update OpMon Variable(s)
+  using namespace std::chrono;
+  uint64_t system_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  uint64_t data_time = m_current_window.time_start * 16 * 1e-6;                  // Convert 62.5 MHz ticks to ms
+  m_data_vs_system_time.store(fabs(system_time - data_time - m_initial_offset)); // Store the difference for OpMon
 
   m_activity_count++;
   return;
 }
-
 
 void
 TriggerCandidateMakerHorizontalMuon::configure(const nlohmann::json& config)
@@ -137,7 +136,7 @@ TriggerCandidateMakerHorizontalMuon::construct_tc() const
   TriggerCandidate tc;
   tc.time_start = m_current_window.time_start - m_readout_window_ticks_before;
   tc.time_end = m_current_window.time_start + m_readout_window_ticks_after;
-  //tc.time_end = latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
+  // tc.time_end = latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kHorizontalMuon;
@@ -148,6 +147,7 @@ TriggerCandidateMakerHorizontalMuon::construct_tc() const
   // TriggerActivityData, which is the base class of TriggerActivity
   for (auto& ta : m_current_window.inputs) {
     tc.inputs.push_back(ta);
+    tc.regions.insert(ta.region);
   }
 
   return tc;

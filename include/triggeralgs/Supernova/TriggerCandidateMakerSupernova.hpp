@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <atomic>
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 namespace triggeralgs {
@@ -28,7 +29,7 @@ public:
   void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
 
 protected:
-  std::vector<TriggerActivity::TriggerActivityData> m_activity;
+  std::vector<TriggerActivity> m_activity;
   /// Slinding time window to count activities
   std::atomic<int64_t> m_time_window = { 500'000'000 };
   /// Minimum number of activities in the time window to issue a trigger
@@ -40,8 +41,9 @@ protected:
   void FlushOldActivity(timestamp_t time_now)
   {
     timestamp_diff_t how_far = time_now - m_time_window;
-    auto end = std::remove_if(
-                              m_activity.begin(), m_activity.end(), [how_far, this](auto& c) -> bool { return (static_cast<dunedaq::trgdataformats::timestamp_diff_t>(c.time_start) < how_far); });
+    auto end = std::remove_if(m_activity.begin(), m_activity.end(), [how_far, this](auto& c) -> bool {
+      return (static_cast<dunedaq::trgdataformats::timestamp_diff_t>(c.time_start) < how_far);
+    });
     m_activity.erase(end, m_activity.end());
   }
 };

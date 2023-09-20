@@ -17,7 +17,7 @@ using namespace triggeralgs;
 
 void
 TriggerCandidateMakerPlaneCoincidence::operator()(const TriggerActivity& activity,
-                                                std::vector<TriggerCandidate>& output_tc)
+                                                  std::vector<TriggerCandidate>& output_tc)
 {
 
   std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
@@ -78,7 +78,8 @@ TriggerCandidateMakerPlaneCoincidence::operator()(const TriggerActivity& activit
   }
   // If it is not, move the window along.
   else {
-    // TLOG_DEBUG(TRACE_NAME) << "TAWindow is at required length but specified threshold not met, shifting window along.";
+    // TLOG_DEBUG(TRACE_NAME) << "TAWindow is at required length but specified threshold not met, shifting window
+    // along.";
     m_current_window.move(activity, m_window_length);
   }
 
@@ -105,7 +106,6 @@ TriggerCandidateMakerPlaneCoincidence::configure(const nlohmann::json& config)
       m_readout_window_ticks_before = config["readout_window_ticks_before"];
     if (config.contains("readout_window_ticks_after"))
       m_readout_window_ticks_after = config["readout_window_ticks_after"];
-
   }
 
   return;
@@ -118,8 +118,8 @@ TriggerCandidateMakerPlaneCoincidence::construct_tc() const
 
   TriggerCandidate tc;
   tc.time_start = m_current_window.time_start - m_readout_window_ticks_before;
-  tc.time_end =
-    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold + m_readout_window_ticks_after;
+  tc.time_end = latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold +
+                m_readout_window_ticks_after;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kPlaneCoincidence;
@@ -130,6 +130,7 @@ TriggerCandidateMakerPlaneCoincidence::construct_tc() const
   // TriggerActivityData, which is the base class of TriggerActivity
   for (auto& ta : m_current_window.inputs) {
     tc.inputs.push_back(ta);
+    tc.regions.insert(ta.region);
   }
 
   return tc;

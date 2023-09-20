@@ -19,6 +19,7 @@ namespace triggeralgs {
 struct TriggerActivity : public dunedaq::trgdataformats::TriggerActivityData
 {
   std::vector<TriggerPrimitive> inputs;
+  int region = 0;
 };
 
 } // namespace triggeralgs

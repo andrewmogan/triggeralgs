@@ -18,10 +18,9 @@ using namespace triggeralgs;
 void
 TriggerActivityMakerPrescale::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
-  if ((m_primitive_count++) % m_prescale == 0)
-  {
+  if ((m_primitive_count++) % m_prescale == 0) {
 
-    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
+    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_primitive_count - 1);
     std::vector<TriggerPrimitive> tp_list;
     tp_list.push_back(input_tp);
 
@@ -40,12 +39,13 @@ TriggerActivityMakerPrescale::operator()(const TriggerPrimitive& input_tp, std::
     ta.algorithm = TriggerActivity::Algorithm::kPrescale;
 
     ta.inputs = tp_list;
+    ta.region = m_region;
 
     using namespace std::chrono;
 
     // Update OpMon Variable(s)
     uint64_t system_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    uint64_t data_time = ta.time_start*16e-6;             // Convert 62.5 MHz ticks to ms    
+    uint64_t data_time = ta.time_start * 16e-6;           // Convert 62.5 MHz ticks to ms
     m_data_vs_system_time.store(data_time - system_time); // Store the difference for OpMon
 
     output_ta.push_back(ta);
@@ -53,11 +53,10 @@ TriggerActivityMakerPrescale::operator()(const TriggerPrimitive& input_tp, std::
 }
 
 void
-TriggerActivityMakerPrescale::configure(const nlohmann::json &config)
+TriggerActivityMakerPrescale::configure(const nlohmann::json& config)
 {
-  //FIXME use some schema here
-  if (config.is_object() && config.contains("prescale"))
-  {
+  // FIXME use some schema here
+  if (config.is_object() && config.contains("prescale")) {
     m_prescale = config["prescale"];
   }
   TLOG_DEBUG(TRACE_NAME) << "Using activity prescale " << m_prescale;

@@ -23,34 +23,34 @@ void
 TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Collection channels only for now
-  if(input_tp.channel%2560 < 1600){
+  if (input_tp.channel % 2560 < 1600) {
     return;
   }
-  
-  if(input_tp.time_start < m_prev_timestamp){
+
+  if (input_tp.time_start < m_prev_timestamp) {
     TLOG(TLVL_INFO) << "Out-of-order TPs: prev " << m_prev_timestamp << ", current " << input_tp.time_start;
     return;
   }
-  
+
   m_dbscan_clusters.clear();
   m_dbscan->add_primitive(input_tp, &m_dbscan_clusters);
 
-  uint64_t t0=m_dbscan->get_first_prim_time();
-  
-  for(auto const& cluster : m_dbscan_clusters){
-    auto& ta=output_ta.emplace_back();
+  uint64_t t0 = m_dbscan->get_first_prim_time();
+
+  for (auto const& cluster : m_dbscan_clusters) {
+    auto& ta = output_ta.emplace_back();
 
     ta.time_start = std::numeric_limits<timestamp_t>::max();
     ta.time_end = 0;
     ta.channel_start = std::numeric_limits<channel_t>::max();
     ta.channel_end = 0;
-    ta.adc_integral =  0;
-    
-    for(auto const& hit : cluster.hits){
-      auto const& prim=hit->primitive;
+    ta.adc_integral = 0;
+
+    for (auto const& hit : cluster.hits) {
+      auto const& prim = hit->primitive;
 
       ta.inputs.push_back(prim);
-      
+
       ta.time_start = std::min(prim.time_start, ta.time_start);
       ta.time_end = std::max(prim.time_start + prim.time_over_threshold, ta.time_end);
 
@@ -61,28 +61,27 @@ TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::ve
 
       ta.detid = prim.detid;
     }
-    
-    ta.time_peak = (ta.time_start+ta.time_end)/2;
+
+    ta.time_peak = (ta.time_start + ta.time_end) / 2;
     ta.time_activity = ta.time_peak;
 
-    ta.channel_peak = (ta.channel_start+ta.channel_end)/2;
+    ta.channel_peak = (ta.channel_start + ta.channel_end) / 2;
 
     ta.type = TriggerActivity::Type::kTPC;
     ta.algorithm = TriggerActivity::Algorithm::kDBSCAN;
     ta.version = 1;
-
+    ta.region = m_region;
   }
 
   m_dbscan->trim_hits();
 }
 
 void
-TriggerActivityMakerDBSCAN::configure(const nlohmann::json &config)
+TriggerActivityMakerDBSCAN::configure(const nlohmann::json& config)
 {
-  if (config.is_object() && config.contains("min_pts"))
-  {
+  if (config.is_object() && config.contains("min_pts")) {
     m_min_pts = config["min_pts"];
   }
 
-  m_dbscan=std::make_unique<dbscan::IncrementalDBSCAN>(10, m_min_pts, 10000);
+  m_dbscan = std::make_unique<dbscan::IncrementalDBSCAN>(10, m_min_pts, 10000);
 }

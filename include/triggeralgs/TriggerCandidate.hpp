@@ -12,6 +12,7 @@
 #include "trgdataformats/TriggerActivityData.hpp"
 #include "trgdataformats/TriggerCandidateData.hpp"
 
+#include <unordered_set>
 #include <vector>
 
 namespace triggeralgs {
@@ -19,6 +20,7 @@ namespace triggeralgs {
 struct TriggerCandidate : public dunedaq::trgdataformats::TriggerCandidateData
 {
   std::vector<dunedaq::trgdataformats::TriggerActivityData> inputs;
+  std::unordered_set<int> regions;
 };
 
 } // namespace triggeralgs
