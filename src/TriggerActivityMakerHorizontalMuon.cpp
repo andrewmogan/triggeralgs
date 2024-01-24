@@ -29,6 +29,8 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
     TLOG(1) << "Adjacency of current window is: " << check_adjacency();    
   }
 
+  if(input_tp.time_over_threshold > m_window_length*0.10)
+    return;
 
   // 0) FIRST TP =====================================================================
   // The first time operator() is called, reset the window object.
