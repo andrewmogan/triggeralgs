@@ -25,7 +25,9 @@ public:
   void configure(const nlohmann::json &config);
   
 private:  
+  int m_eps_selection{10}; // Distance between points of a cluster
   int m_min_pts{3}; // Minimum number of points to form a cluster
+  int m_cluster_number{0}; // AAA: to be removed
   timestamp_t m_first_timestamp{0};
   timestamp_t m_prev_timestamp{0};
   std::vector<dbscan::Cluster> m_dbscan_clusters;

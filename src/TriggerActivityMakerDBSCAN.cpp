@@ -16,6 +16,7 @@
 #define TRACE_NAME "TriggerActivityMakerDBSCANPlugin"
 
 #include <vector>
+#include <fstream> // AAA: to be removed
 
 using namespace triggeralgs;
 
@@ -23,12 +24,12 @@ void
 TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Collection channels only for now
-  if(input_tp.channel%2560 < 1600){
-    return;
-  }
+  //if(input_tp.channel%2560 < 1600){
+  //  return;
+  //}
   
   if(input_tp.time_start < m_prev_timestamp){
-    TLOG(TLVL_INFO) << "Out-of-order TPs: prev " << m_prev_timestamp << ", current " << input_tp.time_start;
+    TLOG() << "Out-of-order TPs: prev " << m_prev_timestamp << ", current " << input_tp.time_start;
     return;
   }
   
@@ -36,6 +37,7 @@ TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::ve
   m_dbscan->add_primitive(input_tp, &m_dbscan_clusters);
 
   uint64_t t0=m_dbscan->get_first_prim_time();
+
   
   for(auto const& cluster : m_dbscan_clusters){
     auto& ta=output_ta.emplace_back();
@@ -47,8 +49,26 @@ TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::ve
     ta.adc_integral =  0;
     
     for(auto const& hit : cluster.hits){
+
       auto const& prim=hit->primitive;
 
+      std::ofstream outputFileClusters("clusters.txt", std::ios::app); // AAA: to be removed 
+      if (outputFileClusters.is_open()) {
+          outputFileClusters << m_cluster_number 
+          << " " << prim.time_start
+          << " " << prim.time_over_threshold
+          << " " << prim.time_peak
+          << " " << prim.channel
+          << " " << prim.adc_integral
+          << " " << prim.adc_peak
+          << " " << prim.detid
+          << " " << prim.type 
+          << " " << (int) prim.algorithm
+          << " " << prim.version
+          << " " << prim.flag
+          << std::endl;        
+      }
+      
       ta.inputs.push_back(prim);
       
       ta.time_start = std::min(prim.time_start, ta.time_start);
@@ -61,11 +81,12 @@ TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::ve
 
       ta.detid = prim.detid;
     }
+    m_cluster_number++;
     
-    ta.time_peak = (ta.time_start+ta.time_end)/2;
+    ta.time_peak = (ta.time_start+ta.time_end)/2; //AAA: TO BE FIXED;
     ta.time_activity = ta.time_peak;
 
-    ta.channel_peak = (ta.channel_start+ta.channel_end)/2;
+    ta.channel_peak = (ta.channel_start+ta.channel_end)/2; //AAA: TO BE FIXED;
 
     ta.type = TriggerActivity::Type::kTPC;
     ta.algorithm = TriggerActivity::Algorithm::kDBSCAN;
@@ -81,10 +102,13 @@ TriggerActivityMakerDBSCAN::configure(const nlohmann::json &config)
 {
   if (config.is_object() && config.contains("min_pts"))
   {
+    m_eps_selection = config["eps"];
     m_min_pts = config["min_pts"];
   }
 
-  m_dbscan=std::make_unique<dbscan::IncrementalDBSCAN>(10, m_min_pts, 10000);
+  // IncrementalDBSCAN takes three arguments (eps distance, min_pts for cluster, pool size)
+  // For the moment the pool size is set to a very large value
+  m_dbscan=std::make_unique<dbscan::IncrementalDBSCAN>(m_eps_selection, m_min_pts, 10000);
 }
 
 // Register algo in TA Factory

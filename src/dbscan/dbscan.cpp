@@ -1,5 +1,6 @@
 #include "triggeralgs/dbscan/dbscan.hpp"
 #include "triggeralgs/dbscan/Hit.hpp"
+#include <fstream> // AAA: to be removed
 
 #include <cassert>
 #include <limits>
@@ -141,6 +142,22 @@ IncrementalDBSCAN::add_primitive(const triggeralgs::TriggerPrimitive& prim, std:
     }
     
     Hit& new_hit=m_hit_pool[m_pool_end];
+    std::ofstream outputFile("raw_TP.txt", std::ios::app); // AAA: to be removed 
+    if (outputFile.is_open()) {
+        outputFile  
+          << " " << prim.time_start
+          << " " << prim.time_over_threshold
+          << " " << prim.time_peak
+          << " " << prim.channel
+          << " " << prim.adc_integral
+          << " " << prim.adc_peak
+          << " " << prim.detid
+          << " " << prim.type 
+          << " " << (int) prim.algorithm
+          << " " << prim.version
+          << " " << prim.flag
+          << std::endl;       
+    }
     new_hit.reset(1e-2*(prim.time_start-m_first_prim_time), prim.channel, &prim);
     ++m_pool_end;
     if(m_pool_end==m_hit_pool.size()) m_pool_end=0;
@@ -173,6 +190,7 @@ IncrementalDBSCAN::add_hit(Hit* new_hit, std::vector<Cluster>* completed_cluster
             // This neighbour is a core point in a cluster. Add the cluster to the list of
             // clusters that will contain this hit
             clusters_neighbouring_hit.insert(neighbour->cluster);
+            //std::cout << "AAA: The NEIGHBOUR is a CORE POINT. IT WILL BE A NEW CLUSTER" << std::endl;
         }
     }
 
@@ -182,6 +200,8 @@ IncrementalDBSCAN::add_hit(Hit* new_hit, std::vector<Cluster>* completed_cluster
 
         if (new_hit->neighbours.size() + 1 >= m_minPts) {
             // std::cout << "New cluster starting at hit time " << new_hit->time << " with " << new_hit->neighbours.size() << " neighbours" << std::endl;
+            //std::cout << "AAA: This HIT is a CORE POINT. IT WILL BE A NEW CLUSTER" << std::endl;
+
             new_hit->connectedness = Connectedness::kCore;
             auto new_it = m_clusters.emplace_hint(
                 m_clusters.end(), next_cluster_index, next_cluster_index);
@@ -192,12 +212,15 @@ IncrementalDBSCAN::add_hit(Hit* new_hit, std::vector<Cluster>* completed_cluster
             cluster_reachable(new_hit, new_cluster);
         }
         else{
+            //std::cout << "AAA: This HIT is NOISE" << std::endl;
             // std::cout << "New hit time " << new_hit->time << " with " << new_hit->neighbours.size() << " neighbours is noise" << std::endl;
         }
     } else {
         // This hit neighboured at least one cluster. Add the hit and
         // its noise neighbours to the first cluster in the list, then
         // merge the rest of the clusters into it
+
+        //std::cout << "AAA: MERGING CLUSTERS" << std::endl;
 
         auto index_it = clusters_neighbouring_hit.begin();
 
