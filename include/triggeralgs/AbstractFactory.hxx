@@ -35,7 +35,7 @@ void AbstractFactory<T>::register_creator(const std::string alg_name, maker_crea
 }
 
 template <typename T>
-std::unique_ptr<T> AbstractFactory<T>::build_maker(const std::string& alg_name)
+std::shared_ptr<T> AbstractFactory<T>::build_maker(const std::string& alg_name)
 {
   creation_map& makers = get_makers();
   auto it = makers.find(alg_name);

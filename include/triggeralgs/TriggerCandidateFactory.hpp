@@ -14,7 +14,7 @@
 #define REGISTER_TRIGGER_CANDIDATE_MAKER(tcm_name, tcm_class)                                                                                      \
   static struct tcm_class##Registrar {                                                                                                            \
     tcm_class##Registrar() {                                                                                                                      \
-      TriggerCandidateFactory::register_creator(tcm_name, []() -> std::unique_ptr<TriggerCandidateMaker> {return std::make_unique<tcm_class>();});   \
+      TriggerCandidateFactory::register_creator(tcm_name, []() -> std::shared_ptr<TriggerCandidateMaker> {return std::make_shared<tcm_class>();});   \
     }                                                                                                                                             \
   } tcm_class##_registrar;
 
