@@ -23,6 +23,7 @@ class HighTimeOverThresholdSkipper : public SkipperDecorator<TriggerPrimitive, T
   public:
     HighTimeOverThresholdSkipper(std::shared_ptr<Skipper<TriggerPrimitive, TriggerActivity>> skipper) :
       SkipperDecorator<TriggerPrimitive, TriggerActivity>(skipper) {}
+    HighTimeOverThresholdSkipper() : SkipperDecorator<TriggerPrimitive, TriggerActivity>() {}
 
     // skip_logic does not need ta in this case, but needs to pass it on.
     bool skip_logic(const TriggerPrimitive& tp, const TriggerActivity& ta) const {

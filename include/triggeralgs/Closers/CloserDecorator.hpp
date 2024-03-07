@@ -10,6 +10,7 @@
 #define TRIGGERALGS_CLOSERS_CLOSERDECORATOR_HPP_
 
 #include "triggeralgs/Closers/Closer.hpp"
+#include "triggeralgs/Closers/SimpleCloser.hpp"
 
 namespace triggeralgs {
 
@@ -24,6 +25,7 @@ class CloserDecorator : public Closer<T, U> {
 
   public:
     CloserDecorator(std::shared_ptr<Closer<T,U>> closer) : m_closer(closer) {}
+    CloserDecorator() : m_closer(std::make_shared<SimpleCloser<T, U>>()) {}
 
     bool close_logic(const T& tx, const U& ty) const {
       return this->m_closer->close_logic(tx, ty);

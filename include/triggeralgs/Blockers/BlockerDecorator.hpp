@@ -10,6 +10,7 @@
 #define TRIGGERALGS_BLOCKERS_BLOCKERDECORATOR_HPP_
 
 #include "triggeralgs/Blockers/Blocker.hpp"
+#include "triggeralgs/Blockers/SimpleBlocker.hpp"
 
 namespace triggeralgs {
 
@@ -24,6 +25,7 @@ class BlockerDecorator : public Blocker<T> {
 
   public:
     BlockerDecorator(std::shared_ptr<Blocker<T>> blocker) : m_blocker(blocker) {}
+    BlockerDecorator() : m_blocker(std::make_shared<SimpleBlocker<T>>()) {}
 
     bool block_logic(const T& input) const {
       return this->m_blocker->block_logic(input);

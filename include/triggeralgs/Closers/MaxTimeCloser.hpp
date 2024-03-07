@@ -25,6 +25,7 @@ class MaxTimeCloser : public CloserDecorator<TriggerPrimitive, TriggerActivity> 
   public:
     MaxTimeCloser(std::shared_ptr<Closer<TriggerPrimitive, TriggerActivity>> closer) :
       CloserDecorator<TriggerPrimitive, TriggerActivity>(closer) {}
+    MaxTimeCloser() : CloserDecorator<TriggerPrimitive, TriggerActivity>() {}
 
     bool close_logic(const TriggerPrimitive& tp, const TriggerActivity& ta) const {
       timestamp_t ta_start = ta.inputs.front().time_start; // Assumes ta is populated.

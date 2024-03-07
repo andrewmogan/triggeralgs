@@ -25,6 +25,7 @@ class FarChannelSkipper : public SkipperDecorator<TriggerPrimitive, TriggerActiv
   public:
     FarChannelSkipper(std::shared_ptr<Skipper<TriggerPrimitive, TriggerActivity>> skipper) :
       SkipperDecorator<TriggerPrimitive, TriggerActivity>(skipper) {}
+    FarChannelSkipper() : SkipperDecorator<TriggerPrimitive, TriggerActivity>() {}
 
     bool skip_logic(const TriggerPrimitive& new_tp, const TriggerActivity& ta) const {
       bool far_tp = false;

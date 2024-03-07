@@ -10,6 +10,7 @@
 #define TRIGGERALGS_SKIPPERS_SKIPPERDECORATOR_HPP_
 
 #include "triggeralgs/Skippers/Skipper.hpp"
+#include "triggeralgs/Skippers/SimpleSkipper.hpp"
 
 namespace triggeralgs {
 
@@ -24,6 +25,7 @@ class SkipperDecorator : public Skipper<T, U> {
 
   public:
     SkipperDecorator(std::shared_ptr<Skipper<T, U>> skipper) : m_skipper(skipper) {}
+    SkipperDecorator() : m_skipper(std::make_shared<SimpleSkipper<T, U>>()) {}
 
     bool skip_logic(const T& tx, const U& ty) const {
       return this->m_skipper->skip_logic(tx, ty);

@@ -17,8 +17,8 @@ namespace triggeralgs {
 template <typename T>
 class LowNumberOfInputsBlocker : public BlockerDecorator<T> {
   public:
-    LowNumberOfInputsBlocker(std::shared_ptr<Blocker<T>> blocker) :
-      BlockerDecorator<T>(blocker) {}
+    LowNumberOfInputsBlocker(std::shared_ptr<Blocker<T>> blocker) : BlockerDecorator<T>(blocker) {}
+    LowNumberOfInputsBlocker() : BlockerDecorator<T>() {}
 
     bool block_logic(const T& input) const {
       return input.inputs.size() < m_min_inputs || BlockerDecorator<T>::block_logic(input);
