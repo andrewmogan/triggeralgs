@@ -29,7 +29,6 @@ class MaxTimeCloser : public CloserDecorator<TriggerPrimitive, TriggerActivity> 
 
     bool close_logic(const TriggerPrimitive& tp, const TriggerActivity& ta) const {
       timestamp_t ta_start = ta.inputs.front().time_start; // Assumes ta is populated.
-      std::cout << "\t\tTime Difference = " << tp.time_start - ta_start << std::endl;
       return tp.time_start - ta_start > m_max_time_delta || CloserDecorator<TriggerPrimitive, TriggerActivity>::close_logic(tp, ta);
     }
 
