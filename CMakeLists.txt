@@ -35,7 +35,11 @@ find_package(detchannelmaps REQUIRED)
 # provided by the trigger package)
 add_library(triggeralgs SHARED
   src/TriggerActivityMakerADCSimpleWindow.cpp
+  src/TriggerActivityMakerChannelDistance.cpp
+  src/TriggerCandidateMakerChannelDistance.cpp
   src/TriggerCandidateMakerADCSimpleWindow.cpp
+  src/TriggerActivityMakerBundleN.cpp
+  src/TriggerCandidateMakerBundleN.cpp
   src/TriggerActivityMakerHorizontalMuon.cpp
   src/TriggerCandidateMakerHorizontalMuon.cpp
   src/TriggerCandidateMakerPlaneCoincidence.cpp
@@ -48,6 +52,7 @@ add_library(triggeralgs SHARED
   src/TriggerCandidateMakerSupernova.cpp
   src/TriggerDecisionMakerSupernova.cpp
   src/TriggerActivityMakerDBSCAN.cpp
+  src/TriggerCandidateMakerDBSCAN.cpp
   src/TriggerActivityMakerTrackFinding.cpp
   src/TriggerCandidateMakerTrackFinding.cpp
   src/TAWindow.cpp
