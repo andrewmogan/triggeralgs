@@ -57,13 +57,18 @@ TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::v
   if (bundle_condition()) {
     TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TA:BN] Emitting BundleN TA with " << m_current_ta.inputs.size() << " TPs.";
     set_ta_attributes();
-    output_tas.push_back(m_current_ta);
+
+    // Only output the (m_prescale)-th bundle.
+    if (m_prescale_counter % m_prescale == 0)
+      output_tas.push_back(m_current_ta);
 
     // Reset the current.
     m_current_ta = TriggerActivity();
+    m_prescale_counter += 1;
   }
 
   // Should never reach this step. In this case, send it out.
+  // Always outputting regardless of m_prescale.
   if (m_current_ta.inputs.size() > m_bundle_size) {
     TLOG_DEBUG(TLVL_IMPORTANT) << "[TA:BN] Emitting large BundleN TriggerActivity with " << m_current_ta.inputs.size() << " TPs.";
     set_ta_attributes();
@@ -71,14 +76,18 @@ TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::v
 
     // Reset the current.
     m_current_ta = TriggerActivity();
+    m_prescale_counter += 1;
   }
 }
 
 void
 TriggerActivityMakerBundleN::configure(const nlohmann::json& config)
 {
-  if (config.is_object() && config.contains("bundle_size")) {
-    m_bundle_size = config["bundle_size"];
+  if (config.is_object()) {
+    if (config.contains("bundle_size"))
+      m_bundle_size = config["bundle_size"];
+    if (config.contains("prescale"))
+      m_prescale = config["prescale"];
   }
 }
 

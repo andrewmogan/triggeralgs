@@ -24,6 +24,8 @@ class TriggerCandidateMakerBundleN : public TriggerCandidateMaker
 
   private:
       uint64_t m_bundle_size = 1;
+      uint64_t m_prescale = 1;
+      uint64_t m_prescale_counter = 0;
       TriggerCandidate m_current_tc;
       void set_tc_attributes();
 };

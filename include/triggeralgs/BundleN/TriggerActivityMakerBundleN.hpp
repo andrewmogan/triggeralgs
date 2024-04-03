@@ -24,6 +24,8 @@ class TriggerActivityMakerBundleN : public TriggerActivityMaker
 
   private:
       uint64_t m_bundle_size = 1;
+      uint64_t m_prescale = 1;
+      uint64_t m_prescale_counter = 0;
       TriggerActivity m_current_ta;
       void set_ta_attributes();
 };
