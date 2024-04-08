@@ -51,20 +51,18 @@ bool TriggerActivityMakerBundleN::bundle_condition() {
 void
 TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas)
 {
-  // Expect that TPs are inherently time ordered.
-  m_current_ta.inputs.push_back(input_tp);
+  m_prescale_counter += 1;
+  if (m_prescale_counter / m_bundle_size % m_prescale == 0)
+    m_current_ta.inputs.push_back(input_tp); // Expect that TPs are inherently time ordered.
 
   if (bundle_condition()) {
     TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TA:BN] Emitting BundleN TA with " << m_current_ta.inputs.size() << " TPs.";
     set_ta_attributes();
+    output_tas.push_back(m_current_ta);
 
-    // Only output the (m_prescale)-th bundle.
-    if (m_prescale_counter % m_prescale == 0)
-      output_tas.push_back(m_current_ta);
-
-    // Reset the current.
+    // Reset the current TA and counters.
     m_current_ta = TriggerActivity();
-    m_prescale_counter += 1;
+    m_prescale_counter = m_bundle_size; // Need to offset or it will do a double count.
   }
 
   // Should never reach this step. In this case, send it out.
@@ -74,9 +72,9 @@ TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::v
     set_ta_attributes();
     output_tas.push_back(m_current_ta);
 
-    // Reset the current.
+    // Reset the current TA and counters.
     m_current_ta = TriggerActivity();
-    m_prescale_counter += 1;
+    m_prescale_counter = m_bundle_size; // Need to offset or it will do a double count.
   }
 }
 

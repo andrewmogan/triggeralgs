@@ -36,20 +36,18 @@ bool TriggerCandidateMakerBundleN::bundle_condition() {
 void
 TriggerCandidateMakerBundleN::operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs)
 {
-  // Expect that TAs are inherently time ordered.
-  m_current_tc.inputs.push_back(input_ta);
+  m_prescale_counter += 1;
+  if (m_prescale_counter / m_bundle_size % m_prescale == 0)
+    m_current_tc.inputs.push_back(input_ta); // Expect that TAs are inherently time ordered.
 
   if (bundle_condition()) {
     TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TC:BN] Emitting BundleN TriggerCandidate with " << m_current_tc.inputs.size() << " TAs.";
     set_tc_attributes();
+    output_tcs.push_back(m_current_tc);
 
-    // Only output the (m_prescale)-th bundle.
-    if (m_prescale_counter % m_prescale == 0)
-      output_tcs.push_back(m_current_tc);
-
-    // Reset the current.
+    // Reset the current TC and counter
     m_current_tc = TriggerCandidate();
-    m_prescale_counter += 1;
+    m_prescale_counter = m_bundle_size; // Need to offset or it will do a double count.
   }
 
   // Should never reach this step. In this case, send it out.
@@ -59,9 +57,9 @@ TriggerCandidateMakerBundleN::operator()(const TriggerActivity& input_ta, std::v
     set_tc_attributes();
     output_tcs.push_back(m_current_tc);
 
-    // Reset the current.
+    // Reset the current TC and counter.
     m_current_tc = TriggerCandidate();
-    m_prescale_counter += 1;
+    m_prescale_counter = m_bundle_size; // Need to offset or it will do a double count.
   }
 }
 
