@@ -85,6 +85,10 @@ TriggerActivityMakerChannelDistance::set_ta_attributes()
 
   m_current_ta.adc_peak = 0;
   for (const TriggerPrimitive& tp : m_current_ta.inputs) {
+    if (tp.channel < m_current_ta.channel_start)
+      m_current_ta.channel_start = tp.channel;
+    if (tp.channel > m_current_ta.channel_end)
+      m_current_ta.channel_end = tp.channel;
     m_current_ta.adc_integral += tp.adc_integral;
     if (tp.adc_peak <= m_current_ta.adc_peak) continue;
     m_current_ta.adc_peak = tp.adc_peak;
