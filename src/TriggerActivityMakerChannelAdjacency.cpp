@@ -25,12 +25,12 @@ TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_t
   // Add useful info about recived TPs here for FW and SW TPG guys.
   if (m_print_tp_info){
     TLOG_DEBUG(TLVL_DEBUG_LOW) << " ########## m_current_window is reset ##########\n"
-				  << " TP Start Time: " << input_tp.time_start << ", TP ADC Sum: " << input_tp.adc_integral
-				  << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
-				  << ", TP Offline Channel ID: " << input_tp.channel << "\n";
+			       << " TP Start Time: " << input_tp.time_start << ", TP ADC Sum: " << input_tp.adc_integral
+			       << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
+			       << ", TP Offline Channel ID: " << input_tp.channel << "\n";
   }
   
-  // 0) FIRST TP =====================================================================
+  // FIRST TP =====================================================================
   // The first time operator() is called, reset the window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
@@ -38,57 +38,63 @@ TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_t
     return;
   }
   
-  // If the difference between the current TP's start time and the start of the window
+  // step 0; f the difference between the current TP's start time and the start of the window
   // is less than the specified window size, add the TP to the window.
-  bool adj_pass = 0; // sets to true when adjacency logic is satisfied
-  bool window_filled = 1; // sets to true when window is ready to test the adjacency logic
   if ((input_tp.time_start - m_current_window.time_start) < m_window_length) {
     m_current_window.add(input_tp);
-    window_filled = 0;
     TLOG_DEBUG(TLVL_DEBUG_LOW) << "m_current_window.time_start " << m_current_window.time_start << "\n";
   }
-  
+  // else check if the channel adjacency logic is true (a TA is found)
+  // if true, remove TPs that made the TA from the window
+  // reset the window using the TP with lowest start time among the remaining TPs
+  // new TPs will be added by step 0
   else {
-    TPWindow win_adj_max;
+    TPWindow win_adj_max = check_adjacency();
+    if (win_adj_max.inputs.size() > 0) {
 
-    bool ta_found = 1;
-    while (ta_found) {
+      m_ta_count++;
+      if (m_ta_count % m_prescale == 0){
+	
+	output_ta.push_back(construct_ta(win_adj_max));
+      }
       
-      // make m_current_window_tmp a copy of m_current_window and clear m_current_window
       TPWindow m_current_window_tmp = m_current_window;
       m_current_window.clear();
-      
-      // make m_current_window a new window of non-overlapping tps (of m_current_window_tmp and win_adj_max)                                                                                 
+      bool reset_window = 1;
       for (auto tp : m_current_window_tmp.inputs) {
 	bool new_tp = 1;
 	for (auto tp_sel : win_adj_max.inputs) {
 	  if (tp.channel == tp_sel.channel) { new_tp = 0; break; }
 	}
-	if (new_tp) m_current_window.add(tp);
-      }
-      
-      // check adjacency -> win_adj_max now contains only those tps that make the track
-      win_adj_max = check_adjacency();
-      if (win_adj_max.inputs.size() > 0) {
-    	
-	adj_pass = 1;
-	ta_found = 1;
-	m_ta_count++;
-	if (m_ta_count % m_prescale == 0){
-	  
-	  output_ta.push_back(construct_ta(win_adj_max));
+	if (new_tp) {
+	  if (reset_window == 1) { m_current_window.reset(tp); reset_window = 0; }
+	  else m_current_window.add(tp);
 	}
       }
-      else ta_found = 0;
+      m_current_window.add(input_tp);
     }
-    if (adj_pass) m_current_window.reset(input_tp);
+    // if no TA found, move the window by one tp only!
+    else m_current_window.move(input_tp, m_window_length);
+    
+    /* // another logic: if no TA found, move the window by 500 ticks
+    else {
+      TPWindow m_current_window_tmp = m_current_window;
+      m_current_window.clear();
+      bool reset_window = 1;
+      for (auto tp : m_current_window_tmp.inputs) {
+	if (tp.time_start > m_current_window_tmp.time_start+500) {
+	  if (reset_window == 1) {
+	    m_current_window.reset(tp); reset_window = 0;
+	  }
+	  else {
+	    m_current_window.add(tp);
+	  }
+	}
+      }
+      m_current_window.add(input_tp);
+    } */
   }
-  
-  // if adjacency logic is not true, slide the window along using the current TP.
-  if (window_filled && !adj_pass) {
-    m_current_window.move(input_tp, m_window_length);  
-  }
-  
+
   using namespace std::chrono;
   // If this is the first TP of the run, calculate the initial offset:
   if (m_primitive_count == 0){
