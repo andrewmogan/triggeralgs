@@ -98,7 +98,7 @@ TriggerActivityMakerADCSimpleWindow::construct_ta() const
   ta.detid = latest_tp_in_window.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kADCSimpleWindow;
-  ta.inputs = m_current_window.tp_list;
+  ta.inputs.assign(m_current_window.tp_list.begin(), m_current_window.tp_list.end());
   return ta;
 }
 

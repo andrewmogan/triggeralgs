@@ -12,6 +12,7 @@
 #include "triggeralgs/TriggerActivityFactory.hpp"
 #include "triggeralgs/Types.hpp"
 
+#include <deque>
 #include <vector>
 
 namespace triggeralgs {
@@ -83,7 +84,7 @@ private:
 
       timestamp_t time_start;
       uint32_t adc_integral;
-      std::vector<TriggerPrimitive> tp_list;
+      std::deque<TriggerPrimitive> tp_list;
   };
 
   TriggerActivity construct_ta() const;
