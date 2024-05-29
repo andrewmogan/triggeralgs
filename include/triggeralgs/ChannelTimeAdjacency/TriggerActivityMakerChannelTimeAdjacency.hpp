@@ -24,19 +24,19 @@ public:
 private:
   TriggerActivity construct_ta() const;
 
-  uint16_t check_adjacency();     // Returns longest string of adjacent collection hits in window
+  uint16_t check_adjacency();         // Returns longest string of adjacent collection hits in window
 
-  TPWindow m_current_window;            // Holds collection hits only
-  TPWindow m_longest_track_window;      // Holds collection hits only for the longest track of the current window provided the adjacency threshold is exceeded
-  uint64_t m_primitive_count = 0;       
-  uint16_t m_fragment_count = 0;        // Fragment counter
+  TPWindow m_current_window;          // Holds collection hits only
+  TPWindow m_longest_track_window;    // Holds collection hits only for the longest track of the current window provided the adjacency threshold is exceeded
+  uint64_t m_primitive_count = 0;     
+  uint16_t m_fragment_count = 0;      // Fragment counter
 
   // Configurable parameters.
   bool m_print_tp_info = false;          // Prints out some information on every TP received
   uint16_t m_adjacency_threshold = 15;   // Default is 15 wire track for testing
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
   uint16_t m_adj_tolerance = 3;          // Adjacency tolerance - default is 3 from coldbox testing.
-  uint16_t m_time_tolerance = 150;      // Time tolerance, in ticks, to filter out TPs not correlated in time in the saved TA for the longest track.
+  uint16_t m_time_tolerance = 150;       // Time tolerance, in ticks, to filter out TPs not correlated in time in the saved TA for the longest track.
   timestamp_t m_window_length = 8000;    // Shouldn't exceed the max drift which is ~9375 62.5 MHz ticks for VDCB
   uint16_t m_ta_count = 0;               // Use for prescaling
   uint16_t m_prescale = 1;               // Prescale value, defult is one, trigger every TA

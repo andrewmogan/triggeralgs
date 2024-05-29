@@ -28,7 +28,8 @@ TriggerActivityMakerChannelTimeAdjacency::operator()(const TriggerPrimitive& inp
   if (m_print_tp_info){
     TLOG(1) << "TP Start Time: " << input_tp.time_start << ", TP ADC Sum: " <<  input_tp.adc_integral
 	    << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
-     	    << ", TP Offline Channel ID: " << input_tp.channel;
+     	<< ", TP Offline Channel ID: " << input_tp.channel;
+    
     TLOG(1) << "Adjacency of current window is: " << check_adjacency();    
   }
 
@@ -38,7 +39,6 @@ TriggerActivityMakerChannelTimeAdjacency::operator()(const TriggerPrimitive& inp
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
     m_primitive_count++;
-    m_longest_track_window.clear();
     return;
   }
 
@@ -63,15 +63,14 @@ TriggerActivityMakerChannelTimeAdjacency::operator()(const TriggerPrimitive& inp
                    " and multiplicity " << m_longest_track_window.n_channels_hit() << ". The ADC integral of this TA is " << 
                    m_longest_track_window.adc_integral << " and the largest longest track seen so far is " << m_max_adjacency;
 
-      output_ta.push_back(construct_ta());
-    	m_current_window.reset(input_tp);
+      output_ta.push_back(construct_ta()); // Construct TA and add to output TA vector
+    	m_current_window.reset(input_tp); // Reset the window with the current TP
      }
   }
 
   // 2) Otherwise, slide the window along using the current TP.
   else {
-    m_current_window.move(input_tp, m_window_length);
-    m_longest_track_window.clear();  
+    m_current_window.move(input_tp, m_window_length); // Move the window along
   }
 
   using namespace std::chrono;
@@ -156,6 +155,7 @@ TriggerActivityMakerChannelTimeAdjacency::check_adjacency()
   unsigned int index;            // Index of the previous TP satisfying the adjacency condition
   int64_t start_time_diff;       // Start time difference between to consecutive TPs of a ChannelID ordered TP vector
   unsigned int tol_count = 0;    // Tolerance count, should not pass adj_tolerance
+  m_longest_track_window.clear(); // Clear the longest track window
 
   std::vector<TriggerPrimitive> tp_inputs = m_current_window.inputs;
   std::vector<TriggerPrimitive> tp_track;
@@ -196,19 +196,9 @@ TriggerActivityMakerChannelTimeAdjacency::check_adjacency()
         tp_track.push_back(tp_inputs.at(j));
         adj++;
         index = j;
-        tol_count = channel_diff - 1;
+        tol_count += channel_diff - 1;
         channel_diff = 0; // To stay in the while loop
       }
-      // else if (((channel_diff == 2 && start_time_diff < 2*m_time_tolerance) || (channel_diff == 3 && start_time_diff < 3*m_time_tolerance) 
-      // || (channel_diff == 4 && start_time_diff < 4*m_time_tolerance) || (channel_diff == 5 && start_time_diff < 5*m_time_tolerance))
-      //         && (tol_count < m_adj_tolerance)) {
-      //   tp_track.push_back(tp_inputs.at(j));
-      //   adj++;
-      //   index = j;
-
-      //   for (unsigned int i = 0 ; i < channel_diff ; i++) tol_count++;
-      //   channel_diff = 0; // To stay in the while loop
-      // }
 
       j++;
     } // End of while loop
