@@ -1,22 +1,22 @@
 /**
- * @file TriggerCandidateMakerPrescale.cpp
+ * @file TCMakerPrescaleAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/Prescale/TriggerCandidateMakerPrescale.hpp"
+#include "triggeralgs/Prescale/TCMakerPrescaleAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerPrescalePlugin"
+#define TRACE_NAME "TCMakerPrescaleAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerPrescale::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
+TCMakerPrescaleAlgorithm::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 { 
   if ((m_activity_count++) % m_prescale == 0)
   {
@@ -47,7 +47,7 @@ TriggerCandidateMakerPrescale::operator()(const TriggerActivity& activity, std::
 }
 
 void
-TriggerCandidateMakerPrescale::configure(const nlohmann::json &config)
+TCMakerPrescaleAlgorithm::configure(const nlohmann::json &config)
 {
   if (config.is_object() && config.contains("prescale"))
   {
@@ -61,4 +61,4 @@ TriggerCandidateMakerPrescale::configure(const nlohmann::json &config)
   TLOG_DEBUG(TRACE_NAME) << "Using candidate prescale " << m_prescale;
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerPrescale)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerPrescaleAlgorithm)

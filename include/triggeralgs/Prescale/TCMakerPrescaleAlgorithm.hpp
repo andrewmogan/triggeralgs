@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerPrescale.hpp
+ * @file TCMakerPrescaleAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerPrescale : public TriggerCandidateMaker
+class TCMakerPrescaleAlgorithm : public TriggerCandidateMaker
 {
 
 public:
