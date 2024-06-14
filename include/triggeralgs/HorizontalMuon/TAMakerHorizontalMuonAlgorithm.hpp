@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerHorizontalMuon.hpp
+ * @file TAMakerHorizontalMuonAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerHorizontalMuon : public TriggerActivityMaker
+class TAMakerHorizontalMuonAlgorithm : public TriggerActivityMaker
 {
 public:
   void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);

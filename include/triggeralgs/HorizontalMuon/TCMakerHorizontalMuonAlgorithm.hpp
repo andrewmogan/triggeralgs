@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerHorizontalMuon.hpp
+ * @file TCMakerHorizontalMuonAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerHorizontalMuon : public TriggerCandidateMaker
+class TCMakerHorizontalMuonAlgorithm : public TriggerCandidateMaker
 {
 
 public:

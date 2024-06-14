@@ -1,21 +1,21 @@
 /**
- * @file TriggerActivityMakerHorizontalMuon.cpp
+ * @file TAMakerHorizontalMuonAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/HorizontalMuon/TriggerActivityMakerHorizontalMuon.hpp"
+#include "triggeralgs/HorizontalMuon/TAMakerHorizontalMuonAlgorithm.hpp"
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerHorizontalMuonPlugin"
+#define TRACE_NAME "TAMakerHorizontalMuonAlgorithm"
 #include <vector>
 #include <math.h>
 
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
+TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
                                                std::vector<TriggerActivity>& output_ta)
 {
 
@@ -138,7 +138,7 @@ TriggerActivityMakerHorizontalMuon::operator()(const TriggerPrimitive& input_tp,
 }
 
 void
-TriggerActivityMakerHorizontalMuon::configure(const nlohmann::json& config)
+TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
 {
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
@@ -171,7 +171,7 @@ TriggerActivityMakerHorizontalMuon::configure(const nlohmann::json& config)
 }
 
 TriggerActivity
-TriggerActivityMakerHorizontalMuon::construct_ta() const
+TAMakerHorizontalMuonAlgorithm::construct_ta() const
 {
 
   TriggerActivity ta;
@@ -209,7 +209,7 @@ TriggerActivityMakerHorizontalMuon::construct_ta() const
 }
 
 uint16_t
-TriggerActivityMakerHorizontalMuon::check_adjacency() const
+TAMakerHorizontalMuonAlgorithm::check_adjacency() const
 {
   // This function returns the adjacency value for the current window, where adjacency
   // is defined as the maximum number of consecutive wires containing hits. It accepts
@@ -277,7 +277,7 @@ TriggerActivityMakerHorizontalMuon::check_adjacency() const
 // Functions below this line are for debugging purposes.
 // =====================================================================================
 void
-TriggerActivityMakerHorizontalMuon::add_window_to_record(TPWindow window)
+TAMakerHorizontalMuonAlgorithm::add_window_to_record(TPWindow window)
 {
   m_window_record.push_back(window);
   return;
@@ -285,7 +285,7 @@ TriggerActivityMakerHorizontalMuon::add_window_to_record(TPWindow window)
 
 // Function to dump the details of the TA window currently on record
 void
-TriggerActivityMakerHorizontalMuon::dump_window_record()
+TAMakerHorizontalMuonAlgorithm::dump_window_record()
 {
   std::ofstream outfile;
   outfile.open("window_record_tam.csv", std::ios_base::app);
@@ -311,7 +311,7 @@ TriggerActivityMakerHorizontalMuon::dump_window_record()
 
 // Function to add current TP details to a text file for testing and debugging.
 void
-TriggerActivityMakerHorizontalMuon::dump_tp(TriggerPrimitive const& input_tp)
+TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
   outfile.open("coldbox_tps.txt", std::ios_base::app);
@@ -331,7 +331,7 @@ TriggerActivityMakerHorizontalMuon::dump_tp(TriggerPrimitive const& input_tp)
 }
 
 int
-TriggerActivityMakerHorizontalMuon::check_tot() const
+TAMakerHorizontalMuonAlgorithm::check_tot() const
 {
   // Here, we just want to sum up all the tot values for each TP within window,
   // and return this tot of the window.
@@ -344,4 +344,4 @@ TriggerActivityMakerHorizontalMuon::check_tot() const
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerHorizontalMuon)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerHorizontalMuonAlgorithm)

@@ -36,14 +36,14 @@ find_package(detchannelmaps REQUIRED)
 add_library(triggeralgs SHARED
   src/TriggerActivityMakerADCSimpleWindow.cpp
   src/TriggerCandidateMakerADCSimpleWindow.cpp
-  src/TriggerActivityMakerHorizontalMuon.cpp
-  src/TriggerCandidateMakerHorizontalMuon.cpp
+  src/TAMakerHorizontalMuonAlgorithm.cpp
+  src/TCMakerHorizontalMuonAlgorithm.cpp
   src/TriggerCandidateMakerPlaneCoincidence.cpp
   src/TriggerActivityMakerPlaneCoincidence.cpp
   src/TriggerActivityMakerMichelElectron.cpp
   src/TriggerCandidateMakerMichelElectron.cpp
-  src/TriggerActivityMakerPrescale.cpp
-  src/TriggerCandidateMakerPrescale.cpp
+  src/TAMakerPrescaleAlgorithm.cpp
+  src/TCMakerPrescaleAlgorithm.cpp
   src/TriggerActivityMakerSupernova.cpp
   src/TriggerCandidateMakerSupernova.cpp
   src/TriggerDecisionMakerSupernova.cpp

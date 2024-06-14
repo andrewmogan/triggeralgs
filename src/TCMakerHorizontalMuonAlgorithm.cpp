@@ -1,22 +1,22 @@
 /**
- * @file TriggerCandidateMakerHorizontalMuon.cpp
+ * @file TCMakerHorizontalMuonAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/HorizontalMuon/TriggerCandidateMakerHorizontalMuon.hpp"
+#include "triggeralgs/HorizontalMuon/TCMakerHorizontalMuonAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerHorizontalMuonPlugin"
+#define TRACE_NAME "TCMakerHorizontalMuonAlgorithm"
 
 #include <vector>
 #include <math.h>
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
+TCMakerHorizontalMuonAlgorithm::operator()(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
@@ -103,7 +103,7 @@ TriggerCandidateMakerHorizontalMuon::operator()(const TriggerActivity& activity,
 
 
 void
-TriggerCandidateMakerHorizontalMuon::configure(const nlohmann::json& config)
+TCMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
 {
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
@@ -144,7 +144,7 @@ TriggerCandidateMakerHorizontalMuon::configure(const nlohmann::json& config)
 }
 
 TriggerCandidate
-TriggerCandidateMakerHorizontalMuon::construct_tc() const
+TCMakerHorizontalMuonAlgorithm::construct_tc() const
 {
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
@@ -168,7 +168,7 @@ TriggerCandidateMakerHorizontalMuon::construct_tc() const
 }
 
 bool
-TriggerCandidateMakerHorizontalMuon::check_adjacency() const
+TCMakerHorizontalMuonAlgorithm::check_adjacency() const
 {
   // FIX ME: An adjacency check on the channels which have hits.
   return true;
@@ -176,14 +176,14 @@ TriggerCandidateMakerHorizontalMuon::check_adjacency() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerCandidateMakerHorizontalMuon::add_window_to_record(TAWindow window)
+TCMakerHorizontalMuonAlgorithm::add_window_to_record(TAWindow window)
 {
   m_window_record.push_back(window);
   return;
 }
 
 void
-TriggerCandidateMakerHorizontalMuon::dump_window_record()
+TCMakerHorizontalMuonAlgorithm::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -207,7 +207,7 @@ TriggerCandidateMakerHorizontalMuon::dump_window_record()
 
 /*
 void
-TriggerCandidateMakerHorizontalMuon::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
+TCMakerHorizontalMuonAlgorithm::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
 {
   // Check the status of the current window, construct TC if conditions are met. Regardless
   // of whether the conditions are met, reset the window.
@@ -228,4 +228,4 @@ reset."; m_current_window.clear();
   return;
 }*/
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerHorizontalMuon)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerHorizontalMuonAlgorithm)
