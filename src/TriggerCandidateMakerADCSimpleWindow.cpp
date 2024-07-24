@@ -26,13 +26,16 @@ TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity
   m_activity_count++;
   std::vector<TriggerActivity::TriggerActivityData> ta_list = {static_cast<TriggerActivity::TriggerActivityData>(activity)};
 
-  TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TCM:ADCSW] Emitting an ADCSimpleWindow TriggerCandidate " << (m_activity_count-1);
+  TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TCM:ADCSW] Emitting an "
+                             << dunedaq::trgdataformats::get_trigger_candidate_type_names()[m_tc_type]
+                             << " TriggerCandidate with ADCSimpleWindow algorithm" << (m_activity_count-1);
+
   TriggerCandidate tc;
   tc.time_start = activity.time_start; 
   tc.time_end = activity.time_end;  
   tc.time_candidate = activity.time_activity;
   tc.detid = activity.detid;
-  tc.type = TriggerCandidate::Type::kADCSimpleWindow;
+  tc.type = m_tc_type;
   tc.algorithm = TriggerCandidate::Algorithm::kADCSimpleWindow;
 
   tc.inputs = ta_list;
@@ -44,6 +47,23 @@ TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity
 void
 TriggerCandidateMakerADCSimpleWindow::configure(const nlohmann::json &config)
 {
+  // Don't configure if no configuration object
+  if (!config.is_object())
+    return;
+
+  // Set the TC name
+  if (config.contains("tc_type_name")){
+    m_tc_type = static_cast<triggeralgs::TriggerCandidate::Type>(
+         dunedaq::trgdataformats::string_to_fragment_type_value(config["tc_type_name"]));
+
+    // Set unknown to the default kADCSimpleWindow
+    if (m_tc_type == triggeralgs::TriggerCandidate::Type::kUnknown) {
+      m_tc_type = TriggerCandidate::Type::kADCSimpleWindow;
+    }
+
+    TLOG() << "[TCM:ADCSW]: setting output TC type to "
+           << dunedaq::trgdataformats::get_trigger_candidate_type_names()[m_tc_type];
+  }
 }
 
 REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerADCSimpleWindow)
