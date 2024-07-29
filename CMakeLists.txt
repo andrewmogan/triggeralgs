@@ -18,6 +18,9 @@ find_package(detdataformats REQUIRED)
 find_package(trgdataformats REQUIRED)
 find_package(cetlib REQUIRED)
 find_package(detchannelmaps REQUIRED)
+find_package(TritonCommon REQUIRED)
+find_package(TritonClient REQUIRED)
+find_package(gRPC REQUIRED)
 
 # We follow the daq-cmake convention of building one main library for
 # the package. In our case, we include all of the available trigger
@@ -55,6 +58,7 @@ add_library(triggeralgs SHARED
   src/TriggerCandidateMakerDBSCAN.cpp
   src/TriggerActivityMakerChannelAdjacency.cpp
   src/TriggerCandidateMakerChannelAdjacency.cpp
+  src/TriggerActivityMakerTriton.cpp
   src/TAWindow.cpp
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp
@@ -66,7 +70,17 @@ target_include_directories(triggeralgs PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json detdataformats::detdataformats trgdataformats::trgdataformats cetlib::cetlib detchannelmaps::detchannelmaps)
+target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json detdataformats::detdataformats
+                      trgdataformats::trgdataformats cetlib::cetlib detchannelmaps::detchannelmaps 
+                      TritonClient::grpcclient gRPC::grpc TritonCommon::triton-common-async-work-queue 
+                      TritonCommon::triton-common-error TritonCommon::triton-common-logging 
+                      TritonCommon::triton-common-sync-queue TritonCommon::triton-common-table-printer 
+                      TritonCommon::triton-common-thread-pool 
+                      #TritonCommon::common-compile-settings # This makes gcc warnings into errors
+                      TritonCommon::triton-common-json TritonCommon::proto-library 
+                      TritonCommon::triton-common-model-config 
+                      TritonCommon::grpc-health-library 
+                      TritonCommon::grpc-service-library)
 install(TARGETS triggeralgs EXPORT triggeralgsTargets)
 
 CONFIGURE_PACKAGE_CONFIG_FILE(cmake/triggeralgsConfig.cmake.in
