@@ -20,7 +20,7 @@ TCMakerPrescaleAlgorithm::operator()(const TriggerActivity& activity, std::vecto
 { 
   if ((m_activity_count++) % m_prescale == 0)
   {
-    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerCandidate " << (m_activity_count-1);
+    TLOG_DEBUG(TLVL_DEBUG_10) << "Emitting prescaled TriggerCandidate " << (m_activity_count-1);
 
     std::vector<TriggerActivity::TriggerActivityData> ta_list;
     ta_list.push_back(static_cast<TriggerActivity::TriggerActivityData>(activity));
