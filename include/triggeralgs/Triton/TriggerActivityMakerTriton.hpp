@@ -27,6 +27,9 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
   private:
       uint64_t m_number_tps_per_request = 100;
       std::string m_inference_url = "localhost:8001";
+      std::string m_model_name = "simple";
+      // The model version is a number representing a directory, so it's declared as a string here
+      std::string m_model_version = "1";
       bool m_print_tp_info = false;
       TriggerActivity m_current_ta;
 };
