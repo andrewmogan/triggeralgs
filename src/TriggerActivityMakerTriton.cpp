@@ -43,8 +43,34 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
      	<< ", TP Offline Channel ID: " << input_tp.channel;
   }
 
+  if (m_current_ta.inputs.size() < m_number_tps_per_request) {
+    m_current_ta.inputs.push_back(input_tp);
+    return;
+  }
+
+  query_triton_server(const m_current_ta&);
+
   // Reset the current.
   m_current_ta = TriggerActivity();
+  return;
+}
+
+void query_triton_server(const TriggerActivity& trigger_activity) {
+  TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Querying server with TA size " << trigger_activity.inputs.size();
+  
+  // Create the server
+  std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
+  FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), err);
+
+  // Check is the server is live
+  bool live;
+  FAIL_IF_ERR(
+      client->IsServerLive(&live),
+      "unable to get server liveness");
+  if (!live) {
+    std::cerr << "error: server is not live" << std::endl;
+    exit(1);
+  }
 }
 
 void
@@ -57,6 +83,14 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
   if (config.is_object() && config.contains("inference_url")) {
     m_inference_url = config["inference_url"];
     TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Inference URL is " << m_inference_url;
+  }
+  if (config.is_object() && config.contains("model_name")) {
+    m_inference_url = config["model_name"];
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Model name is " << m_model_name;
+  }
+  if (config.is_object() && config.contains("model_version")) {
+    m_inference_url = config["model_version"];
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Model version is " << m_model_version;
   }
   if (config.is_object() && config.contains("print_tp_info")) {
     m_print_tp_info = config["print_tp_info"];
