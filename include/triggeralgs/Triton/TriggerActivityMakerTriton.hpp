@@ -23,6 +23,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
   public:
     void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
     void configure(const nlohmann::json& config);
+    void query_triton_server(const TriggerActivity& trigger_activity, const std::string inference_url);
 
   private:
       uint64_t m_number_tps_per_request = 100;

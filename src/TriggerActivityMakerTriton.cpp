@@ -48,19 +48,19 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
     return;
   }
 
-  query_triton_server(const m_current_ta&);
+  query_triton_server(m_current_ta, m_inference_url);
 
   // Reset the current.
   m_current_ta = TriggerActivity();
   return;
 }
 
-void query_triton_server(const TriggerActivity& trigger_activity) {
+void query_triton_server(const TriggerActivity& trigger_activity, const std::string inference_url) {
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Querying server with TA size " << trigger_activity.inputs.size();
   
   // Create the server
   std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
-  FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), err);
+  FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, inference_url), err);
 
   // Check is the server is live
   bool live;
@@ -71,6 +71,7 @@ void query_triton_server(const TriggerActivity& trigger_activity) {
     std::cerr << "error: server is not live" << std::endl;
     exit(1);
   }
+  return;
 }
 
 void
