@@ -25,8 +25,10 @@ namespace tc = triton::client;
 
 namespace triggeralgs {
 
-using Logging::TLVL_IMPORTANT;
+using Logging::TLVL_GENERAL;
+using Logging::TLVL_DEBUG_INFO;
 using Logging::TLVL_DEBUG_HIGH;
+using Logging::TLVL_DEBUG_ALL;
 
 void
 TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas)
@@ -50,15 +52,15 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 {
   if (config.is_object() && config.contains("number_tps_per_request")) {
     m_number_tps_per_request = config["number_tps_per_request"];
-    TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TA:Triton] Emitting Triton TA with " << m_current_ta.inputs.size() << " TPs.";
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Emitting Triton TA with " << m_current_ta.inputs.size() << " TPs.";
   }
   if (config.is_object() && config.contains("inference_url")) {
     m_inference_url = config["inference_url"];
-    TLOG() << "[TA:Triton] Inference URL is " << m_inference_url;
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Inference URL is " << m_inference_url;
   }
   if (config.is_object() && config.contains("print_tp_info")) {
     m_print_tp_info = config["print_tp_info"];
-    TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TA:Triton] Printing of TP info enabled";
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Printing of TP info enabled";
   }
 }
 
