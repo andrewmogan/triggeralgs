@@ -55,7 +55,7 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
   return;
 }
 
-void query_triton_server(const TriggerActivity& trigger_activity, const std::string inference_url) {
+void TriggerActivityMakerTriton::query_triton_server(const TriggerActivity& trigger_activity, const std::string& inference_url) {
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Querying server with TA size " << trigger_activity.inputs.size();
   
   // Create the server
@@ -71,8 +71,24 @@ void query_triton_server(const TriggerActivity& trigger_activity, const std::str
     std::cerr << "error: server is not live" << std::endl;
     exit(1);
   }
+
+  // Server metadata
+  inference::ServerMetadataResponse server_metadata;
+  FAIL_IF_ERR(
+      client->ServerMetadata(&server_metadata),
+      "unable to get server metadata");
+  if (server_metadata.name().compare("triton") != 0) {
+    std::cerr << "error: unexpected server metadata: "
+              << server_metadata.DebugString() << std::endl;
+    exit(1);
+  }
+
+  TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Server metadata debug string: " << server_metadata.DebugString();
+  //TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Server metadata: " << server_metadata;
+
   return;
 }
+
 
 void
 TriggerActivityMakerTriton::configure(const nlohmann::json& config)
