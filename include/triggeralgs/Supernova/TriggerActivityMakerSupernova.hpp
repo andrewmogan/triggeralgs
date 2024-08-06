@@ -47,7 +47,7 @@ class TriggerActivityMakerSupernova : public TriggerActivityMaker
   }
 
 public:
-  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) override;
+  void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) override;
 
   void flush(timestamp_t, std::vector<TriggerActivity>& tas) override { tas.push_back(MakeTriggerActivity()); }
 

@@ -26,7 +26,7 @@ namespace triggeralgs {
 class TriggerActivityMakerPlaneCoincidence : public TriggerActivityMaker
 {
 public:
-  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
+  void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
   void configure(const nlohmann::json& config);
 
 private:

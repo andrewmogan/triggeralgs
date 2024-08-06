@@ -18,13 +18,12 @@ class TAMakerPrescaleAlgorithm : public TriggerActivityMaker
 {
 
 public:
-  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
+  void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
   
   void configure(const nlohmann::json &config);
   
 private:  
   uint64_t m_primitive_count = 0;   // NOLINT(build/unsigned)
-  uint64_t m_prescale = 1;          // NOLINT(build/unsigned)
 };
 } // namespace triggeralgs
 
