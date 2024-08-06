@@ -16,7 +16,7 @@
 using namespace triggeralgs;
 
 void
-TAMakerPrescaleAlgorithm::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   if ((m_primitive_count++) % m_prescale == 0)
   {
@@ -53,14 +53,9 @@ TAMakerPrescaleAlgorithm::operator()(const TriggerPrimitive& input_tp, std::vect
 }
 
 void
-TAMakerPrescaleAlgorithm::configure(const nlohmann::json &config)
+TAMakerPrescaleAlgorithm::configure(const nlohmann::json& config)
 {
-  //FIXME use some schema here
-  if (config.is_object() && config.contains("prescale"))
-  {
-    m_prescale = config["prescale"];
-  }
-  TLOG_DEBUG(TRACE_NAME) << "Using activity prescale " << m_prescale;
+  TriggerActivityMaker::configure(config);
 }
 
 // Register algo in TA Factory

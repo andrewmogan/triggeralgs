@@ -16,7 +16,7 @@
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerADCSimpleWindow::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerADCSimpleWindow::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   
   // The first time operator is called, reset
@@ -57,8 +57,10 @@ TriggerActivityMakerADCSimpleWindow::operator()(const TriggerPrimitive& input_tp
 }
 
 void
-TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json &config)
+TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   //FIXME use some schema here
   if (config.is_object()){
     if (config.contains("window_length")) m_window_length = config["window_length"];

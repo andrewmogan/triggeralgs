@@ -18,7 +18,7 @@ using pd_clock = std::chrono::duration<double, std::ratio<1, 62500000>>;
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerSupernova::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerSupernova::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Time measurement
   // auto now = std::chrono::steady_clock::now();

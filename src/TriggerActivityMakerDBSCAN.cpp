@@ -20,7 +20,7 @@
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerDBSCAN::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Collection channels only for now
   if(input_tp.channel%2560 < 1600){
@@ -77,8 +77,10 @@ TriggerActivityMakerDBSCAN::operator()(const TriggerPrimitive& input_tp, std::ve
 }
 
 void
-TriggerActivityMakerDBSCAN::configure(const nlohmann::json &config)
+TriggerActivityMakerDBSCAN::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   if (config.is_object() && config.contains("min_pts"))
   {
     m_min_pts = config["min_pts"];

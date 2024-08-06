@@ -14,7 +14,7 @@
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerPlaneCoincidence::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerPlaneCoincidence::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
 
   // Get the plane from which this hit arrived: 
@@ -97,6 +97,8 @@ TriggerActivityMakerPlaneCoincidence::operator()(const TriggerPrimitive& input_t
 void
 TriggerActivityMakerPlaneCoincidence::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
       m_trigger_on_adc = config["trigger_on_adc"];
