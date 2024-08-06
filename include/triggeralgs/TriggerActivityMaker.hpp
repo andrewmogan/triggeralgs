@@ -24,12 +24,100 @@ class TriggerActivityMaker
 {
 public:
   virtual ~TriggerActivityMaker() = default;
-  virtual void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) = 0;
+  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+  {
+    // Apply TP filtering
+    if (!preprocess(input_tp)) {
+      return;
+    }
+
+    // Process TP, to implement per alg triggeralgs
+    process(input_tp, output_ta);
+
+    // Postprocess TA, e.g. prescaling
+    postprocess(output_ta);
+  }
+
+  /**
+   * @brief TP processing function that creates & fills TAs
+   *
+   * @param input_tp[in] Input TP for the triggering algorithm
+   * @param output_ta[out] Output vector of TAs to fill by the algorithm
+   */
+  virtual void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta) = 0;
+
+  /**
+   * @brief TP pre-processing/filtering
+   *
+   * Takes a TP and returns true or false depending whether we want to process
+   * that TP into a TA algorithm.
+   *
+   * @todo: Implement tp-filtering, e.g. TOT, plane, channel and whatnot
+   * @todo: Implement something smarter & more efficient if no filtering: vector of functions, or c-o-c
+   *
+   * @param[in] intput_tp input TP reference for filtering
+   */
+  virtual bool preprocess(const TriggerPrimitive& input_tp)
+  {
+    if (input_tp.time_over_threshold > m_max_time_over_threshold) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * @brief Post-processing/filtering of the TAs, e.g. prescale
+   *
+   * @todo: Like in preprocessing: implement something more efficient, e.g. vec of tasks
+   *
+   * @param output_ta[out] output triggeractivity vector
+   */
+  virtual void postprocess(std::vector<TriggerActivity>& output_ta)
+  {
+    // Don't post-process TAs if there's no TAs made.
+    if (output_ta.size() == 0) {
+      return;
+    }
+
+    // Apply prescale by erasing TAs
+    if (m_prescale > 1) {
+      for (std::vector<TriggerActivity>::iterator iter = output_ta.begin(); iter != output_ta.end();) {
+        m_ta_count++;
+        if (m_ta_count % m_prescale == 1) {
+          iter = output_ta.erase(iter);
+        }
+        else {
+          ++iter;
+        }
+      }
+    }
+  }
+
   virtual void flush(timestamp_t /* until */, std::vector<TriggerActivity>&) {}
-  virtual void configure(const nlohmann::json&) {}
+  virtual void configure(const nlohmann::json& config) 
+  {
+    // Don't do anyting if the config does not exist
+    if (!config.is_object()) {
+      return;
+    }
+
+    if (config.contains("prescale"))
+      m_prescale = config["prescale"]; 
+    if (config.contains("max_tot"))
+      m_max_time_over_threshold = config["max_tot"];
+  }
   
   std::atomic<uint64_t> m_data_vs_system_time = 0;
   std::atomic<uint64_t> m_initial_offset = 0;
+
+  /// @brief Configurable prescale factor
+  uint64_t m_prescale = 1;
+  /// @brief TA made count for prescaling
+  uint64_t m_ta_count = 0;
+
+  /// @brief Time-over-threshold TP filtering
+  uint32_t m_max_time_over_threshold = 0;
 };
 
 } // namespace triggeralgs
