@@ -34,8 +34,8 @@ find_package(detchannelmaps REQUIRED)
 # which uses triggeralgs (eg, for dunedaq plugins, the plugin will be
 # provided by the trigger package)
 add_library(triggeralgs SHARED
-  src/TAMakerADCSimpleWindow.cpp
-  src/TCMakerADCSimpleWindow.cpp
+  src/TAMakerADCSimpleWindowAlgorithm.cpp
+  src/TCMakerADCSimpleWindowAlgorithm.cpp
   src/TAMakerHorizontalMuonAlgorithm.cpp
   src/TCMakerHorizontalMuonAlgorithm.cpp
   src/TriggerCandidateMakerPlaneCoincidence.cpp

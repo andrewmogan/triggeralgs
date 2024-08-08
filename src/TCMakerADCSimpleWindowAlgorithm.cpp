@@ -1,22 +1,22 @@
 /**
- * @file TCMakerADCSimpleWindow.cpp
+ * @file TCMakerADCSimpleWindowAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ADCSimpleWindow/TCMakerADCSimpleWindow.hpp"
+#include "triggeralgs/ADCSimpleWindow/TCMakerADCSimpleWindowAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TCMakerADCSimpleWindowPlugin"
+#define TRACE_NAME "TCMakerADCSimpleWindowAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TCMakerADCSimpleWindow::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
+TCMakerADCSimpleWindowAlgorithm::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 { 
   // For now, if there is any single activity from any one detector element, emit
   // a trigger candidate.
@@ -37,9 +37,9 @@ TCMakerADCSimpleWindow::process(const TriggerActivity& activity, std::vector<Tri
 }
 
 void
-TCMakerADCSimpleWindow::configure(const nlohmann::json &config)
+TCMakerADCSimpleWindowAlgorithm::configure(const nlohmann::json &config)
 {
   TriggerCandidateMaker::configure(config);
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerADCSimpleWindow)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerADCSimpleWindowAlgorithm)

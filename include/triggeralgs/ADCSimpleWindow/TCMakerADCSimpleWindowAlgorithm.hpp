@@ -1,5 +1,5 @@
 /**
- * @file TCMakerADCSimpleWindow.hpp
+ * @file TCMakerADCSimpleWindowAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TCMakerADCSimpleWindow : public TriggerCandidateMaker
+class TCMakerADCSimpleWindowAlgorithm : public TriggerCandidateMaker
 {
 
 public:
