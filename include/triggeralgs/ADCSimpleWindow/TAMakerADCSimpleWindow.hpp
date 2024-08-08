@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerADCSimpleWindow.hpp
+ * @file TAMakerADCSimpleWindow.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerADCSimpleWindow : public TriggerActivityMaker
+class TAMakerADCSimpleWindow : public TriggerActivityMaker
 {
 
 public:

@@ -1,22 +1,22 @@
 /**
- * @file TriggerActivityMakerADCSimpleWindow.cpp
+ * @file TAMakerADCSimpleWindow.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ADCSimpleWindow/TriggerActivityMakerADCSimpleWindow.hpp"
+#include "triggeralgs/ADCSimpleWindow/TAMakerADCSimpleWindow.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerADCSimpleWindowPlugin"
+#define TRACE_NAME "TAMakerADCSimpleWindowPlugin"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerADCSimpleWindow::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerADCSimpleWindow::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   
   // The first time operator is called, reset
@@ -57,7 +57,7 @@ TriggerActivityMakerADCSimpleWindow::process(const TriggerPrimitive& input_tp, s
 }
 
 void
-TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json& config)
+TAMakerADCSimpleWindow::configure(const nlohmann::json& config)
 {
   TriggerActivityMaker::configure(config);
 
@@ -74,7 +74,7 @@ TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json& config)
 }
 
 TriggerActivity
-TriggerActivityMakerADCSimpleWindow::construct_ta() const
+TAMakerADCSimpleWindow::construct_ta() const
 {
   TLOG(TLVL_DEBUG_1) << "I am constructing a trigger activity!";
   //TLOG_DEBUG(TRACE_NAME) << m_current_window;
@@ -100,4 +100,4 @@ TriggerActivityMakerADCSimpleWindow::construct_ta() const
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerADCSimpleWindow)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerADCSimpleWindow)
