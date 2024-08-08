@@ -23,7 +23,6 @@ public:
   void configure(const nlohmann::json &config);
   
 private:  
-  uint64_t m_primitive_count = 0;   // NOLINT(build/unsigned)
 };
 } // namespace triggeralgs
 

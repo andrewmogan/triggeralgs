@@ -18,10 +18,6 @@ using namespace triggeralgs;
 void
 TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
-  if ((m_primitive_count++) % m_prescale == 0)
-  {
-
-    TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
     std::vector<TriggerPrimitive> tp_list;
     tp_list.push_back(input_tp);
 
@@ -49,7 +45,6 @@ TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<
     m_data_vs_system_time.store(data_time - system_time); // Store the difference for OpMon
 
     output_ta.push_back(ta);
-  }
 }
 
 void
