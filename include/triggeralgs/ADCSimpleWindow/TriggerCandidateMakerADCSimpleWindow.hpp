@@ -19,7 +19,7 @@ class TriggerCandidateMakerADCSimpleWindow : public TriggerCandidateMaker
 
 public:
   /// The function that gets call when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
   
   void configure(const nlohmann::json &config);
   

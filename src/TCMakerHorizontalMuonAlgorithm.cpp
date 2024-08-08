@@ -16,7 +16,7 @@
 using namespace triggeralgs;
 
 void
-TCMakerHorizontalMuonAlgorithm::operator()(const TriggerActivity& activity,
+TCMakerHorizontalMuonAlgorithm::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
@@ -105,6 +105,8 @@ TCMakerHorizontalMuonAlgorithm::operator()(const TriggerActivity& activity,
 void
 TCMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
+
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
       m_trigger_on_adc = config["trigger_on_adc"];

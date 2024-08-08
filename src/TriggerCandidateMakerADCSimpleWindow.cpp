@@ -16,7 +16,7 @@
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
+TriggerCandidateMakerADCSimpleWindow::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 { 
 
   // For now, if there is any single activity from any one detector element, emit
@@ -42,6 +42,7 @@ TriggerCandidateMakerADCSimpleWindow::operator()(const TriggerActivity& activity
 void
 TriggerCandidateMakerADCSimpleWindow::configure(const nlohmann::json &config)
 {
+  TriggerCandidateMaker::configure(config);
 }
 
 REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerADCSimpleWindow)
