@@ -17,6 +17,10 @@
 #include <vector>
 #include <atomic>
 #include <chrono>
+#include <limits>
+
+// TRACE_NAME to be defined in the derived TAMs
+#include "TRACE/trace.h"
 
 namespace triggeralgs {
 
@@ -56,6 +60,7 @@ public:
    * @todo: Implement something smarter & more efficient if no filtering: vector of functions, or c-o-c
    *
    * @param[in] intput_tp input TP reference for filtering
+   * @return bool true if we want to keep the TP
    */
   virtual bool preprocess(const TriggerPrimitive& input_tp)
   {
@@ -68,6 +73,9 @@ public:
 
   /**
    * @brief Post-processing/filtering of the TAs, e.g. prescale
+   *
+   * Takes a vector of TAs and removes ones that we want to fileter out, e.g.
+   * based on prescaling.
    *
    * @todo: Like in preprocessing: implement something more efficient, e.g. vec of tasks
    *
@@ -84,12 +92,14 @@ public:
     if (m_prescale > 1) {
       for (std::vector<TriggerActivity>::iterator iter = output_ta.begin(); iter != output_ta.end();) {
         m_ta_count++;
-        if (m_ta_count % m_prescale == 1) {
+
+        if (m_ta_count % m_prescale != 0) {
           iter = output_ta.erase(iter);
+          continue;
         }
-        else {
-          ++iter;
-        }
+
+        TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_ta_count-1);
+        ++iter;
       }
     }
   }
@@ -106,6 +116,9 @@ public:
       m_prescale = config["prescale"]; 
     if (config.contains("max_tot"))
       m_max_time_over_threshold = config["max_tot"];
+
+    TLOG() << "[TAM]: max tot   : " << m_max_time_over_threshold;
+    TLOG() << "[TAM]: prescale  : " << m_prescale;
   }
   
   std::atomic<uint64_t> m_data_vs_system_time = 0;
@@ -117,7 +130,7 @@ public:
   uint64_t m_ta_count = 0;
 
   /// @brief Time-over-threshold TP filtering
-  uint32_t m_max_time_over_threshold = 0;
+  uint32_t m_max_time_over_threshold = std::numeric_limits<uint32_t>::max();
 };
 
 } // namespace triggeralgs
