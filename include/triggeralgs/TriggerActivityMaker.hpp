@@ -74,7 +74,7 @@ public:
   /**
    * @brief Post-processing/filtering of the TAs, e.g. prescale
    *
-   * Takes a vector of TAs and removes ones that we want to fileter out, e.g.
+   * Takes a vector of TAs and removes ones that we want to filter out, e.g.
    * based on prescaling.
    *
    * @todo: Like in preprocessing: implement something more efficient, e.g. vec of tasks
@@ -113,7 +113,7 @@ public:
     }
 
     if (config.contains("prescale"))
-      m_prescale = config["prescale"]; 
+      m_prescale = config["prescale"];
     if (config.contains("max_tot"))
       m_max_time_over_threshold = config["max_tot"];
 
