@@ -53,7 +53,6 @@ TCMakerPrescaleAlgorithm::configure(const nlohmann::json &config)
       m_readout_window_ticks_after = config["readout_window_ticks_after"];
 
   }
-  TLOG_DEBUG(TRACE_NAME) << "Using candidate prescale " << m_prescale;
 }
 
 REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerPrescaleAlgorithm)
