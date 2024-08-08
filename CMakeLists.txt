@@ -35,7 +35,7 @@ find_package(detchannelmaps REQUIRED)
 # provided by the trigger package)
 add_library(triggeralgs SHARED
   src/TAMakerADCSimpleWindow.cpp
-  src/TriggerCandidateMakerADCSimpleWindow.cpp
+  src/TCMakerADCSimpleWindow.cpp
   src/TAMakerHorizontalMuonAlgorithm.cpp
   src/TCMakerHorizontalMuonAlgorithm.cpp
   src/TriggerCandidateMakerPlaneCoincidence.cpp

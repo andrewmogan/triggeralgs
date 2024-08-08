@@ -58,7 +58,7 @@ public:
    * @param[in] intput_tp input TP reference for filtering
    * @return bool true if we want to keep the TP
    */
-  virtual bool preprocess(const TriggerActivity& input_ta)
+  virtual bool preprocess(const TriggerActivity&)
   {
     return true;
   }
