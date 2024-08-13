@@ -52,7 +52,7 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
     return;
   }
 
-  check_triton_server_liveness(m_inference_url);
+  //check_triton_server_liveness(m_inference_url);
   //check_model_inputs(m_model_name, m_model_version);
 
 
@@ -102,12 +102,15 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
 }
 
 // TODO The check_model_inputs call should probably go in here
-void TriggerActivityMakerTriton::load_model(const std::string model_name, const std::string model_version) const {
+void TriggerActivityMakerTriton::check_model_readiness(const std::string model_name, const std::string model_version) const {
   bool model_ready;
   tc::Error model_load_err;
   model_load_err = client->IsModelReady(&model_ready, model_name, model_version);
   if (!model_load_err.IsOk()) {
     fail_if_error(model_load_err, "Unable to get model readiness");
+  }
+  if (model_ready) {
+    TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
   }
 
   //FAIL_IF_ERR(
@@ -213,10 +216,17 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Using configuration:\n" << config.dump(4);
 
   /* TODO Add this where it makes sense once there's an inference function*/
-  FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), err);
+  //FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), err);
+  tc::Error server_create_err = tc::InferenceServerGrpcClient::Create(&client, m_inference_url);
+  if (!server_create_err.IsOk()) {
+    fail_if_error(server_create_err, "Could not create Triton client");
+  }
+  else {
+    TLOG(TLVL_DEBUG_INFO) << "Triton client is live and communicating with server on " << m_inference_url;
+  }
 
   check_triton_server_liveness(m_inference_url);
-  //load_model(m_model_name, m_model_version);
+  check_model_readiness(m_model_name, m_model_version);
   check_model_inputs(m_model_name, m_model_version);
 }
 

@@ -28,7 +28,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     void dump_config() const;
     void check_triton_server_liveness(const std::string& inference_url) const;
     //void check_model_readiness(const std::string model_name, const std::string model_version) const;
-    void load_model(const std::string model_name, const std::string model_version) const;
+    void check_model_readiness(const std::string model_name, const std::string model_version) const;
     void check_model_inputs(const std::string model_name, const std::string model_version) const;
     //void query_triton_server(const TriggerActivity& trigger_activity, const std::string& inference_url);
 
