@@ -18,6 +18,7 @@ find_package(detdataformats REQUIRED)
 find_package(trgdataformats REQUIRED)
 find_package(cetlib REQUIRED)
 find_package(detchannelmaps REQUIRED)
+find_package(RapidJSON REQUIRED)
 find_package(TritonCommon REQUIRED)
 find_package(TritonClient REQUIRED)
 find_package(gRPC REQUIRED)
@@ -70,7 +71,7 @@ target_include_directories(triggeralgs PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json detdataformats::detdataformats
+target_link_libraries(triggeralgs PRIVATE nlohmann_json::nlohmann_json detdataformats::detdataformats rapidjson 
                       trgdataformats::trgdataformats cetlib::cetlib detchannelmaps::detchannelmaps 
                       TritonClient::grpcclient gRPC::grpc TritonCommon::triton-common-async-work-queue 
                       TritonCommon::triton-common-error TritonCommon::triton-common-logging 
