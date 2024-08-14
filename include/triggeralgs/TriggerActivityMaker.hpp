@@ -98,7 +98,7 @@ public:
           continue;
         }
 
-        TLOG(TLVL_DEBUG_1) << "Emitting prescaled TriggerActivity " << (m_ta_count-1);
+        TLOG(TLVL_DEBUG_10) << "Emitting prescaled TriggerActivity " << (m_ta_count-1);
         ++iter;
       }
     }

@@ -90,7 +90,7 @@ public:
           continue;
         }
 
-        TLOG() << "Emitting prescaled TriggerCandidate " << (m_tc_count-1);
+        TLOG_DEBUG(TLVL_DEBUG_10) << "Emitting prescaled TriggerCandidate " << (m_tc_count-1);
         ++iter;
       }
     }
