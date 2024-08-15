@@ -15,8 +15,8 @@
 using namespace triggeralgs;
 
 void
-TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
-                                               std::vector<TriggerActivity>& output_ta)
+TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
+                                        std::vector<TriggerActivity>& output_ta)
 {
 
   uint16_t adjacency;
@@ -31,7 +31,7 @@ TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
 
 
   // 0) FIRST TP =====================================================================
-  // The first time operator() is called, reset the window object.
+  // The first time process() is called, reset the window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
     m_primitive_count++;
@@ -51,16 +51,13 @@ TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
   // make a TA and start a fresh window with the current TP.
   else if (m_current_window.adc_integral > m_adc_threshold && m_trigger_on_adc) {
 
-    ta_count++;
-    if (ta_count % m_prescale == 0){
-      auto ta = construct_ta();
+    auto ta = construct_ta();
 
-    	TLOG(1) << "[TA]: Emitting ADC threshold trigger with " << m_current_window.adc_integral <<
-                   " window ADC integral. ta.time_start=" << ta.time_start << " ta.time_end=" << ta.time_end;
+    TLOG(1) << "[TA]: Emitting ADC threshold trigger with " << m_current_window.adc_integral <<
+                 " window ADC integral. ta.time_start=" << ta.time_start << " ta.time_end=" << ta.time_end;
 
-      output_ta.push_back(ta);
-    	m_current_window.reset(input_tp);
-    }
+    output_ta.push_back(ta);
+    m_current_window.reset(input_tp);
   }
 
   // 2) MULTIPLICITY - N UNQIUE CHANNELS EXCEEDED =====================================
@@ -70,15 +67,11 @@ TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
   // on channel multiplicity, make a TA and start a fresh window with the current TP.
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
 
-    ta_count++;
-    if (ta_count % m_prescale == 0){
+    TLOG(1) << "Emitting multiplicity trigger with " << m_current_window.n_channels_hit() <<
+               " unique channels hit.";
 
-    	  TLOG(1) << "Emitting multiplicity trigger with " << m_current_window.n_channels_hit() <<
-                   " unique channels hit.";
-
-        output_ta.push_back(construct_ta());
-    	m_current_window.reset(input_tp);
-    }
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
   // 3) ADJACENCY THRESHOLD EXCEEDED ==================================================
@@ -88,21 +81,17 @@ TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
   // on adjacency, then create a TA and reset the window with the new/current TP.
   else if ((adjacency = check_adjacency()) > m_adjacency_threshold && m_trigger_on_adjacency) {
 
-    ta_count++;
-    if (ta_count % m_prescale == 0){   
+    //for (auto tp : m_current_window.inputs){ dump_tp(tp); }
 
-        //for (auto tp : m_current_window.inputs){ dump_tp(tp); }
+    // Check for a new maximum, display the largest seen adjacency in the log.
+    // uint16_t adjacency = check_adjacency();
+    if (adjacency > m_max_adjacency) { m_max_adjacency = adjacency; }
+    TLOG_DEBUG(TRACE_NAME) << "Emitting track and multiplicity TA with adjacency " << check_adjacency() <<
+                 " and multiplicity " << m_current_window.n_channels_hit() << ". The ADC integral of this TA is " << 
+                 m_current_window.adc_integral << " and the largest longest track seen so far is " << m_max_adjacency;
 
-    	// Check for a new maximum, display the largest seen adjacency in the log.
-    	// uint16_t adjacency = check_adjacency();
-    	if (adjacency > m_max_adjacency) { m_max_adjacency = adjacency; }
-    	TLOG_DEBUG(TRACE_NAME) << "Emitting track and multiplicity TA with adjacency " << check_adjacency() <<
-                   " and multiplicity " << m_current_window.n_channels_hit() << ". The ADC integral of this TA is " << 
-                   m_current_window.adc_integral << " and the largest longest track seen so far is " << m_max_adjacency;
-
-        output_ta.push_back(construct_ta());
-    	m_current_window.reset(input_tp);
-     }
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
   // Temporary triggering logic for Adam's large TOT TPs. Trigger on very large TOT TPs.
@@ -140,6 +129,8 @@ TAMakerHorizontalMuonAlgorithm::operator()(const TriggerPrimitive& input_tp,
 void
 TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
       m_trigger_on_adc = config["trigger_on_adc"];
@@ -159,13 +150,10 @@ TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))
       m_print_tp_info = config["print_tp_info"];
-    if (config.contains("prescale"))
-      m_prescale = config["prescale"]; 
     if (config.contains("trigger_on_tot"))
       m_trigger_on_tot = config["trigger_on_tot"];
     if (config.contains("tot_threshold"))
       m_tot_threshold = config["tot_threshold"];
-     
  }
 
 }
@@ -191,7 +179,6 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kHorizontalMuon;
   ta.inputs = m_current_window.inputs;
-
 
   for( const auto& tp : ta.inputs ) {
     ta.time_start = std::min(ta.time_start, tp.time_start);

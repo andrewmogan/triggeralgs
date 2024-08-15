@@ -16,14 +16,14 @@
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerMichelElectron::operator()(const TriggerActivity& activity,
+TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
   std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
     activity) };
 
-  // The first time operator is called, reset window object.
+  // The first time process() is called, reset window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
@@ -94,6 +94,8 @@ TriggerCandidateMakerMichelElectron::operator()(const TriggerActivity& activity,
 void
 TriggerCandidateMakerMichelElectron::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
+
   // FIX ME: Use some schema here. Also can't work out how to pass booleans.
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))

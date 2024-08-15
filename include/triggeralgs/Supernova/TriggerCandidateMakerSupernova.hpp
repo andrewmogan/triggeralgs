@@ -25,7 +25,7 @@ class TriggerCandidateMakerSupernova : public TriggerCandidateMaker
 
 public:
   /// The function that gets call when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
 
 protected:
   std::vector<TriggerActivity::TriggerActivityData> m_activity;

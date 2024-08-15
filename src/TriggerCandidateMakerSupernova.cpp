@@ -14,7 +14,7 @@
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerSupernova::operator()(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
+TriggerCandidateMakerSupernova::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 {
   timestamp_t time = activity.time_start;
   FlushOldActivity(time); // get rid of old activities in the buffer

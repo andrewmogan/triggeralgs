@@ -16,12 +16,8 @@
 using namespace triggeralgs;
 
 void
-TAMakerPrescaleAlgorithm::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
-  if ((m_primitive_count++) % m_prescale == 0)
-  {
-
-    TLOG_DEBUG(TLVL_DEBUG_10) << "Emitting prescaled TriggerActivity " << (m_primitive_count-1);
     std::vector<TriggerPrimitive> tp_list;
     tp_list.push_back(input_tp);
 
@@ -49,18 +45,12 @@ TAMakerPrescaleAlgorithm::operator()(const TriggerPrimitive& input_tp, std::vect
     m_data_vs_system_time.store(data_time - system_time); // Store the difference for OpMon
 
     output_ta.push_back(ta);
-  }
 }
 
 void
-TAMakerPrescaleAlgorithm::configure(const nlohmann::json &config)
+TAMakerPrescaleAlgorithm::configure(const nlohmann::json& config)
 {
-  //FIXME use some schema here
-  if (config.is_object() && config.contains("prescale"))
-  {
-    m_prescale = config["prescale"];
-  }
-  TLOG_DEBUG(TRACE_NAME) << "Using activity prescale " << m_prescale;
+  TriggerActivityMaker::configure(config);
 }
 
 // Register algo in TA Factory

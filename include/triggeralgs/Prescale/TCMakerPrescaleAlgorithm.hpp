@@ -19,14 +19,12 @@ class TCMakerPrescaleAlgorithm : public TriggerCandidateMaker
 
 public:
   /// The function that gets call when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
   
   void configure(const nlohmann::json &config);
   
 private:
 
-  uint64_t m_activity_count = 0;    // NOLINT(build/unsigned)
-  uint64_t m_prescale = 1;          // NOLINT(build/unsigned)
   timestamp_t m_readout_window_ticks_before = 0; 
   timestamp_t m_readout_window_ticks_after = 0;
   

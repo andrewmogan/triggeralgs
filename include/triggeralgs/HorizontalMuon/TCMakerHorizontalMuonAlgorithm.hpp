@@ -21,7 +21,7 @@ class TCMakerHorizontalMuonAlgorithm : public TriggerCandidateMaker
 
 public:
   // The function that gets called when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
   void configure(const nlohmann::json& config);
 
 private:

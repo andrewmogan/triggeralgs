@@ -15,8 +15,8 @@
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
-                                               std::vector<TriggerActivity>& output_ta)
+TriggerActivityMakerMichelElectron::process(const TriggerPrimitive& input_tp,
+                                            std::vector<TriggerActivity>& output_ta)
 {
 
   // The first time operator() is called, reset the window object.
@@ -63,6 +63,8 @@ TriggerActivityMakerMichelElectron::operator()(const TriggerPrimitive& input_tp,
 void
 TriggerActivityMakerMichelElectron::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   // FIX ME: Use some schema here. Also can't work out how to pass booleans.
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))

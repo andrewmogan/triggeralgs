@@ -1,22 +1,22 @@
 /**
- * @file TriggerActivityMakerADCSimpleWindow.cpp
+ * @file TAMakerADCSimpleWindowAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ADCSimpleWindow/TriggerActivityMakerADCSimpleWindow.hpp"
+#include "triggeralgs/ADCSimpleWindow/TAMakerADCSimpleWindowAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerADCSimpleWindowPlugin"
+#define TRACE_NAME "TAMakerADCSimpleWindowAlgorithmPlugin"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerADCSimpleWindow::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerADCSimpleWindowAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   
   // The first time operator is called, reset
@@ -57,8 +57,10 @@ TriggerActivityMakerADCSimpleWindow::operator()(const TriggerPrimitive& input_tp
 }
 
 void
-TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json &config)
+TAMakerADCSimpleWindowAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   //FIXME use some schema here
   if (config.is_object()){
     if (config.contains("window_length")) m_window_length = config["window_length"];
@@ -72,7 +74,7 @@ TriggerActivityMakerADCSimpleWindow::configure(const nlohmann::json &config)
 }
 
 TriggerActivity
-TriggerActivityMakerADCSimpleWindow::construct_ta() const
+TAMakerADCSimpleWindowAlgorithm::construct_ta() const
 {
   TLOG(TLVL_DEBUG_1) << "I am constructing a trigger activity!";
   //TLOG_DEBUG(TRACE_NAME) << m_current_window;
@@ -98,4 +100,4 @@ TriggerActivityMakerADCSimpleWindow::construct_ta() const
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerADCSimpleWindow)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerADCSimpleWindowAlgorithm)

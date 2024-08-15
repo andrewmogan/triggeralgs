@@ -16,14 +16,14 @@
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerPlaneCoincidence::operator()(const TriggerActivity& activity,
+TriggerCandidateMakerPlaneCoincidence::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
   std::vector<TriggerActivity::TriggerActivityData> ta_list = { static_cast<TriggerActivity::TriggerActivityData>(
     activity) };
 
-  // The first time operator is called, reset window object.
+  // The first time process is called, reset window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
@@ -90,6 +90,7 @@ TriggerCandidateMakerPlaneCoincidence::operator()(const TriggerActivity& activit
 void
 TriggerCandidateMakerPlaneCoincidence::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
       m_trigger_on_adc = config["trigger_on_adc"];

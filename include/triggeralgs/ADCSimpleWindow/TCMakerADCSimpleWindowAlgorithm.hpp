@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerADCSimpleWindow.hpp
+ * @file TCMakerADCSimpleWindowAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,12 +14,12 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerADCSimpleWindow : public TriggerCandidateMaker
+class TCMakerADCSimpleWindowAlgorithm : public TriggerCandidateMaker
 {
 
 public:
   /// The function that gets call when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
   
   void configure(const nlohmann::json &config);
   
