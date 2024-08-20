@@ -71,15 +71,6 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
   if (live) {
     TLOG(TLVL_DEBUG_INFO) << "[TA:Triton] Triton server is live";
   }
-  /*
-  FAIL_IF_ERR(
-      client->IsServerLive(&live),
-      "unable to get server liveness");
-  if (!live) {
-    std::cerr << "error: server is not live" << std::endl;
-    exit(1);
-  }
-  */
 
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
@@ -87,9 +78,6 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
   if (!err.IsOk()) {
     fail_if_error(err, "Unable to get server metadata");
   }
-  //FAIL_IF_ERR(
-  //    client->ServerMetadata(&server_metadata),
-  //    "unable to get server metadata");
   if (server_metadata.name().compare("triton") != 0) {
     std::cerr << "error: unexpected server metadata: "
               << server_metadata.DebugString() << std::endl;
@@ -101,7 +89,6 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
   return;
 }
 
-// TODO The check_model_inputs call should probably go in here
 void TriggerActivityMakerTriton::check_model_readiness(const std::string model_name, const std::string model_version) const {
   bool model_ready;
   tc::Error model_load_err;
@@ -113,32 +100,11 @@ void TriggerActivityMakerTriton::check_model_readiness(const std::string model_n
     TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
   }
 
-  //FAIL_IF_ERR(
-  //    client->IsModelReady(&model_ready, model_name, model_version),
-  //    "unable to get model readiness");
   if (!model_ready) {
     std::cerr << "error: model " << model_name << " is not live" << std::endl;
     exit(1);
   }
 
-  /*
-  inference::ModelMetadataResponse model_metadata;
-  FAIL_IF_ERR(
-      client->ModelMetadata(
-          &model_metadata, model_name, model_version),
-      "unable to get model metadata");
-
-  rapidjson::Document model_metadata_json;
-  FAIL_IF_ERR(
-      tc::ParseJson(&model_metadata_json, model_metadata),
-      "failed to parse model metadata");
-  if ((std::string(model_metadata_json["name"].GetString()))
-          .compare(model_name) != 0) {
-    std::cerr << "error: unexpected model metadata: " << model_metadata
-              << std::endl;
-    exit(1);
-  }
-  */
   return;
 }
 
@@ -164,18 +130,7 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   // Initialize the inputs with the data.
   tc::InferInput* input0;
   tc::InferInput* input1;
-  /*
-  FAIL_IF_ERR(
-      tc::InferInput::Create(&input0, "INPUT0", shape, "INT32"),
-      "unable to get INPUT0");
-  std::shared_ptr<tc::InferInput> input0_ptr;
-  input0_ptr.reset(input0);
-  FAIL_IF_ERR(
-      tc::InferInput::Create(&input1, "INPUT1", shape, "INT32"),
-      "unable to get INPUT1");
-  std::shared_ptr<tc::InferInput> input1_ptr;
-  input1_ptr.reset(input1);
-  */
+
   return;
 }
 
@@ -215,8 +170,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Using configuration:\n" << config.dump(4);
 
-  /* TODO Add this where it makes sense once there's an inference function*/
-  //FAIL_IF_ERR(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), err);
   tc::Error server_create_err = tc::InferenceServerGrpcClient::Create(&client, m_inference_url);
   if (!server_create_err.IsOk()) {
     fail_if_error(server_create_err, "Could not create Triton client");
