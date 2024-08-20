@@ -143,10 +143,25 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   std::shared_ptr<tc::InferRequestedOutput> output1_ptr;
   output1_ptr.reset(output1);
 
+  // The inference settings. Will be using default for now.
+  tc::InferOptions options(model_name);
+  options.model_version_ = model_version;
+  options.client_timeout_ = m_client_timeout_microseconds;
+
+  std::vector<tc::InferInput*> inputs = {input0_ptr.get(), input1_ptr.get()};
+  std::vector<const tc::InferRequestedOutput*> outputs = {
+      output0_ptr.get(), output1_ptr.get()
+  };
+
+  tc::InferResult* results;
+  fail_if_error(
+    client->Infer(&results, options, inputs, outputs), 
+    "Unable to run model");
+  std::shared_ptr<tc::InferResult> results_ptr;
+  results_ptr.reset(results);
+
   return;
 }
-
-
 
 void
 TriggerActivityMakerTriton::configure(const nlohmann::json& config)
