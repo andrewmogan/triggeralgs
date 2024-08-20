@@ -131,6 +131,25 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   tc::InferInput* input0;
   tc::InferInput* input1;
 
+  bool model_ready;
+  tc::Error model_load_err;
+  model_load_err = client->IsModelReady(&model_ready, model_name, model_version);
+  if (!model_load_err.IsOk()) {
+    fail_if_error(model_load_err, "Unable to get model readiness");
+  }
+
+  tc::Error create_inference_handler_err;
+  fail_if_error(
+    create_inference_handler_err = tc::InferInput::Create(&input0, "INPUT0", shape, "INT32")
+    "Unable to get INPUT0");
+  std::shared_ptr<tc::InferInput> input0_ptr;
+  input0_ptr.reset(input0);
+  fail_if_error(
+    create_inference_handler_err = tc::InferInput::Create(&input1, "INPUT1", shape, "INT32")
+    "Unable to get INPUT1");
+  std::shared_ptr<tc::InferInput> input1_ptr;
+  input1_ptr.reset(input1);
+
   return;
 }
 
