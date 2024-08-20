@@ -45,7 +45,9 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 
   //check_triton_server_liveness(m_inference_url);
   //check_model_inputs(m_model_name, m_model_version);
-
+  TLOG_DEBUG(TLVL_DEBUG_INFO) << "TA size is now " << m_current_ta.inputs.size();
+  TLOG_DEBUG(TLVL_DEBUG_INFO) << "Starting model checks..." << m_current_ta.inputs.size();
+  check_model_inputs(m_model_name, m_model_version);
 
   // Reset the current.
   m_current_ta = TriggerActivity();
@@ -103,11 +105,6 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   tc::InferInput* input0;
   tc::InferInput* input1;
 
-  bool model_ready;
-  tc::Error model_load_err;
-  model_load_err = client->IsModelReady(&model_ready, model_name, model_version);
-  fail_if_error(client->IsModelReady(&model_ready, model_name, model_version), "Unable to get model readiness");
-
   fail_if_error(tc::InferInput::Create(&input0, "INPUT0", shape, "INT32"), "Unable to get INPUT0");
   std::shared_ptr<tc::InferInput> input0_ptr;
   input0_ptr.reset(input0);
@@ -147,6 +144,8 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   tc::InferOptions options(model_name);
   options.model_version_ = model_version;
   options.client_timeout_ = m_client_timeout_microseconds;
+  
+  TLOG_DEBUG(TLVL_DEBUG_INFO) << "Client timetout is set to " << m_client_timeout_microseconds;
 
   std::vector<tc::InferInput*> inputs = {input0_ptr.get(), input1_ptr.get()};
   std::vector<const tc::InferRequestedOutput*> outputs = {
@@ -241,7 +240,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 
   check_triton_server_liveness(m_inference_url);
   check_model_readiness(m_model_name, m_model_version);
-  check_model_inputs(m_model_name, m_model_version);
 }
 
 void TriggerActivityMakerTriton::fail_if_error(const tc::Error& err, const std::string& msg) const {
