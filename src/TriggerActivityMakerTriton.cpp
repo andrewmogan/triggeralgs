@@ -183,6 +183,22 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
     exit(1);
   }
 
+  for (size_t i = 0; i < 16; ++i) {
+    std::cout << input0_data[i] << " + " << input1_data[i] << " = "
+              << *(output0_data + i) << std::endl;
+    std::cout << input0_data[i] << " - " << input1_data[i] << " = "
+              << *(output1_data + i) << std::endl;
+
+    if ((input0_data[i] + input1_data[i]) != *(output0_data + i)) {
+      std::cerr << "Error: incorrect sum" << std::endl;
+      exit(1);
+    }
+    if ((input0_data[i] - input1_data[i]) != *(output1_data + i)) {
+      std::cerr << "Error: incorrect difference" << std::endl;
+      exit(1);
+    }
+  }
+
   return;
 }
 
