@@ -150,6 +150,18 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   std::shared_ptr<tc::InferInput> input1_ptr;
   input1_ptr.reset(input1);
 
+  tc::Error append_raw_err;
+  fail_if_error(
+    input0_ptr->AppendRaw(
+        reinterpret_cast<uint8_t*>(&input0_data[0]),
+        input0_data.size() * sizeof(int32_t)),
+        "Unable to set data for INPUT0");
+  fail_if_error(
+    input1_ptr->AppendRaw(
+        reinterpret_cast<uint8_t*>(&input1_data[0]),
+        input1_data.size() * sizeof(int32_t)),
+        "Unable to set data for INPUT1");
+
   return;
 }
 
