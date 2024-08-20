@@ -16,15 +16,6 @@
 
 namespace tc = triton::client;
 
-#define FAIL_IF_ERR(X, MSG)                                        \
-  {                                                                \
-    tc::Error err = (X);                                           \
-    if (!err.IsOk()) {                                             \
-      std::cerr << "error: " << (MSG) << ": " << err << std::endl; \
-      exit(1);                                                     \
-    }                                                              \
-  }
-
 namespace triggeralgs {
 
 using Logging::TLVL_GENERAL;
@@ -64,10 +55,8 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
   // Check is the server is live
   bool live;
+  fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
   tc::Error err = client->IsServerLive(&live);
-  if (!err.IsOk()) {
-    fail_if_error(err, "Unable to get server liveness");
-  }
   if (live) {
     TLOG(TLVL_DEBUG_INFO) << "[TA:Triton] Triton server is live";
   }
@@ -75,11 +64,9 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
   err = client->ServerMetadata(&server_metadata);
-  if (!err.IsOk()) {
-    fail_if_error(err, "Unable to get server metadata");
-  }
+  fail_if_error(client->ServerMetadata(&server_metadata), "Unable to get server metadata");
   if (server_metadata.name().compare("triton") != 0) {
-    std::cerr << "error: unexpected server metadata: "
+    std::cerr << "Error: unexpected server metadata: "
               << server_metadata.DebugString() << std::endl;
     exit(1);
   }
@@ -91,18 +78,9 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
 
 void TriggerActivityMakerTriton::check_model_readiness(const std::string model_name, const std::string model_version) const {
   bool model_ready;
-  tc::Error model_load_err;
-  model_load_err = client->IsModelReady(&model_ready, model_name, model_version);
-  if (!model_load_err.IsOk()) {
-    fail_if_error(model_load_err, "Unable to get model readiness");
-  }
+  fail_if_error(client->IsModelReady(&model_ready, model_name, model_version), "Unable to get model readiness");
   if (model_ready) {
     TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
-  }
-
-  if (!model_ready) {
-    std::cerr << "error: model " << model_name << " is not live" << std::endl;
-    exit(1);
   }
 
   return;
@@ -134,33 +112,15 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   bool model_ready;
   tc::Error model_load_err;
   model_load_err = client->IsModelReady(&model_ready, model_name, model_version);
-  if (!model_load_err.IsOk()) {
-    fail_if_error(model_load_err, "Unable to get model readiness");
-  }
+  fail_if_error(client->IsModelReady(&model_ready, model_name, model_version), "Unable to get model readiness");
 
-  tc::Error create_inference_handler_err;
-  fail_if_error(
-    create_inference_handler_err = tc::InferInput::Create(&input0, "INPUT0", shape, "INT32")
-    "Unable to get INPUT0");
+  fail_if_error(tc::InferInput::Create(&input0, "INPUT0", shape, "INT32"), "Unable to get INPUT0");
   std::shared_ptr<tc::InferInput> input0_ptr;
   input0_ptr.reset(input0);
-  fail_if_error(
-    create_inference_handler_err = tc::InferInput::Create(&input1, "INPUT1", shape, "INT32")
-    "Unable to get INPUT1");
+
+  fail_if_error(tc::InferInput::Create(&input1, "INPUT1", shape, "INT32"), "Unable to get INPUT1");
   std::shared_ptr<tc::InferInput> input1_ptr;
   input1_ptr.reset(input1);
-
-  tc::Error append_raw_err;
-  fail_if_error(
-    input0_ptr->AppendRaw(
-        reinterpret_cast<uint8_t*>(&input0_data[0]),
-        input0_data.size() * sizeof(int32_t)),
-        "Unable to set data for INPUT0");
-  fail_if_error(
-    input1_ptr->AppendRaw(
-        reinterpret_cast<uint8_t*>(&input1_data[0]),
-        input1_data.size() * sizeof(int32_t)),
-        "Unable to set data for INPUT1");
 
   return;
 }
@@ -201,13 +161,8 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Using configuration:\n" << config.dump(4);
 
-  tc::Error server_create_err = tc::InferenceServerGrpcClient::Create(&client, m_inference_url);
-  if (!server_create_err.IsOk()) {
-    fail_if_error(server_create_err, "Could not create Triton client");
-  }
-  else {
-    TLOG(TLVL_DEBUG_INFO) << "Triton client is live and communicating with server on " << m_inference_url;
-  }
+  fail_if_error(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), "Could not create Triton client");
+  TLOG(TLVL_DEBUG_INFO) << "Triton client is live and communicating with server on " << m_inference_url;
 
   check_triton_server_liveness(m_inference_url);
   check_model_readiness(m_model_name, m_model_version);
