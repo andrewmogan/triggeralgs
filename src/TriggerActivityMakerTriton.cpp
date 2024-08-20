@@ -160,6 +160,29 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   std::shared_ptr<tc::InferResult> results_ptr;
   results_ptr.reset(results);
 
+  // Get pointers to the result returned...
+  int32_t* output0_data;
+  size_t output0_byte_size;
+  fail_if_error(
+    results_ptr->RawData("OUTPUT0", (const uint8_t**)&output_data, &output0_byte_size),
+    "Unable to get result data for OUTPUT0");
+  if (output0_byte_size != 64) {
+    std::cerr << "error: received incorrect byte size for 'OUTPUT0': "
+              << output0_byte_size << std::endl;
+    exit(1);
+  }
+
+  int32_t* output1_data;
+  size_t output1_byte_size;
+  fail_if_error(
+    results_ptr->RawData("OUTPUT1", (const uint8_t**)&output_data, &output0_byte_size),
+    "Unable to get result data for output1");
+  if (output1_byte_size != 64) {
+    std::cerr << "error: received incorrect byte size for 'OUTPUT1': "
+              << output1_byte_size << std::endl;
+    exit(1);
+  }
+
   return;
 }
 
