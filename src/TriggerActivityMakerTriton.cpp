@@ -53,17 +53,11 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 }
 
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
-  // Check is the server is live
   bool live;
   fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
-  tc::Error err = client->IsServerLive(&live);
-  if (live) {
-    TLOG(TLVL_DEBUG_INFO) << "[TA:Triton] Triton server is live";
-  }
 
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
-  err = client->ServerMetadata(&server_metadata);
   fail_if_error(client->ServerMetadata(&server_metadata), "Unable to get server metadata");
   if (server_metadata.name().compare("triton") != 0) {
     std::cerr << "Error: unexpected server metadata: "
@@ -121,6 +115,33 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   fail_if_error(tc::InferInput::Create(&input1, "INPUT1", shape, "INT32"), "Unable to get INPUT1");
   std::shared_ptr<tc::InferInput> input1_ptr;
   input1_ptr.reset(input1);
+
+  fail_if_error(
+    input0_ptr->AppendRaw(
+          reinterpret_cast<uint8_t*>(&input0_data[0]),
+          input0_data.size() * sizeof(int32_t)),
+    "Unable to set data for INPUT0");
+  fail_if_error(
+    input1_ptr->AppendRaw(
+          reinterpret_cast<uint8_t*>(&input1_data[0]),
+          input1_data.size() * sizeof(int32_t)),
+    "Unable to set data for INPUT1");
+
+  // Generate the outputs to be requested.
+  tc::InferRequestedOutput* output0;
+  tc::InferRequestedOutput* output1;
+
+  fail_if_error(
+    tc::InferRequestedOutput::Create(&output0, "OUTPUT0"), 
+    "Unable to get OUTPUT0");
+  std::shared_ptr<tc::InferRequestedOutput> output0_ptr;
+  output0_ptr.reset(output0);
+
+  fail_if_error(
+    tc::InferRequestedOutput::Create(&output1, "OUTPUT1"), 
+    "Unable to get OUTPUT1");
+  std::shared_ptr<tc::InferRequestedOutput> output1_ptr;
+  output1_ptr.reset(output1);
 
   return;
 }
