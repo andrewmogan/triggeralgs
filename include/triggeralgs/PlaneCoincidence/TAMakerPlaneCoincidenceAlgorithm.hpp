@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerPlaneCoincidence.hpp
+ * @file TAMakerPlaneCoincidenceAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -23,7 +23,7 @@
 #include <utility>
 
 namespace triggeralgs {
-class TriggerActivityMakerPlaneCoincidence : public TriggerActivityMaker
+class TAMakerPlaneCoincidenceAlgorithm : public TriggerActivityMaker
 {
 public:
   void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);

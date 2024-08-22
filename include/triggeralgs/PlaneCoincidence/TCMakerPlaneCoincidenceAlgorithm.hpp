@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerPlaneCoincidence.hpp
+ * @file TCMakerPlaneCoincidenceAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerPlaneCoincidence : public TriggerCandidateMaker
+class TCMakerPlaneCoincidenceAlgorithm : public TriggerCandidateMaker
 {
 
 public:

@@ -1,22 +1,22 @@
 /**
- * @file TriggerCandidateMakerPlaneCoincidence.cpp
+ * @file TCMakerPlaneCoincidenceAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/PlaneCoincidence/TriggerCandidateMakerPlaneCoincidence.hpp"
+#include "triggeralgs/PlaneCoincidence/TCMakerPlaneCoincidenceAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerPlaneCoincidencePlugin"
+#define TRACE_NAME "TCMakerPlaneCoincidenceAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerPlaneCoincidence::process(const TriggerActivity& activity,
+TCMakerPlaneCoincidenceAlgorithm::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
@@ -88,7 +88,7 @@ TriggerCandidateMakerPlaneCoincidence::process(const TriggerActivity& activity,
 }
 
 void
-TriggerCandidateMakerPlaneCoincidence::configure(const nlohmann::json& config)
+TCMakerPlaneCoincidenceAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerCandidateMaker::configure(config);
   if (config.is_object()) {
@@ -113,7 +113,7 @@ TriggerCandidateMakerPlaneCoincidence::configure(const nlohmann::json& config)
 }
 
 TriggerCandidate
-TriggerCandidateMakerPlaneCoincidence::construct_tc() const
+TCMakerPlaneCoincidenceAlgorithm::construct_tc() const
 {
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
@@ -137,7 +137,7 @@ TriggerCandidateMakerPlaneCoincidence::construct_tc() const
 }
 
 bool
-TriggerCandidateMakerPlaneCoincidence::check_adjacency() const
+TCMakerPlaneCoincidenceAlgorithm::check_adjacency() const
 {
   // FIX ME: An adjacency check on the channels which have hits.
   return true;
@@ -145,14 +145,14 @@ TriggerCandidateMakerPlaneCoincidence::check_adjacency() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerCandidateMakerPlaneCoincidence::add_window_to_record(TAWindow window)
+TCMakerPlaneCoincidenceAlgorithm::add_window_to_record(TAWindow window)
 {
   m_window_record.push_back(window);
   return;
 }
 
 void
-TriggerCandidateMakerPlaneCoincidence::dump_window_record()
+TCMakerPlaneCoincidenceAlgorithm::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -174,4 +174,4 @@ TriggerCandidateMakerPlaneCoincidence::dump_window_record()
   return;
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerPlaneCoincidence)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerPlaneCoincidenceAlgorithm)
