@@ -1,15 +1,15 @@
 /**
- * @file TriggerActivityMakerChannelAdjacency.cpp
+ * @file TAMakerChannelAdjacencyAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ChannelAdjacency/TriggerActivityMakerChannelAdjacency.hpp"
+#include "triggeralgs/ChannelAdjacency/TAMakerChannelAdjacencyAlgorithm.hpp"
 #include "TRACE/trace.h"
 #include "triggeralgs/Logging.hpp"
-#define TRACE_NAME "TriggerActivityMakerChannelAdjacencyPlugin"
+#define TRACE_NAME "TAMakerChannelAdjacencyAlgorithm"
 #include <math.h>
 #include <vector>
 
@@ -18,8 +18,8 @@ using namespace triggeralgs;
 using Logging::TLVL_DEBUG_LOW;
 
 void
-TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_tp,
-                                                 std::vector<TriggerActivity>& output_ta)
+TAMakerChannelAdjacencyAlgorithm::process(const TriggerPrimitive& input_tp,
+                                              std::vector<TriggerActivity>& output_ta)
 {
 
   // Add useful info about recived TPs here for FW and SW TPG guys.
@@ -31,7 +31,7 @@ TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_t
   }
 
   // 0) FIRST TP =====================================================================
-  // The first time operator() is called, reset the window object.
+  // The first time process() is called, reset the window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
     return;
@@ -76,10 +76,7 @@ TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_t
 
         adj_pass = 1;
         ta_found = 1;
-        m_ta_count++;
-        if (m_ta_count % m_prescale == 0) {
-          output_ta.push_back(construct_ta(win_adj_max));
-        }
+        output_ta.push_back(construct_ta(win_adj_max));
       } else
         ta_found = 0;
     }
@@ -96,8 +93,9 @@ TriggerActivityMakerChannelAdjacency::operator()(const TriggerPrimitive& input_t
 }
 
 void
-TriggerActivityMakerChannelAdjacency::configure(const nlohmann::json& config)
+TAMakerChannelAdjacencyAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
   if (config.is_object()) {
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
@@ -107,13 +105,11 @@ TriggerActivityMakerChannelAdjacency::configure(const nlohmann::json& config)
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))
       m_print_tp_info = config["print_tp_info"];
-    if (config.contains("prescale"))
-      m_prescale = config["prescale"];
   }
 }
 
 TriggerActivity
-TriggerActivityMakerChannelAdjacency::construct_ta(TPWindow win_adj_max) const
+TAMakerChannelAdjacencyAlgorithm::construct_ta(TPWindow win_adj_max) const
 {
 
   TriggerActivity ta;
@@ -151,7 +147,7 @@ TriggerActivityMakerChannelAdjacency::construct_ta(TPWindow win_adj_max) const
 
 // std::vector<TriggerPrimitive>
 TPWindow
-TriggerActivityMakerChannelAdjacency::check_adjacency()
+TAMakerChannelAdjacencyAlgorithm::check_adjacency()
 {
   // This function deals with tp window (m_current_window), select adjacent tps (with a channel gap from 0 to 5; sum of
   // all gaps < m_adj_tolerance), checks if track length > m_adjacency_threshold: return the tp window (win_adj_max,
@@ -235,11 +231,11 @@ TriggerActivityMakerChannelAdjacency::check_adjacency()
 // Functions below this line are for debugging purposes.
 // =====================================================================================
 void
-TriggerActivityMakerChannelAdjacency::add_window_to_record(TPWindow window)
+TAMakerChannelAdjacencyAlgorithm::add_window_to_record(TPWindow window)
 {
   m_window_record.push_back(window);
   return;
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerChannelAdjacency)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerChannelAdjacencyAlgorithm)

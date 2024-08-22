@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerChannelAdjacency.hpp
+ * @file TAMakerChannelAdjacencyAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,10 +15,10 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerChannelAdjacency : public TriggerActivityMaker
+class TAMakerChannelAdjacencyAlgorithm : public TriggerActivityMaker
 {
 public:
-  void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
+  void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
   void configure(const nlohmann::json& config);
 
 private:
@@ -33,8 +33,6 @@ private:
   uint16_t m_adjacency_threshold = 15; // Default is 15 wire track for testing
   uint16_t m_adj_tolerance = 3;        // Adjacency tolerance - default is 3 from coldbox testing.
   timestamp_t m_window_length = 8000;  // Shouldn't exceed the max drift which is ~9375 62.5 MHz ticks for VDCB
-  uint16_t m_ta_count = 0;             // Use for prescaling
-  uint16_t m_prescale = 1;             // Prescale value, defult is one, trigger every TA
 
   // For debugging and performance study purposes.
   void add_window_to_record(TPWindow window);

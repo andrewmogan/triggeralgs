@@ -1,16 +1,16 @@
 /**
- * @file TriggerCandidateMakerChannelAdjacency.cpp
+ * @file TCMakerChannelAdjacencyAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ChannelAdjacency/TriggerCandidateMakerChannelAdjacency.hpp"
+#include "triggeralgs/ChannelAdjacency/TCMakerChannelAdjacencyAlgorithm.hpp"
 #include "triggeralgs/Logging.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerChannelAdjacencyPlugin"
+#define TRACE_NAME "TCMakerChannelAdjacencyAlgorithm"
 
 #include <math.h>
 #include <vector>
@@ -23,11 +23,11 @@ using Logging::TLVL_DEBUG_MEDIUM;
 using Logging::TLVL_VERY_IMPORTANT;
 
 void
-TriggerCandidateMakerChannelAdjacency::operator()(const TriggerActivity& activity,
-                                                  std::vector<TriggerCandidate>& output_tc)
+TCMakerChannelAdjacencyAlgorithm::process(const TriggerActivity& activity,
+                                               std::vector<TriggerCandidate>& output_tc)
 {
 
-  // The first time operator is called, reset window object.
+  // The first time process() is called, reset window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(activity);
     m_activity_count++;
@@ -53,7 +53,6 @@ TriggerCandidateMakerChannelAdjacency::operator()(const TriggerActivity& activit
   if (m_current_window.adc_integral > m_adc_threshold && m_trigger_on_adc) {
     TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TCM:CA] m_current_window.adc_integral " << m_current_window.adc_integral
                                   << " - m_adc_threshold " << m_adc_threshold;
-    m_tc_number++;
     TriggerCandidate tc = construct_tc();
     TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TCM:CA] tc.time_start=" << tc.time_start << " tc.time_end=" << tc.time_end
                                   << " len(tc.inputs) " << tc.inputs.size();
@@ -72,8 +71,6 @@ TriggerCandidateMakerChannelAdjacency::operator()(const TriggerActivity& activit
   // the existing window is above the specified threshold. If it is, and we are triggering on channels,
   // make a TC and start a fresh window with the current TA.
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
-    m_tc_number++;
-
     output_tc.push_back(construct_tc());
     m_current_window.clear();
   }
@@ -83,8 +80,10 @@ TriggerCandidateMakerChannelAdjacency::operator()(const TriggerActivity& activit
 }
 
 void
-TriggerCandidateMakerChannelAdjacency::configure(const nlohmann::json& config)
+TCMakerChannelAdjacencyAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
+
   if (config.is_object()) {
     if (config.contains("trigger_on_adc"))
       m_trigger_on_adc = config["trigger_on_adc"];
@@ -112,7 +111,7 @@ TriggerCandidateMakerChannelAdjacency::configure(const nlohmann::json& config)
 }
 
 TriggerCandidate
-TriggerCandidateMakerChannelAdjacency::construct_tc() const
+TCMakerChannelAdjacencyAlgorithm::construct_tc() const
 {
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
@@ -137,10 +136,10 @@ TriggerCandidateMakerChannelAdjacency::construct_tc() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerCandidateMakerChannelAdjacency::add_window_to_record(TAWindow window)
+TCMakerChannelAdjacencyAlgorithm::add_window_to_record(TAWindow window)
 {
   m_window_record.push_back(window);
   return;
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerChannelAdjacency)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerChannelAdjacencyAlgorithm)

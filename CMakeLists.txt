@@ -52,8 +52,8 @@ add_library(triggeralgs SHARED
   src/TriggerCandidateMakerChannelDistance.cpp
   src/TAMakerBundleNAlgorithm.cpp
   src/TCMakerBundleNAlgorithm.cpp
-  src/TriggerActivityMakerChannelAdjacency.cpp
-  src/TriggerCandidateMakerChannelAdjacency.cpp
+  src/TAMakerChannelAdjacencyAlgorithm.cpp
+  src/TCMakerChannelAdjacencyAlgorithm.cpp
   src/TAWindow.cpp
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp

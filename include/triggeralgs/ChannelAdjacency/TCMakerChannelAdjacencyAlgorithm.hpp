@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerChannelAdjacency.hpp
+ * @file TCMakerChannelAdjacencyAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -16,12 +16,12 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerChannelAdjacency : public TriggerCandidateMaker
+class TCMakerChannelAdjacencyAlgorithm : public TriggerCandidateMaker
 {
 
 public:
   // The function that gets called when there is a new activity
-  void operator()(const TriggerActivity&, std::vector<TriggerCandidate>&);
+  void process(const TriggerActivity&, std::vector<TriggerCandidate>&);
   void configure(const nlohmann::json& config);
 
 private:
@@ -39,7 +39,6 @@ private:
   timestamp_t m_window_length = 80000;
   timestamp_t m_readout_window_ticks_before = 32768;
   timestamp_t m_readout_window_ticks_after = 32768;
-  int m_tc_number = 0;
 
   // For debugging purposes.
   void add_window_to_record(TAWindow window);
