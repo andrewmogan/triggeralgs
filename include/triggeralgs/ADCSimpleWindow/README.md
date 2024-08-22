@@ -3,11 +3,11 @@
  - A “next-to-most-simple” triggering algorithm to exercise the TP chain.
  - Look at the total ADC of incoming TPs in a given time window (`window_length`), trigger if that total goes above some user defined threshold (`adc_threshold`). Both `window_length` and `adc_threshold` are configurable members of the `TAMakerADCSimpleWindow` class. Defaults obtained based on the data in `tps_link_11.txt`.
  - All of the logic is implemented in the `TAMakerADCSimpleWindow` class. A nested class called `Window` monitors incoming TPs (which are time ordered).
- - When a particular window exceeds threshold, `TAMakerADCSimpleWindow::construct_ta()` constructs a `TriggerActivity`. This is enough (eventually) to request data to be read out. The `TriggerCandidateMakerADCSimpleWindow` class simply constructs trigger candidates one-for-one from the trigger activities.
+ - When a particular window exceeds threshold, `TAMakerADCSimpleWindow::construct_ta()` constructs a `TriggerActivity`. This is enough (eventually) to request data to be read out. The `TCMakerADCSimpleWindowAlgorithm` class simply constructs trigger candidates one-for-one from the trigger activities.
  - Note that an activity will only be constructed once the window is full length even if the total ADC goes above the threshold beforehand. For example, if the user defines a window 1 ms in length and the ADC threshold is reached after 0.5 ms, a candidate will only be constructed once a TP is received with a start time 1 ms after the first TP in that window.
  - Can use `faketp_chain` confgen to generate the configuration to run the fake TP chain with the  `ADCSimpleWindow` algorithm:
  ```
-python -m trigger.faketp_chain -a TAMakerADCSimpleWindowPlugin -A "dict(window_length=100000,adc_threshold=1000000)" -c TriggerCandidateMakerADCSimpleWindowPlugin -f tps_link_11.txt faketp_chain_ADCSimpleWindow
+python -m trigger.faketp_chain -a TAMakerADCSimpleWindowPlugin -A "dict(window_length=100000,adc_threshold=1000000)" -c TCMakerADCSimpleWindowPlugin -f tps_link_11.txt faketp_chain_ADCSimpleWindow
 ```
  - Then to run:
 ```

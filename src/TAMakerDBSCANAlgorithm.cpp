@@ -1,26 +1,26 @@
 /**
- * @file TriggerActivityMakerDBSCAN.cpp
+ * @file TAMakerDBSCANAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/dbscan/TriggerActivityMakerDBSCAN.hpp"
+#include "triggeralgs/dbscan/TAMakerDBSCANAlgorithm.hpp"
 #include "dbscan/Point.hpp"
 
 #include "TRACE/trace.h"
 #include "triggeralgs/Types.hpp"
 #include <chrono>
 #include <limits>
-#define TRACE_NAME "TriggerActivityMakerDBSCANPlugin"
+#define TRACE_NAME "TAMakerDBSCANAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerDBSCAN::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Collection channels only for now
   if(input_tp.channel%2560 < 1600){
@@ -77,7 +77,7 @@ TriggerActivityMakerDBSCAN::process(const TriggerPrimitive& input_tp, std::vecto
 }
 
 void
-TriggerActivityMakerDBSCAN::configure(const nlohmann::json& config)
+TAMakerDBSCANAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerActivityMaker::configure(config);
 
@@ -90,4 +90,4 @@ TriggerActivityMakerDBSCAN::configure(const nlohmann::json& config)
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerDBSCAN)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerDBSCANAlgorithm)

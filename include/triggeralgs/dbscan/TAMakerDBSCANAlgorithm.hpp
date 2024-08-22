@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerDBSCAN.hpp
+ * @file TAMakerDBSCANAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerDBSCAN : public TriggerActivityMaker
+class TAMakerDBSCANAlgorithm : public TriggerActivityMaker
 {
 
 public:
