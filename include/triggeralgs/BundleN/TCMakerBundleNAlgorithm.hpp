@@ -18,7 +18,7 @@ namespace triggeralgs {
 class TCMakerBundleNAlgorithm: public TriggerCandidateMaker
 {
   public:
-    void operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs);
+    void process(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs);
     void configure(const nlohmann::json& config);
     bool bundle_condition();
 

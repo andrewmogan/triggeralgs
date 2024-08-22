@@ -1,22 +1,22 @@
 /**
- * @file TriggerCandidateMakerBundleN.cpp
+ * @file TCMakerBundleNAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/BundleN/TriggerCandidateMakerBundleN.hpp"
+#include "triggeralgs/BundleN/TCMakerBundleNAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerBundleNPlugin"
+#define TRACE_NAME "TCMakerBundleNAlgorithm"
 
 namespace triggeralgs {
 
 using Logging::TLVL_IMPORTANT;
 using Logging::TLVL_DEBUG_HIGH;
 
-void TriggerCandidateMakerBundleN::set_tc_attributes() {
+void TCMakerBundleNAlgorithm::set_tc_attributes() {
     // Using the first TA as reference.
     dunedaq::trgdataformats::TriggerActivityData front_ta = m_current_tc.inputs.front();
 
@@ -29,12 +29,12 @@ void TriggerCandidateMakerBundleN::set_tc_attributes() {
     return;
 }
 
-bool TriggerCandidateMakerBundleN::bundle_condition() {
+bool TCMakerBundleNAlgorithm::bundle_condition() {
   return m_current_tc.inputs.size() == m_bundle_size;
 }
 
 void
-TriggerCandidateMakerBundleN::operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs)
+TCMakerBundleNAlgorithm::process(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs)
 {
   // Expect that TAs are inherently time ordered.
   m_current_tc.inputs.push_back(input_ta);
@@ -60,13 +60,14 @@ TriggerCandidateMakerBundleN::operator()(const TriggerActivity& input_ta, std::v
 }
 
 void
-TriggerCandidateMakerBundleN::configure(const nlohmann::json& config)
+TCMakerBundleNAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
   if (config.is_object() && config.contains("bundle_size")) {
     m_bundle_size = config["bundle_size"];
   }
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerBundleN)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerBundleNAlgorithm)
 } // namespace triggeralgs
 
