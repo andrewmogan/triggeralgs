@@ -71,12 +71,11 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
   // on channel multiplicity, make a TA and start a fresh window with the current TP.
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
 
-      TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting multiplicity trigger with "
-                                    << m_current_window.n_channels_hit() << " unique channels hit.";
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting multiplicity trigger with "
+                                  << m_current_window.n_channels_hit() << " unique channels hit.";
 
-      output_ta.push_back(construct_ta());
-      m_current_window.reset(input_tp);
-    }
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
   // 3) ADJACENCY THRESHOLD EXCEEDED ==================================================
