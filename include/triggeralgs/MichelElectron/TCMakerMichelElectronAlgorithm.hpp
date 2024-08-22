@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerMichelElectron.hpp
+ * @file TCMakerMichelElectronAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerMichelElectron : public TriggerCandidateMaker
+class TCMakerMichelElectronAlgorithm : public TriggerCandidateMaker
 {
 
 public:

@@ -1,22 +1,22 @@
 /**
- * @file TriggerCandidateMakerMichelElectron.cpp
+ * @file TCMakerMichelElectronAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/MichelElectron/TriggerCandidateMakerMichelElectron.hpp"
+#include "triggeralgs/MichelElectron/TCMakerMichelElectronAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerMichelElectronPlugin"
+#define TRACE_NAME "TCMakerMichelElectronAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
+TCMakerMichelElectronAlgorithm::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
@@ -92,7 +92,7 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
 }
 
 void
-TriggerCandidateMakerMichelElectron::configure(const nlohmann::json& config)
+TCMakerMichelElectronAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerCandidateMaker::configure(config);
 
@@ -138,7 +138,7 @@ TriggerCandidateMakerMichelElectron::configure(const nlohmann::json& config)
 }
 
 TriggerCandidate
-TriggerCandidateMakerMichelElectron::construct_tc() const
+TCMakerMichelElectronAlgorithm::construct_tc() const
 {
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
@@ -162,7 +162,7 @@ TriggerCandidateMakerMichelElectron::construct_tc() const
 }
 
 bool
-TriggerCandidateMakerMichelElectron::check_adjacency() const
+TCMakerMichelElectronAlgorithm::check_adjacency() const
 {
   // FIX ME: An adjacency check on the channels which have hits.
   return true;
@@ -170,14 +170,14 @@ TriggerCandidateMakerMichelElectron::check_adjacency() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerCandidateMakerMichelElectron::add_window_to_record(Window window)
+TCMakerMichelElectronAlgorithm::add_window_to_record(Window window)
 {
   m_window_record.push_back(window);
   return;
 }
 
 void
-TriggerCandidateMakerMichelElectron::dump_window_record()
+TCMakerMichelElectronAlgorithm::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -201,7 +201,7 @@ TriggerCandidateMakerMichelElectron::dump_window_record()
 
 /*
 void
-TriggerCandidateMakerMichelElectron::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
+TCMakerMichelElectronAlgorithm::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
 {
   // Check the status of the current window, construct TC if conditions are met. Regardless
   // of whether the conditions are met, reset the window.
@@ -222,4 +222,4 @@ reset."; m_current_window.clear();
   return;
 }*/
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerMichelElectron)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerMichelElectronAlgorithm)
