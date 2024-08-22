@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerChannelDistance.hpp
+ * @file TCMakerChannelDistanceAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,9 +14,9 @@
 
 namespace triggeralgs {
 
-class TriggerCandidateMakerChannelDistance : public TriggerCandidateMaker {
+class TCMakerChannelDistanceAlgorithm : public TriggerCandidateMaker {
   public:
-    void operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs);
+    void process(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs);
     void configure(const nlohmann::json& config);
     void set_tc_attributes();
 

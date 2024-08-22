@@ -1,20 +1,20 @@
 /**
- * @file TriggerCandidateMakerChannelDistance.cpp
+ * @file TCMakerChannelDistanceAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ChannelDistance/TriggerCandidateMakerChannelDistance.hpp"
+#include "triggeralgs/ChannelDistance/TCMakerChannelDistanceAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerChannelDistancePlugin"
+#define TRACE_NAME "TCMakerChannelDistanceAlgorithm"
 
 namespace triggeralgs {
 
 void
-TriggerCandidateMakerChannelDistance::set_new_tc(const TriggerActivity& input_ta)
+TCMakerChannelDistanceAlgorithm::set_new_tc(const TriggerActivity& input_ta)
 {
   m_current_tc = TriggerCandidate();
   m_current_tc.inputs.push_back(input_ta);
@@ -23,15 +23,17 @@ TriggerCandidateMakerChannelDistance::set_new_tc(const TriggerActivity& input_ta
 }
 
 void
-TriggerCandidateMakerChannelDistance::configure(const nlohmann::json& config)
+TCMakerChannelDistanceAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
+
   if (config.contains("max_tp_count"))
     m_max_tp_count = config["max_tp_count"];
   return;
 }
 
 void
-TriggerCandidateMakerChannelDistance::set_tc_attributes()
+TCMakerChannelDistanceAlgorithm::set_tc_attributes()
 {
   auto& first_ta = m_current_tc.inputs.front();
   auto& last_ta = m_current_tc.inputs.back();
@@ -47,8 +49,8 @@ TriggerCandidateMakerChannelDistance::set_tc_attributes()
 }
 
 void
-TriggerCandidateMakerChannelDistance::operator()(const TriggerActivity& input_ta,
-                                                 std::vector<TriggerCandidate>& output_tcs)
+TCMakerChannelDistanceAlgorithm::process(const TriggerActivity& input_ta,
+                                              std::vector<TriggerCandidate>& output_tcs)
 {
 
   // Start a new TC if not already going.
@@ -73,6 +75,6 @@ TriggerCandidateMakerChannelDistance::operator()(const TriggerActivity& input_ta
 }
 
 // Register algo in TC Factory
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerChannelDistance)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerChannelDistanceAlgorithm)
 
 } // namespace triggeralgs

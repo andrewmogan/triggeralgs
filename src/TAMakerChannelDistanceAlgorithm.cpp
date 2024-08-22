@@ -1,20 +1,20 @@
 /**
- * @file TriggerActivityMakerChannelDistance.cpp
+ * @file TAMakerChannelDistanceAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/ChannelDistance/TriggerActivityMakerChannelDistance.hpp"
+#include "triggeralgs/ChannelDistance/TAMakerChannelDistanceAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerChannelDistancePlugin"
+#define TRACE_NAME "TAMakerChannelDistanceAlgorithm"
 
 namespace triggeralgs {
 
 void
-TriggerActivityMakerChannelDistance::set_new_ta(const TriggerPrimitive& input_tp)
+TAMakerChannelDistanceAlgorithm::set_new_ta(const TriggerPrimitive& input_tp)
 {
   m_current_ta = TriggerActivity();
   m_current_ta.inputs.push_back(input_tp);
@@ -24,8 +24,8 @@ TriggerActivityMakerChannelDistance::set_new_ta(const TriggerPrimitive& input_tp
 }
 
 void
-TriggerActivityMakerChannelDistance::operator()(const TriggerPrimitive& input_tp,
-                                                std::vector<TriggerActivity>& output_tas)
+TAMakerChannelDistanceAlgorithm::process(const TriggerPrimitive& input_tp,
+                                            std::vector<TriggerActivity>& output_tas)
 {
 
   // Start a new TA if not already going.
@@ -55,8 +55,10 @@ TriggerActivityMakerChannelDistance::operator()(const TriggerPrimitive& input_tp
 }
 
 void
-TriggerActivityMakerChannelDistance::configure(const nlohmann::json& config)
+TAMakerChannelDistanceAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerActivityMaker::configure(config);
+
   if (config.contains("min_tps"))
     m_min_tps = config["min_tps"];
   if (config.contains("window_length"))
@@ -68,7 +70,7 @@ TriggerActivityMakerChannelDistance::configure(const nlohmann::json& config)
 }
 
 void
-TriggerActivityMakerChannelDistance::set_ta_attributes()
+TAMakerChannelDistanceAlgorithm::set_ta_attributes()
 {
   TriggerPrimitive first_tp = m_current_ta.inputs.front();
   TriggerPrimitive last_tp = m_current_ta.inputs.back();
@@ -97,6 +99,6 @@ TriggerActivityMakerChannelDistance::set_ta_attributes()
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerChannelDistance)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerChannelDistanceAlgorithm)
 
 } // namespace triggeralgs

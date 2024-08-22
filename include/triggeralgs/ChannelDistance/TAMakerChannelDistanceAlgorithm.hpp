@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerChannelDistance.hpp
+ * @file TAMakerChannelDistanceAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,9 +14,9 @@
 
 namespace triggeralgs {
 
-class TriggerActivityMakerChannelDistance : public TriggerActivityMaker {
+class TAMakerChannelDistanceAlgorithm : public TriggerActivityMaker {
   public:
-    void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
+    void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
     void configure(const nlohmann::json& config);
     void set_ta_attributes();
 
