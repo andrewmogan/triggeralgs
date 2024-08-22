@@ -1,12 +1,12 @@
 /**
- * @file TriggerDecisionMakerSupernova.cpp
+ * @file TDMakerSupernovaAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/Supernova/TriggerDecisionMakerSupernova.hpp"
+#include "triggeralgs/Supernova/TDMakerSupernovaAlgorithm.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -17,7 +17,7 @@ using pd_clock = std::chrono::duration<double, std::ratio<1, 62500000>>;
 using namespace triggeralgs;
 
 void
-TriggerDecisionMakerSupernova::operator()(const TriggerCandidate& cand, std::vector<TriggerDecision>& decisions)
+TDMakerSupernovaAlgorithm::operator()(const TriggerCandidate& cand, std::vector<TriggerDecision>& decisions)
 {
 
   std::vector<TriggerCandidate> vCand;
