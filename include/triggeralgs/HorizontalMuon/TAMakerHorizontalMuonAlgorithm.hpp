@@ -23,16 +23,15 @@ public:
 
 private:
   TriggerActivity construct_ta() const;
-  uint16_t check_adjacency() const;     // Returns longest string of adjacent collection hits in window
+  uint16_t check_adjacency() const; // Returns longest string of adjacent collection hits in window
 
-  TPWindow m_current_window;              // Holds collection hits only
-  uint64_t m_primitive_count = 0;
+  TPWindow m_current_window; // Holds collection hits only
   int check_tot() const;
 
   // Configurable parameters.
   bool m_trigger_on_adc = false;
   bool m_trigger_on_n_channels = false;
-  bool m_trigger_on_adjacency = true;    // Default use of the horizontal muon triggering
+  bool m_trigger_on_adjacency = true; // Default use of the horizontal muon triggering
   bool m_trigger_on_tot = false;
   uint16_t m_tot_threshold = 5000;       // Time over threshold - threshold to exceed.
   bool m_print_tp_info = false;          // Prints out some information on every TP received
@@ -44,7 +43,7 @@ private:
   int index = 0;
   uint16_t ta_adc = 0;
   uint16_t ta_channels = 0;
-  timestamp_t m_window_length = 8000;    // Shouldn't exceed the max drift which is ~9375 62.5 MHz ticks for VDCB
+  timestamp_t m_window_length = 8000; // Shouldn't exceed the max drift which is ~9375 62.5 MHz ticks for VDCB
 
   // For debugging and performance study purposes.
   void add_window_to_record(TPWindow window);

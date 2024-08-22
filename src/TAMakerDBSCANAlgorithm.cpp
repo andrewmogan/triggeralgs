@@ -19,16 +19,13 @@
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_LOW;
+
 void
 TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
-  // Collection channels only for now
-  if(input_tp.channel%2560 < 1600){
-    return;
-  }
-  
   if(input_tp.time_start < m_prev_timestamp){
-    TLOG(TLVL_INFO) << "Out-of-order TPs: prev " << m_prev_timestamp << ", current " << input_tp.time_start;
+    TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TAM:DBS] Out-of-order TPs: prev " << m_prev_timestamp << ", current " << input_tp.time_start;
     return;
   }
   
@@ -60,17 +57,16 @@ TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<Tr
       ta.adc_integral += prim.adc_integral;
 
       ta.detid = prim.detid;
+      if (prim.adc_peak > ta.adc_peak) {
+        ta.adc_peak = prim.adc_peak;
+        ta.channel_peak = prim.channel;
+        ta.time_peak = prim.time_peak;
+      }
     }
-    
-    ta.time_peak = (ta.time_start+ta.time_end)/2;
     ta.time_activity = ta.time_peak;
-
-    ta.channel_peak = (ta.channel_start+ta.channel_end)/2;
 
     ta.type = TriggerActivity::Type::kTPC;
     ta.algorithm = TriggerActivity::Algorithm::kDBSCAN;
-    ta.version = 1;
-
   }
 
   m_dbscan->trim_hits();
@@ -81,12 +77,14 @@ TAMakerDBSCANAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerActivityMaker::configure(config);
 
-  if (config.is_object() && config.contains("min_pts"))
+  if (config.is_object())
   {
-    m_min_pts = config["min_pts"];
+    if (config.contains("min_pts"))
+      m_min_pts = config["min_pts"];
+    if (config.contains("eps"))
+      m_eps = config["eps"];
   }
-
-  m_dbscan=std::make_unique<dbscan::IncrementalDBSCAN>(10, m_min_pts, 10000);
+  m_dbscan=std::make_unique<dbscan::IncrementalDBSCAN>(m_eps, m_min_pts, 10000);
 }
 
 // Register algo in TA Factory

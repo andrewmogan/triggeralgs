@@ -48,6 +48,12 @@ add_library(triggeralgs SHARED
   src/TCMakerSupernovaAlgorithm.cpp
   src/TDMakerSupernovaAlgorithm.cpp
   src/TAMakerDBSCANAlgorithm.cpp
+  src/TriggerActivityMakerChannelDistance.cpp
+  src/TriggerCandidateMakerChannelDistance.cpp
+  src/TriggerActivityMakerBundleN.cpp
+  src/TriggerCandidateMakerBundleN.cpp
+  src/TriggerActivityMakerChannelAdjacency.cpp
+  src/TriggerCandidateMakerChannelAdjacency.cpp
   src/TAWindow.cpp
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp

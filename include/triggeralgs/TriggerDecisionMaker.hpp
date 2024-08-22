@@ -9,13 +9,15 @@
 #ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERDECISIONMAKER_HPP_
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERDECISIONMAKER_HPP_
 
+#include "triggeralgs/Issues.hpp"
+#include "triggeralgs/Logging.hpp"
 #include "triggeralgs/TriggerCandidate.hpp"
 #include "triggeralgs/TriggerDecision.hpp"
 
-#include <nlohmann/json.hpp>
-#include <vector>
 #include <atomic>
 #include <chrono>
+#include <nlohmann/json.hpp>
+#include <vector>
 
 namespace triggeralgs {
 
@@ -26,9 +28,6 @@ public:
   virtual void operator()(const TriggerCandidate& input_tc, std::vector<TriggerDecision>& output_tds) = 0;
   virtual void flush(std::vector<TriggerDecision>&) {}
   virtual void configure(const nlohmann::json&) {}
-
-  std::atomic<uint64_t> m_data_vs_system_time = 0; 
-
 };
 
 } // namespace triggeralgs

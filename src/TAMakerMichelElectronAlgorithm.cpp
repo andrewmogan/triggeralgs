@@ -14,6 +14,8 @@
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_MEDIUM;
+
 void
 TAMakerMichelElectronAlgorithm::process(const TriggerPrimitive& input_tp,
                                             std::vector<TriggerActivity>& output_ta)
@@ -43,7 +45,7 @@ TAMakerMichelElectronAlgorithm::process(const TriggerPrimitive& input_tp,
      
      if (check_bragg_peak(trackHits)){
        if (check_kinks(trackHits)){
-         TLOG(1) << "Emitting a trigger for candidate Michel event.";
+         TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:ME] Emitting a trigger for candidate Michel event.";
          output_ta.push_back(construct_ta());
          m_current_window.reset(input_tp);
        } // Kinks 

@@ -13,6 +13,8 @@
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_MEDIUM;
+
 void
 TAMakerPlaneCoincidenceAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
@@ -60,7 +62,7 @@ TAMakerPlaneCoincidenceAlgorithm::process(const TriggerPrimitive& input_tp, std:
   else if (collectionComplete && (m_induction1_window.adc_integral + m_induction2_window.adc_integral + m_collection_window.adc_integral)
             > m_adc_threshold && check_adjacency(m_collection_window) >= m_adjacency_threshold){
 
-          TLOG(1) << "Emitting low energy trigger with " << m_induction1_window.adc_integral << " U "
+          TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:PC] Emitting low energy trigger with " << m_induction1_window.adc_integral << " U "
                   << m_induction2_window.adc_integral << " Y induction ADC sums and "
                   << check_adjacency(m_collection_window) << " adjacent collection hits.";
    
