@@ -1,20 +1,20 @@
 /**
- * @file TriggerCandidateMakerDBSCAN.cpp
+ * @file TCMakerDBSCANAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/dbscan/TriggerCandidateMakerDBSCAN.hpp"
+#include "triggeralgs/dbscan/TCMakerDBSCANAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerDBSCANPlugin"
+#define TRACE_NAME "TCMakerDBSCANAlgorithm"
 
 namespace triggeralgs {
 
 void
-TriggerCandidateMakerDBSCAN::set_new_tc(const TriggerActivity& input_ta)
+TCMakerDBSCANAlgorithm::set_new_tc(const TriggerActivity& input_ta)
 {
   m_current_tc = TriggerCandidate();
   m_current_tc.inputs.push_back(input_ta);
@@ -23,15 +23,17 @@ TriggerCandidateMakerDBSCAN::set_new_tc(const TriggerActivity& input_ta)
 }
 
 void
-TriggerCandidateMakerDBSCAN::configure(const nlohmann::json& config)
+TCMakerDBSCANAlgorithm::configure(const nlohmann::json& config)
 {
+  TriggerCandidateMaker::configure(config);
+
   if (config.contains("max_tp_count"))
     m_max_tp_count = config["max_tp_count"];
   return;
 }
 
 void
-TriggerCandidateMakerDBSCAN::set_tc_attributes()
+TCMakerDBSCANAlgorithm::set_tc_attributes()
 {
   auto& first_ta = m_current_tc.inputs.front();
   auto& last_ta = m_current_tc.inputs.back();
@@ -47,7 +49,7 @@ TriggerCandidateMakerDBSCAN::set_tc_attributes()
 }
 
 void
-TriggerCandidateMakerDBSCAN::operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs)
+TCMakerDBSCANAlgorithm::process(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs)
 {
   // Start a new TC if not already going.
   if (m_current_tc.inputs.empty()) {
@@ -70,6 +72,6 @@ TriggerCandidateMakerDBSCAN::operator()(const TriggerActivity& input_ta, std::ve
 }
 
 // Register algo in TC Factory.
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerDBSCAN)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerDBSCANAlgorithm)
 
 } // namespace triggeralgs
