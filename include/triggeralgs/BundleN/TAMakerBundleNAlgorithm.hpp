@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerBundleN.hpp
+ * @file TAMakerBundleNAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,10 +15,10 @@
 
 namespace triggeralgs {
 
-class TriggerActivityMakerBundleN : public TriggerActivityMaker
+class TAMakerBundleNAlgorithm : public TriggerActivityMaker
 {
   public:
-    void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
+    void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
     void configure(const nlohmann::json& config);
     bool bundle_condition();
 

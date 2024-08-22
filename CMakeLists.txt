@@ -50,8 +50,8 @@ add_library(triggeralgs SHARED
   src/TAMakerDBSCANAlgorithm.cpp
   src/TriggerActivityMakerChannelDistance.cpp
   src/TriggerCandidateMakerChannelDistance.cpp
-  src/TriggerActivityMakerBundleN.cpp
-  src/TriggerCandidateMakerBundleN.cpp
+  src/TAMakerBundleNAlgorithm.cpp
+  src/TCMakerBundleNAlgorithm.cpp
   src/TriggerActivityMakerChannelAdjacency.cpp
   src/TriggerCandidateMakerChannelAdjacency.cpp
   src/TAWindow.cpp

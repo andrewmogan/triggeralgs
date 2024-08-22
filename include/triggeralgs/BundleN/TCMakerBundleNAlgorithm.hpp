@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerBundleN.hpp
+ * @file TCMakerBundleNAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -15,7 +15,7 @@
 
 namespace triggeralgs {
 
-class TriggerCandidateMakerBundleN : public TriggerCandidateMaker
+class TCMakerBundleNAlgorithm: public TriggerCandidateMaker
 {
   public:
     void operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tcs);

@@ -1,22 +1,22 @@
 /**
- * @file TriggerActivityMakerBundleN.cpp
+ * @file TAMakerBundleNAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/BundleN/TriggerActivityMakerBundleN.hpp"
+#include "triggeralgs/BundleN/TAMakerBundleNAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerBundleNPlugin"
+#define TRACE_NAME "TAMakerBundleNAlgorithm"
 
 namespace triggeralgs {
 
 using Logging::TLVL_IMPORTANT;
 using Logging::TLVL_DEBUG_HIGH;
 
-void TriggerActivityMakerBundleN::set_ta_attributes() {
+void TAMakerBundleNAlgorithm::set_ta_attributes() {
     // Using the first TA as reference.
     TriggerPrimitive first_tp = m_current_ta.inputs.front();
     TriggerPrimitive last_tp = m_current_ta.inputs.back();
@@ -44,12 +44,12 @@ void TriggerActivityMakerBundleN::set_ta_attributes() {
     return;
 }
 
-bool TriggerActivityMakerBundleN::bundle_condition() {
+bool TAMakerBundleNAlgorithm::bundle_condition() {
   return m_current_ta.inputs.size() == m_bundle_size;
 }
 
 void
-TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas)
+TAMakerBundleNAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas)
 {
   // Expect that TPs are inherently time ordered.
   m_current_ta.inputs.push_back(input_tp);
@@ -75,13 +75,13 @@ TriggerActivityMakerBundleN::operator()(const TriggerPrimitive& input_tp, std::v
 }
 
 void
-TriggerActivityMakerBundleN::configure(const nlohmann::json& config)
+TAMakerBundleNAlgorithm::configure(const nlohmann::json& config)
 {
   if (config.is_object() && config.contains("bundle_size")) {
     m_bundle_size = config["bundle_size"];
   }
 }
 
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerBundleN)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerBundleNAlgorithm)
 } // namespace triggeralgs
 
