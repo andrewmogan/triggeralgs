@@ -135,8 +135,7 @@ TCMakerHorizontalMuonAlgorithm::construct_tc() const
 
   TriggerCandidate tc;
   tc.time_start = m_current_window.time_start;
-  tc.time_end = m_current_window.time_end;
-  // tc.time_end = latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
+  tc.time_end = latest_ta_in_window.inputs.back().time_start;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kHorizontalMuon;
@@ -147,6 +146,9 @@ TCMakerHorizontalMuonAlgorithm::construct_tc() const
   // TriggerActivityData, which is the base class of TriggerActivity
   for (auto& ta : m_current_window.inputs) {
     tc.inputs.push_back(ta);
+    if (ta.time_end > tc.time_end) {
+      tc.time_end = ta.time_end;
+    }
   }
 
   return tc;
