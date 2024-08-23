@@ -69,18 +69,8 @@ TAMakerMichelElectronAlgorithm::configure(const nlohmann::json& config)
 
   // FIX ME: Use some schema here. Also can't work out how to pass booleans.
   if (config.is_object()) {
-    if (config.contains("trigger_on_adc"))
-      m_trigger_on_adc = config["trigger_on_adc"];
-    if (config.contains("trigger_on_n_channels"))
-      m_trigger_on_n_channels = config["trigger_on_n_channels"];
-    if (config.contains("adc_threshold"))
-      m_adc_threshold = config["adc_threshold"];
-    if (config.contains("n_channels_threshold"))
-      m_n_channels_threshold = config["n_channels_threshold"];
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("trigger_on_adjacency"))
-      m_trigger_on_adjacency = config["trigger_on_adjacency"];
     if (config.contains("adjacency_tolerance"))
       m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
