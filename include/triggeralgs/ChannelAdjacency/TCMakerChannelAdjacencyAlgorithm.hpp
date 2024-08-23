@@ -37,8 +37,6 @@ private:
   uint32_t m_adc_threshold = 1200000;
   uint16_t m_n_channels_threshold = 600; // 80ish for frames, O(200 - 600) for tpslink
   timestamp_t m_window_length = 80000;
-  timestamp_t m_readout_window_ticks_before = 32768;
-  timestamp_t m_readout_window_ticks_after = 32768;
 
   // For debugging purposes.
   void add_window_to_record(TAWindow window);

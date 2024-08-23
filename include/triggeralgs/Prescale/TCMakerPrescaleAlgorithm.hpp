@@ -25,9 +25,6 @@ public:
   
 private:
 
-  timestamp_t m_readout_window_ticks_before = 0; 
-  timestamp_t m_readout_window_ticks_after = 0;
-  
 };
 
 } // namespace triggeralgs

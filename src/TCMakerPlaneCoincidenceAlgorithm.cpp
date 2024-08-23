@@ -108,11 +108,6 @@ TCMakerPlaneCoincidenceAlgorithm::configure(const nlohmann::json& config)
       m_n_channels_threshold = config["n_channels_threshold"];
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("readout_window_ticks_before"))
-      m_readout_window_ticks_before = config["readout_window_ticks_before"];
-    if (config.contains("readout_window_ticks_after"))
-      m_readout_window_ticks_after = config["readout_window_ticks_after"];
-
   }
   if (m_trigger_on_n_channels) {
     TLOG_DEBUG(TLVL_VERY_IMPORTANT) << "[TCM:PC] Using trigger_on_n_channels is not supported.";
@@ -131,9 +126,9 @@ TCMakerPlaneCoincidenceAlgorithm::construct_tc() const
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
   TriggerCandidate tc;
-  tc.time_start = m_current_window.time_start - m_readout_window_ticks_before;
+  tc.time_start = m_current_window.time_start;
   tc.time_end =
-    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold + m_readout_window_ticks_after;
+    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kPlaneCoincidence;
