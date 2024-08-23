@@ -139,8 +139,8 @@ TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
       m_window_length = config["window_length"];
     if (config.contains("trigger_on_adjacency"))
       m_trigger_on_adjacency = config["trigger_on_adjacency"];
-    if (config.contains("adj_tolerance"))
-      m_adj_tolerance = config["adj_tolerance"];
+    if (config.contains("adjacency_tolerance"))
+      m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))

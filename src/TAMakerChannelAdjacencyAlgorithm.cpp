@@ -99,8 +99,8 @@ TAMakerChannelAdjacencyAlgorithm::configure(const nlohmann::json& config)
   if (config.is_object()) {
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("adj_tolerance"))
-      m_adj_tolerance = config["adj_tolerance"];
+    if (config.contains("adjacency_tolerance"))
+      m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))
