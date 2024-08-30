@@ -20,7 +20,7 @@ class TCMakerDBSCANAlgorithm : public TriggerCandidateMaker
 {
 
 public:
-  void operator()(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tc);
+  void process(const TriggerActivity& input_ta, std::vector<TriggerCandidate>& output_tc);
   void configure(const nlohmann::json &config);
 
 private:
