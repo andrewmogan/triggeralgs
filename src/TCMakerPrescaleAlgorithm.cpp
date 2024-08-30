@@ -22,8 +22,8 @@ TCMakerPrescaleAlgorithm::process(const TriggerActivity& activity, std::vector<T
   ta_list.push_back(static_cast<TriggerActivity::TriggerActivityData>(activity));
   
   TriggerCandidate tc;
-  tc.time_start = activity.time_start - m_readout_window_ticks_before;
-  tc.time_end = activity.time_end + m_readout_window_ticks_after;
+  tc.time_start = activity.time_start;
+  tc.time_end = activity.time_end;
   tc.time_candidate = activity.time_start;
   tc.detid = activity.detid;
   tc.type = TriggerCandidate::Type::kPrescale;
@@ -45,14 +45,6 @@ void
 TCMakerPrescaleAlgorithm::configure(const nlohmann::json &config)
 {
   TriggerCandidateMaker::configure(config);
-  if (config.is_object())
-  {
-    if (config.contains("readout_window_ticks_before"))
-      m_readout_window_ticks_before = config["readout_window_ticks_before"];
-    if (config.contains("readout_window_ticks_after"))
-      m_readout_window_ticks_after = config["readout_window_ticks_after"];
-
-  }
 }
 
 REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerPrescaleAlgorithm)

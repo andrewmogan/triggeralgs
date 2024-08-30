@@ -1,20 +1,20 @@
 /**
- * @file TriggerCandidateMakerSupernova.cpp
+ * @file TCMakerSupernovaAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/Supernova/TriggerCandidateMakerSupernova.hpp"
+#include "triggeralgs/Supernova/TCMakerSupernovaAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerSupernovaPlugin"
+#define TRACE_NAME "TCMakerSupernovaAlgorithm"
 
 using namespace triggeralgs;
 
 void
-TriggerCandidateMakerSupernova::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
+TCMakerSupernovaAlgorithm::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 {
   timestamp_t time = activity.time_start;
   FlushOldActivity(time); // get rid of old activities in the buffer
@@ -41,4 +41,4 @@ TriggerCandidateMakerSupernova::process(const TriggerActivity& activity, std::ve
   }
 }
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerSupernova)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerSupernovaAlgorithm)

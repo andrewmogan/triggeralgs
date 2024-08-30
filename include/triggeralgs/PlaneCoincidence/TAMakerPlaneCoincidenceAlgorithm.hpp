@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerPlaneCoincidence.hpp
+ * @file TAMakerPlaneCoincidenceAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -23,7 +23,7 @@
 #include <utility>
 
 namespace triggeralgs {
-class TriggerActivityMakerPlaneCoincidence : public TriggerActivityMaker
+class TAMakerPlaneCoincidenceAlgorithm : public TriggerActivityMaker
 {
 public:
   void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
@@ -45,14 +45,10 @@ private:
 
   // Configurable parameters.
   std::string m_channel_map_name = "VDColdboxChannelMap";  // Default is coldbox
-  bool m_trigger_on_adc = true;
-  bool m_trigger_on_n_channels = true;
-  bool m_trigger_on_adjacency = true;    // Default use of the triggering
   uint16_t m_adjacency_threshold = 15;   // Default is 15 wire track for testing
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
   uint32_t m_tot_threshold = 2000;       // Work out good values for this
   uint32_t m_adc_threshold = 300000;     // AbsRunningSum HF Alg Finds Induction ADC ~10x higher
-  uint16_t m_n_channels_threshold = 20;  // Set this to ~80 for frames.bin, ~150-300 for tps_link_11.txt
   uint16_t m_adj_tolerance = 5;          // Adjacency tolerance - default is 3 from coldbox testing.
   int index = 0;
   uint16_t ta_adc = 0;

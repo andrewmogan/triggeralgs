@@ -1,21 +1,23 @@
 /**
- * @file TriggerActivityMakerMichelElectron.cpp
+ * @file TAMakerMichelElectronAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/MichelElectron/TriggerActivityMakerMichelElectron.hpp"
+#include "triggeralgs/MichelElectron/TAMakerMichelElectronAlgorithm.hpp"
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerMichelElectronPlugin"
+#define TRACE_NAME "TAMakerMichelElectronAlgorithm"
 #include <vector>
 #include <algorithm>
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_MEDIUM;
+
 void
-TriggerActivityMakerMichelElectron::process(const TriggerPrimitive& input_tp,
+TAMakerMichelElectronAlgorithm::process(const TriggerPrimitive& input_tp,
                                             std::vector<TriggerActivity>& output_ta)
 {
 
@@ -43,7 +45,7 @@ TriggerActivityMakerMichelElectron::process(const TriggerPrimitive& input_tp,
      
      if (check_bragg_peak(trackHits)){
        if (check_kinks(trackHits)){
-         TLOG(1) << "Emitting a trigger for candidate Michel event.";
+         TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:ME] Emitting a trigger for candidate Michel event.";
          output_ta.push_back(construct_ta());
          m_current_window.reset(input_tp);
        } // Kinks 
@@ -61,26 +63,16 @@ TriggerActivityMakerMichelElectron::process(const TriggerPrimitive& input_tp,
 }
 
 void
-TriggerActivityMakerMichelElectron::configure(const nlohmann::json& config)
+TAMakerMichelElectronAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerActivityMaker::configure(config);
 
   // FIX ME: Use some schema here. Also can't work out how to pass booleans.
   if (config.is_object()) {
-    if (config.contains("trigger_on_adc"))
-      m_trigger_on_adc = config["trigger_on_adc"];
-    if (config.contains("trigger_on_n_channels"))
-      m_trigger_on_n_channels = config["trigger_on_n_channels"];
-    if (config.contains("adc_threshold"))
-      m_adc_threshold = config["adc_threshold"];
-    if (config.contains("n_channels_threshold"))
-      m_n_channels_threshold = config["n_channels_threshold"];
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("trigger_on_adjacency"))
-      m_trigger_on_adjacency = config["trigger_on_adjacency"];
-    if (config.contains("adj_tolerance"))
-      m_adj_tolerance = config["adj_tolerance"];
+    if (config.contains("adjacency_tolerance"))
+      m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
       m_adjacency_threshold = config["adjacency_threshold"];
   }
@@ -88,7 +80,7 @@ TriggerActivityMakerMichelElectron::configure(const nlohmann::json& config)
 }
 
 TriggerActivity
-TriggerActivityMakerMichelElectron::construct_ta() const
+TAMakerMichelElectronAlgorithm::construct_ta() const
 {
 
   TriggerPrimitive latest_tp_in_window = m_current_window.inputs.back();
@@ -112,7 +104,7 @@ TriggerActivityMakerMichelElectron::construct_ta() const
 }
 
 std::vector<TriggerPrimitive>
-TriggerActivityMakerMichelElectron::longest_activity() const
+TAMakerMichelElectronAlgorithm::longest_activity() const
 {
   // This function attempts to return a vector of hits that correspond to the longest
   // piece of activity in the current window. The logic follows that from the HMA
@@ -198,7 +190,7 @@ TriggerActivityMakerMichelElectron::longest_activity() const
 // count up clusters of charge deposition above that baseline. If the largest is at
 // one of the ends of that collection, signal a potential Bragg peak.
 bool
-TriggerActivityMakerMichelElectron::check_bragg_peak(std::vector<TriggerPrimitive> trackHits)
+TAMakerMichelElectronAlgorithm::check_bragg_peak(std::vector<TriggerPrimitive> trackHits)
 {
   bool bragg = false; 
   std::vector<float> adc_means_list;
@@ -244,7 +236,7 @@ TriggerActivityMakerMichelElectron::check_bragg_peak(std::vector<TriggerPrimitiv
  }
 
 bool
-TriggerActivityMakerMichelElectron::check_kinks(std::vector<TriggerPrimitive> finalHits)
+TAMakerMichelElectronAlgorithm::check_kinks(std::vector<TriggerPrimitive> finalHits)
 {
     bool kinks = false;  // We actually required two kinks in the coldbox, the michel kink and the wes kink
     std::vector<float> runningGradient;
@@ -309,7 +301,7 @@ TriggerActivityMakerMichelElectron::check_kinks(std::vector<TriggerPrimitive> fi
 // ===============================================================================================
 
 void
-TriggerActivityMakerMichelElectron::add_window_to_record(Window window)
+TAMakerMichelElectronAlgorithm::add_window_to_record(Window window)
 {
   m_window_record.push_back(window);
   return;
@@ -318,7 +310,7 @@ TriggerActivityMakerMichelElectron::add_window_to_record(Window window)
 
 // Function to dump the details of the TA window currently on record
 void
-TriggerActivityMakerMichelElectron::dump_window_record()
+TAMakerMichelElectronAlgorithm::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -345,7 +337,7 @@ TriggerActivityMakerMichelElectron::dump_window_record()
 
 // Function to add current TP details to a text file for testing and debugging.
 void
-TriggerActivityMakerMichelElectron::dump_tp(TriggerPrimitive const& input_tp)
+TAMakerMichelElectronAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
   outfile.open("coldbox_tps.txt", std::ios_base::app);
@@ -366,7 +358,7 @@ TriggerActivityMakerMichelElectron::dump_tp(TriggerPrimitive const& input_tp)
 
 /*
 void
-TriggerActivityMakerMichelElectron::flush(timestamp_t, std::vector<TriggerActivity>& output_ta)
+TAMakerMichelElectronAlgorithm::flush(timestamp_t, std::vector<TriggerActivity>& output_ta)
 {
   // Check the status of the current window, construct TA if conditions are met. Regardless
   // of whether the conditions are met, reset the window.
@@ -388,4 +380,4 @@ reset."; m_current_window.clear();
 }*/
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerMichelElectron)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerMichelElectronAlgorithm)

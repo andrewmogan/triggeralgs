@@ -11,8 +11,12 @@
 #define TRACE_NAME "TAMakerHorizontalMuonAlgorithm"
 #include <vector>
 #include <math.h>
+#include <vector>
 
 using namespace triggeralgs;
+
+using Logging::TLVL_DEBUG_ALL;
+using Logging::TLVL_DEBUG_MEDIUM;
 
 void
 TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
@@ -22,19 +26,18 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
   uint16_t adjacency;
 
   // Add useful info about recived TPs here for FW and SW TPG guys.
-  if (m_print_tp_info){
-    TLOG(1) << "TP Start Time: " << input_tp.time_start << ", TP ADC Sum: " <<  input_tp.adc_integral
-	    << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
-     	    << ", TP Offline Channel ID: " << input_tp.channel;
-    TLOG(1) << "Adjacency of current window is: " << check_adjacency();    
+  if (m_print_tp_info) {
+    TLOG_DEBUG(TLVL_DEBUG_ALL) << "[TAM:HM] TP Start Time: " << input_tp.time_start
+                               << ", TP ADC Sum: " << input_tp.adc_integral
+                               << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
+                               << ", TP Offline Channel ID: " << input_tp.channel;
+    TLOG_DEBUG(TLVL_DEBUG_ALL) << "[TAM:HM] Adjacency of current window is: " << check_adjacency();
   }
-
 
   // 0) FIRST TP =====================================================================
   // The first time process() is called, reset the window object.
   if (m_current_window.is_empty()) {
     m_current_window.reset(input_tp);
-    m_primitive_count++;
     return;
   }
 
@@ -53,8 +56,9 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
 
     auto ta = construct_ta();
 
-    TLOG(1) << "[TA]: Emitting ADC threshold trigger with " << m_current_window.adc_integral <<
-                 " window ADC integral. ta.time_start=" << ta.time_start << " ta.time_end=" << ta.time_end;
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TA:HM]: Emitting ADC threshold trigger with " << m_current_window.adc_integral
+                                  << " window ADC integral. ta.time_start=" << ta.time_start 
+                                  << " ta.time_end=" << ta.time_end;
 
     output_ta.push_back(ta);
     m_current_window.reset(input_tp);
@@ -67,8 +71,8 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
   // on channel multiplicity, make a TA and start a fresh window with the current TP.
   else if (m_current_window.n_channels_hit() > m_n_channels_threshold && m_trigger_on_n_channels) {
 
-    TLOG(1) << "Emitting multiplicity trigger with " << m_current_window.n_channels_hit() <<
-               " unique channels hit.";
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting multiplicity trigger with "
+                                  << m_current_window.n_channels_hit() << " unique channels hit.";
 
     output_ta.push_back(construct_ta());
     m_current_window.reset(input_tp);
@@ -85,43 +89,34 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
 
     // Check for a new maximum, display the largest seen adjacency in the log.
     // uint16_t adjacency = check_adjacency();
-    if (adjacency > m_max_adjacency) { m_max_adjacency = adjacency; }
-    TLOG_DEBUG(TRACE_NAME) << "Emitting track and multiplicity TA with adjacency " << check_adjacency() <<
-                 " and multiplicity " << m_current_window.n_channels_hit() << ". The ADC integral of this TA is " << 
-                 m_current_window.adc_integral << " and the largest longest track seen so far is " << m_max_adjacency;
+    if (adjacency > m_max_adjacency) { 
+      m_max_adjacency = adjacency; 
+    }
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting track and multiplicity TA with adjacency "
+                                  << check_adjacency() << " and multiplicity " << m_current_window.n_channels_hit()
+                                  << ". The ADC integral of this TA is " << m_current_window.adc_integral
+                                  << " and the largest longest track seen so far is " << m_max_adjacency;
 
     output_ta.push_back(construct_ta());
     m_current_window.reset(input_tp);
   }
 
   // Temporary triggering logic for Adam's large TOT TPs. Trigger on very large TOT TPs.
-  else if (m_trigger_on_tot && input_tp.time_over_threshold > m_tot_threshold){
-      
-      // If the incoming TP has a large time over threshold, we might have a cluster of
-      // interesting physics activity surrounding it. Trigger on that.
-      TLOG_DEBUG(TRACE_NAME) << "Emitting a TA due to a TP with a very large time over threshold: "
-              << input_tp.time_over_threshold << " ticks and offline channel: " << input_tp.channel
-              << ", where the ADC integral of that TP is " << input_tp.adc_integral;
-      output_ta.push_back(construct_ta());
-      m_current_window.reset(input_tp);
+  else if (m_trigger_on_tot && input_tp.time_over_threshold > m_tot_threshold) {
+
+    // If the incoming TP has a large time over threshold, we might have a cluster of
+    // interesting physics activity surrounding it. Trigger on that.
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting a TA due to a TP with a very large time over threshold: "
+                                  << input_tp.time_over_threshold << " ticks and offline channel: " << input_tp.channel
+                                  << ", where the ADC integral of that TP is " << input_tp.adc_integral;
+    output_ta.push_back(construct_ta());
+    m_current_window.reset(input_tp);
   }
 
   // 4) Otherwise, slide the window along using the current TP.
   else {
-    m_current_window.move(input_tp, m_window_length);  
+    m_current_window.move(input_tp, m_window_length);
   }
-
-  using namespace std::chrono;
-  // If this is the first TP of the run, calculate the initial offset:
-  if (m_primitive_count == 0){
-   m_initial_offset = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - input_tp.time_start*16*1e-6;
-  }
-  
-  // Update OpMon Variable(s)
-  uint64_t system_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-  uint64_t data_time = input_tp.time_start*16*1e-6;                              // Convert 62.5 MHz ticks to ms
-  m_data_vs_system_time.store(fabs(system_time - data_time - m_initial_offset)); // Store the difference for OpMon*/
-  m_primitive_count++;
 
   return;
 }
@@ -144,8 +139,8 @@ TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
       m_window_length = config["window_length"];
     if (config.contains("trigger_on_adjacency"))
       m_trigger_on_adjacency = config["trigger_on_adjacency"];
-    if (config.contains("adj_tolerance"))
-      m_adj_tolerance = config["adj_tolerance"];
+    if (config.contains("adjacency_tolerance"))
+      m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))
@@ -167,7 +162,7 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
   TriggerPrimitive last_tp = m_current_window.inputs.back();
 
   ta.time_start = last_tp.time_start;
-  ta.time_end = last_tp.time_start+last_tp.time_over_threshold;
+  ta.time_end = last_tp.time_start + last_tp.time_over_threshold;
   ta.time_peak = last_tp.time_peak;
   ta.time_activity = last_tp.time_peak;
   ta.channel_start = last_tp.channel;
@@ -182,10 +177,10 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
 
   for( const auto& tp : ta.inputs ) {
     ta.time_start = std::min(ta.time_start, tp.time_start);
-    ta.time_end = std::max(ta.time_end, tp.time_start+tp.time_over_threshold);
+    ta.time_end = std::max(ta.time_end, tp.time_start + tp.time_over_threshold);
     ta.channel_start = std::min(ta.channel_start, tp.channel);
     ta.channel_end = std::max(ta.channel_end, tp.channel);
-    if (tp.adc_peak > ta.adc_peak ) {
+    if (tp.adc_peak > ta.adc_peak) {
       ta.time_peak = tp.time_peak;
       ta.adc_peak = tp.adc_peak;
       ta.channel_peak = tp.channel;
@@ -220,9 +215,9 @@ TAMakerHorizontalMuonAlgorithm::check_adjacency() const
 
   // ADAJACENCY LOGIC ====================================================================
   // =====================================================================================
-  // Adjcancency Tolerance = Number of times prepared to skip missed hits before resetting 
-  // the adjacency count. This accounts for things like dead channels / missed TPs. The 
-  // maximum gap is 4 which comes from tuning on December 2021 coldbox data, and June 2022 
+  // Adjcancency Tolerance = Number of times prepared to skip missed hits before resetting
+  // the adjacency count. This accounts for things like dead channels / missed TPs. The
+  // maximum gap is 4 which comes from tuning on December 2021 coldbox data, and June 2022
   // coldbox runs.
   for (int i = 0; i < chanList.size(); ++i) {
 
@@ -231,27 +226,37 @@ TAMakerHorizontalMuonAlgorithm::check_adjacency() const
     next_channel = chanList.at(next); // Next channel with a hit
 
     // End of vector condition.
-    if (next_channel == 0) { next_channel = channel - 1; }
+    if (next_channel == 0) {
+      next_channel = channel - 1;
+    }
 
     // Skip same channel hits.
-    if (next_channel == channel) { continue; }
+    if (next_channel == channel) {
+      continue;
+    }
 
     // If next hit is on next channel, increment the adjacency count.
-    else if (next_channel == channel + 1){ ++adj; }
-
-    // If next channel is not on the next hit, but the 'second next', increase adjacency 
-    // but also tally up with the tolerance counter.
-    else if (((next_channel == channel + 2) || (next_channel == channel + 3) || 
-              (next_channel == channel + 4) || (next_channel == channel + 5))
-             && (tol_count < m_adj_tolerance)) {
+    else if (next_channel == channel + 1) {
       ++adj;
-      for (int i = 0 ; i < next_channel-channel ; ++i){ ++tol_count; }
+    }
+
+    // If next channel is not on the next hit, but the 'second next', increase adjacency
+    // but also tally up with the tolerance counter.
+    else if (((next_channel == channel + 2) || (next_channel == channel + 3) || (next_channel == channel + 4) ||
+              (next_channel == channel + 5)) &&
+             (tol_count < m_adj_tolerance)) {
+      ++adj;
+      for (int i = 0; i < next_channel - channel; ++i) {
+        ++tol_count;
+      }
     }
 
     // If next hit isn't within reach, end the adjacency count and check for a new max.
     // Reset variables for next iteration.
     else {
-      if (adj > max) { max = adj; } 
+      if (adj > max) {
+        max = adj;
+      }
       adj = 1;
       tol_count = 0;
     }
@@ -304,14 +309,14 @@ TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile.open("coldbox_tps.txt", std::ios_base::app);
 
   // Output relevant TP information to file
-  outfile << input_tp.time_start << " ";          
+  outfile << input_tp.time_start << " ";
   outfile << input_tp.time_over_threshold << " "; // 50MHz ticks
-  outfile << input_tp.time_peak << " ";           
-  outfile << input_tp.channel << " ";             // Offline channel ID
-  outfile << input_tp.adc_integral << " ";        
-  outfile << input_tp.adc_peak << " ";            
-  outfile << input_tp.detid << " ";               // Det ID - Identifies detector element
-  outfile << input_tp.type << std::endl;        
+  outfile << input_tp.time_peak << " ";
+  outfile << input_tp.channel << " "; // Offline channel ID
+  outfile << input_tp.adc_integral << " ";
+  outfile << input_tp.adc_peak << " ";
+  outfile << input_tp.detid << " "; // Det ID - Identifies detector element
+  outfile << input_tp.type << std::endl;
   outfile.close();
 
   return;
@@ -322,7 +327,7 @@ TAMakerHorizontalMuonAlgorithm::check_tot() const
 {
   // Here, we just want to sum up all the tot values for each TP within window,
   // and return this tot of the window.
-  int window_tot = 0; 
+  int window_tot = 0;
   for (auto tp : m_current_window.inputs) {
     window_tot += tp.time_over_threshold;
   }

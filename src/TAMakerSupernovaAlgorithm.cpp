@@ -1,15 +1,15 @@
 /**
- * @file TriggerActivityMakerSupernova.cpp
+ * @file TAMakerSupernovaAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/Supernova/TriggerActivityMakerSupernova.hpp"
+#include "triggeralgs/Supernova/TAMakerSupernovaAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerSupernovaPlugin"
+#define TRACE_NAME "TAMakerSupernovaAlgorithm"
 
 #include <chrono>
 #include <vector>
@@ -18,7 +18,7 @@ using pd_clock = std::chrono::duration<double, std::ratio<1, 62500000>>;
 using namespace triggeralgs;
 
 void
-TriggerActivityMakerSupernova::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
   // Time measurement
   // auto now = std::chrono::steady_clock::now();
@@ -84,4 +84,4 @@ TriggerActivityMakerSupernova::process(const TriggerPrimitive& input_tp, std::ve
 }
 
 // Register algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerSupernova)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerSupernovaAlgorithm)

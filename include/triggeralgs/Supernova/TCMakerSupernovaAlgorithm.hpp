@@ -1,5 +1,5 @@
 /**
- * @file TriggerCandidateMakerSupernova.hpp
+ * @file TCMakerSupernovaAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -18,7 +18,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerCandidateMakerSupernova : public TriggerCandidateMaker
+class TCMakerSupernovaAlgorithm : public TriggerCandidateMaker
 {
   /// This decision maker just counts the number of activities in the time_window and triggers
   /// if the number of activities exceeds that.

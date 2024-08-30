@@ -1,13 +1,13 @@
 /**
- * @file TCMakerHorizontalMuonAlgorithm.hpp
+ * @file TCMakerChannelAdjacencyAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#ifndef TRIGGERALGS_HORIZONTALMUON_TRIGGERCANDIDATEMAKERHORIZONTALMUON_HPP_
-#define TRIGGERALGS_HORIZONTALMUON_TRIGGERCANDIDATEMAKERHORIZONTALMUON_HPP_
+#ifndef TRIGGERALGS_CHANNELADJACENCY_TRIGGERCANDIDATEMAKERCHANNELADJACENCY_HPP_
+#define TRIGGERALGS_CHANNELADJACENCY_TRIGGERCANDIDATEMAKERCHANNELADJACENCY_HPP_
 
 #include "triggeralgs/TriggerCandidateFactory.hpp"
 #include "triggeralgs/TAWindow.hpp"
@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TCMakerHorizontalMuonAlgorithm : public TriggerCandidateMaker
+class TCMakerChannelAdjacencyAlgorithm : public TriggerCandidateMaker
 {
 
 public:
@@ -27,7 +27,6 @@ public:
 private:
 
   TriggerCandidate construct_tc() const;
-  bool check_adjacency() const;
 
   TAWindow m_current_window;
   uint64_t m_activity_count = 0; // NOLINT(build/unsigned)
@@ -38,12 +37,10 @@ private:
   uint32_t m_adc_threshold = 1200000;
   uint16_t m_n_channels_threshold = 600; // 80ish for frames, O(200 - 600) for tpslink
   timestamp_t m_window_length = 80000;
-  int tc_number = 0;
 
   // For debugging purposes.
   void add_window_to_record(TAWindow window);
-  void dump_window_record();
   std::vector<TAWindow> m_window_record;
 };
 } // namespace triggeralgs
-#endif // TRIGGERALGS_HORIZONTALMUON_TRIGGERCANDIDATEMAKERHORIZONTALMUON_HPP_
+#endif // TRIGGERALGS_CHANNELADJACENCY_TRIGGERCANDIDATEMAKERCHANNELADJACENCY_HPP_

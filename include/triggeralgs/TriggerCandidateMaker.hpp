@@ -9,14 +9,16 @@
 #ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERCANDIDATEMAKER_HPP_
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGERCANDIDATEMAKER_HPP_
 
+#include "triggeralgs/Issues.hpp"
+#include "triggeralgs/Logging.hpp"
 #include "triggeralgs/TriggerActivity.hpp"
 #include "triggeralgs/TriggerCandidate.hpp"
 #include "triggeralgs/Types.hpp"
 
-#include <nlohmann/json.hpp>
-#include <vector>
 #include <atomic>
 #include <chrono>
+#include <nlohmann/json.hpp>
+#include <vector>
 
 // TRACE_NAME to be defined in the derived TAMs
 #include "TRACE/trace.h"

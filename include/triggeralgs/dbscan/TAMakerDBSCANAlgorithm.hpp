@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerDBSCAN.hpp
+ * @file TAMakerDBSCANAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerDBSCAN : public TriggerActivityMaker
+class TAMakerDBSCANAlgorithm : public TriggerActivityMaker
 {
 
 public:
@@ -25,6 +25,7 @@ public:
   void configure(const nlohmann::json &config);
   
 private:  
+  int m_eps{10};
   int m_min_pts{3}; // Minimum number of points to form a cluster
   timestamp_t m_first_timestamp{0};
   timestamp_t m_prev_timestamp{0};

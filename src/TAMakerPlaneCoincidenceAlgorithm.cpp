@@ -1,20 +1,22 @@
 /**
- * @file TriggerActivityMakerPlaneCoincidence.cpp
+ * @file TAMakerPlaneCoincidenceAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/PlaneCoincidence/TriggerActivityMakerPlaneCoincidence.hpp"
+#include "triggeralgs/PlaneCoincidence/TAMakerPlaneCoincidenceAlgorithm.hpp"
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerActivityMakerPlaneCoincidencePlugin"
+#define TRACE_NAME "TAMakerPlaneCoincidenceAlgorithm"
 #include <vector>
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_MEDIUM;
+
 void
-TriggerActivityMakerPlaneCoincidence::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
+TAMakerPlaneCoincidenceAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {
 
   // Get the plane from which this hit arrived: 
@@ -60,7 +62,7 @@ TriggerActivityMakerPlaneCoincidence::process(const TriggerPrimitive& input_tp, 
   else if (collectionComplete && (m_induction1_window.adc_integral + m_induction2_window.adc_integral + m_collection_window.adc_integral)
             > m_adc_threshold && check_adjacency(m_collection_window) >= m_adjacency_threshold){
 
-          TLOG(1) << "Emitting low energy trigger with " << m_induction1_window.adc_integral << " U "
+          TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:PC] Emitting low energy trigger with " << m_induction1_window.adc_integral << " U "
                   << m_induction2_window.adc_integral << " Y induction ADC sums and "
                   << check_adjacency(m_collection_window) << " adjacent collection hits.";
    
@@ -95,25 +97,17 @@ TriggerActivityMakerPlaneCoincidence::process(const TriggerPrimitive& input_tp, 
 }
 
 void
-TriggerActivityMakerPlaneCoincidence::configure(const nlohmann::json& config)
+TAMakerPlaneCoincidenceAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerActivityMaker::configure(config);
 
   if (config.is_object()) {
-    if (config.contains("trigger_on_adc"))
-      m_trigger_on_adc = config["trigger_on_adc"];
-    if (config.contains("trigger_on_n_channels"))
-      m_trigger_on_n_channels = config["trigger_on_n_channels"];
     if (config.contains("adc_threshold"))
       m_adc_threshold = config["adc_threshold"];
-    if (config.contains("n_channels_threshold"))
-      m_n_channels_threshold = config["n_channels_threshold"];
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("trigger_on_adjacency"))
-      m_trigger_on_adjacency = config["trigger_on_adjacency"];
-    if (config.contains("adj_tolerance"))
-      m_adj_tolerance = config["adj_tolerance"];
+    if (config.contains("adjacency_tolerance"))
+      m_adj_tolerance = config["adjacency_tolerance"];
     if (config.contains("adjacency_threshold"))
       m_adjacency_threshold = config["adjacency_threshold"];
   }
@@ -121,7 +115,7 @@ TriggerActivityMakerPlaneCoincidence::configure(const nlohmann::json& config)
 }
 
 TriggerActivity
-TriggerActivityMakerPlaneCoincidence::construct_ta(TPWindow m_current_window) const
+TAMakerPlaneCoincidenceAlgorithm::construct_ta(TPWindow m_current_window) const
 {
 
   TriggerPrimitive latest_tp_in_window = m_current_window.inputs.back();
@@ -145,7 +139,7 @@ TriggerActivityMakerPlaneCoincidence::construct_ta(TPWindow m_current_window) co
 }
 
 uint16_t
-TriggerActivityMakerPlaneCoincidence::check_adjacency(TPWindow window) const
+TAMakerPlaneCoincidenceAlgorithm::check_adjacency(TPWindow window) const
 {
   /* This function returns the adjacency value for the current window, where adjacency
   *  is defined as the maximum number of consecutive wires containing hits. It accepts
@@ -207,7 +201,7 @@ TriggerActivityMakerPlaneCoincidence::check_adjacency(TPWindow window) const
 // Functions below this line are for debugging and performance study purposes.
 // =====================================================================================
 void
-TriggerActivityMakerPlaneCoincidence::add_window_to_record(TPWindow window)
+TAMakerPlaneCoincidenceAlgorithm::add_window_to_record(TPWindow window)
 {
   m_window_record.push_back(window);
   return;
@@ -215,7 +209,7 @@ TriggerActivityMakerPlaneCoincidence::add_window_to_record(TPWindow window)
 
 // Function to dump the details of the TA window currently on record
 void
-TriggerActivityMakerPlaneCoincidence::dump_window_record()
+TAMakerPlaneCoincidenceAlgorithm::dump_window_record()
 {
   std::ofstream outfile;
   outfile.open("window_record_tam.csv", std::ios_base::app);
@@ -243,7 +237,7 @@ TriggerActivityMakerPlaneCoincidence::dump_window_record()
 
 // Function to add current TP details to a text file for testing and debugging.
 void
-TriggerActivityMakerPlaneCoincidence::dump_tp(TriggerPrimitive const& input_tp)
+TAMakerPlaneCoincidenceAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 {
   std::ofstream outfile;
   outfile.open("triggered_coldbox_tps.txt", std::ios_base::app);
@@ -263,7 +257,7 @@ TriggerActivityMakerPlaneCoincidence::dump_tp(TriggerPrimitive const& input_tp)
 }
 
 int
-TriggerActivityMakerPlaneCoincidence::check_tot(TPWindow m_current_window) const
+TAMakerPlaneCoincidenceAlgorithm::check_tot(TPWindow m_current_window) const
 {
   // Here, we just want to sum up all the tot values for each TP within window,
   // and return this tot of the window.
@@ -276,5 +270,5 @@ TriggerActivityMakerPlaneCoincidence::check_tot(TPWindow m_current_window) const
 }
 
 // Regiser algo in TA Factory
-REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerPlaneCoincidence)
+REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TAMakerPlaneCoincidenceAlgorithm)
 // END OF TA MAKER - LOW ENERGY EVENTS

@@ -1,5 +1,5 @@
 /**
- * @file TriggerDecisionMakerSupernova.hpp
+ * @file TDMakerSupernovaAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -18,7 +18,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerDecisionMakerSupernova : public TriggerDecisionMaker
+class TDMakerSupernovaAlgorithm : public TriggerDecisionMaker
 {
   /// This decision maker just spits out the trigger candidates
 

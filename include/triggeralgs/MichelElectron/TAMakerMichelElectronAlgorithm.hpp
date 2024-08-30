@@ -1,5 +1,5 @@
 /**
- * @file TriggerActivityMakerMichelElectron.hpp
+ * @file TAMakerMichelElectronAlgorithm.hpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace triggeralgs {
-class TriggerActivityMakerMichelElectron : public TriggerActivityMaker
+class TAMakerMichelElectronAlgorithm : public TriggerActivityMaker
 {
 
 public:
@@ -113,14 +113,9 @@ private:
 
   // Configurable parameters.
   // triggeractivitymakerhorizontalmuon::ConfParams m_conf;
-  bool m_trigger_on_adc = false;
-  bool m_trigger_on_n_channels = false;
-  bool m_trigger_on_adjacency = true;    // Default use of the horizontal muon triggering
   bool debug = false;                    // Use to control whether functions write out useful info
   uint16_t m_adjacency_threshold = 15;   // Default is 15 for trigger
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
-  uint32_t m_adc_threshold = 3000000;    // Not currently triggering on this
-  uint16_t m_n_channels_threshold = 400; // Set this to ~80 for frames.bin, ~150-300 for tps_link_11.txt
   uint16_t m_adj_tolerance = 3;          // Adjacency tolerance - default is 3 from coldbox testing.
   int index = 0;
   uint16_t ta_adc = 0;

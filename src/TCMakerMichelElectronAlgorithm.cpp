@@ -1,22 +1,28 @@
 /**
- * @file TriggerCandidateMakerMichelElectron.cpp
+ * @file TCMakerMichelElectronAlgorithm.cpp
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2021.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
 
-#include "triggeralgs/MichelElectron/TriggerCandidateMakerMichelElectron.hpp"
+#include "triggeralgs/MichelElectron/TCMakerMichelElectronAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TriggerCandidateMakerMichelElectronPlugin"
+#define TRACE_NAME "TCMakerMichelElectronAlgorithm"
 
 #include <vector>
 
 using namespace triggeralgs;
 
+using Logging::TLVL_DEBUG_ALL;
+using Logging::TLVL_DEBUG_HIGH;
+using Logging::TLVL_DEBUG_LOW;
+using Logging::TLVL_DEBUG_INFO;
+using Logging::TLVL_VERY_IMPORTANT;
+
 void
-TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
+TCMakerMichelElectronAlgorithm::process(const TriggerActivity& activity,
                                                 std::vector<TriggerCandidate>& output_tc)
 {
 
@@ -34,7 +40,7 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
 
       // add_window_to_record(m_current_window);
       // dump_window_record();
-      // TLOG(1) << "Constructing trivial TC.";
+      TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TCM:ME] Constructing TC.";
 
       TriggerCandidate tc = construct_tc();
       output_tc.push_back(tc);
@@ -51,7 +57,7 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
   // If the difference between the current TA's start time and the start of the window
   // is less than the specified window size, add the TA to the window.
   if ((activity.time_start - m_current_window.time_start) < m_window_length) {
-    // TLOG_DEBUG(TRACE_NAME) << "Window not yet complete, adding the activity to the window.";
+    TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TCM:ME] Window not yet complete, adding the activity to the window.";
     m_current_window.add(activity);
   }
   // If the addition of the current TA to the window would make it longer
@@ -59,11 +65,11 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
   // the existing window is above the specified threshold. If it is, and we are triggering on ADC,
   // make a TA and start a fresh window with the current TP.
   else if (m_current_window.adc_integral > m_adc_threshold && m_trigger_on_adc) {
-    // TLOG_DEBUG(TRACE_NAME) << "ADC integral in window is greater than specified threshold.";
+    TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TCM:ME] ADC integral in window is greater than specified threshold.";
     TriggerCandidate tc = construct_tc();
 
     output_tc.push_back(tc);
-    // TLOG_DEBUG(TRACE_NAME) << "Resetting window with activity.";
+    TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TCM:ME] Resetting window with activity.";
     m_current_window.reset(activity);
   }
   // If the addition of the current TA to the window would make it longer
@@ -74,15 +80,15 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
     tc_number++;
     //   output_tc.push_back(construct_tc());
     m_current_window.reset(activity);
-    TLOG(1) << "Should not see this!";
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TCM:ME] Should not see this!";
   }
   // If it is not, move the window along.
   else {
-    // TLOG_DEBUG(TRACE_NAME) << "Window is at required length but specified threshold not met, shifting window along.";
+    TLOG_DEBUG(TLVL_DEBUG_HIGH) << "[TCM:ME] Window is at required length but specified threshold not met, shifting window along.";
     m_current_window.move(activity, m_window_length);
   }
 
-  // TLOG_DEBUG(TRACE_NAME) << m_current_window;
+  //TLOG_DEBUG(TLVL_DEBUG_ALL) << "[TCM:ME] " m_current_window;
 
   m_activity_count++;
 
@@ -92,7 +98,7 @@ TriggerCandidateMakerMichelElectron::process(const TriggerActivity& activity,
 }
 
 void
-TriggerCandidateMakerMichelElectron::configure(const nlohmann::json& config)
+TCMakerMichelElectronAlgorithm::configure(const nlohmann::json& config)
 {
   TriggerCandidateMaker::configure(config);
 
@@ -108,44 +114,28 @@ TriggerCandidateMakerMichelElectron::configure(const nlohmann::json& config)
       m_n_channels_threshold = config["n_channels_threshold"];
     if (config.contains("window_length"))
       m_window_length = config["window_length"];
-    if (config.contains("readout_window_ticks_before"))
-      m_readout_window_ticks_before = config["readout_window_ticks_before"];
-    if (config.contains("readout_window_ticks_after"))
-      m_readout_window_ticks_after = config["readout_window_ticks_after"];
-
     // if (config.contains("channel_map")) m_channel_map = config["channel_map"];
   }
-  /*if(m_trigger_on_adc) {
-    TLOG_DEBUG(TRACE_NAME) << "If the total ADC of trigger activities with times within a "
-                           << m_window_length << " tick time window is above " << m_adc_threshold << " counts, a trigger
-  will be issued.";
+  if (m_trigger_on_adc && m_trigger_on_n_channels) {
+    TLOG_DEBUG(TLVL_VERY_IMPORTANT) << "[TCM:ME] Triggering on ADC count and number of channels is not supported.";
+    throw BadConfiguration(ERS_HERE, TRACE_NAME);
   }
-  else if(m_trigger_on_n_channels) {
-    TLOG_DEBUG(TRACE_NAME) << "If the total number of channels with hits within a "
-                           << m_window_length << " tick time window is above " << m_n_channels_threshold << " channels,
-  a trigger will be issued.";
+  if (!m_trigger_on_adc && !m_trigger_on_n_channels) {
+    TLOG_DEBUG(TLVL_DEBUG_LOW) << "[TCM:ME] Both trigger flags are false. Passing TAs through 1:1.";
   }
-  else if ((!m_trigger_on_adc) && (!m_trigger_on_n_channels)) {
-    TLOG_DEBUG(TRACE_NAME) << "The candidate maker will construct candidates 1 for 1 from trigger activities.";
-  }
-  else if (m_trigger_on_adc && m_trigger_on_n_channels) {
-    TLOG() << "You have requsted to trigger on both the number of channels hit and the sum of adc counts, "
-           << "unfortunately this is not yet supported. Exiting.";
-    // FIX ME: Logic to throw an exception here.
-  }*/
 
   return;
 }
 
 TriggerCandidate
-TriggerCandidateMakerMichelElectron::construct_tc() const
+TCMakerMichelElectronAlgorithm::construct_tc() const
 {
   TriggerActivity latest_ta_in_window = m_current_window.inputs.back();
 
   TriggerCandidate tc;
-  tc.time_start = m_current_window.time_start - m_readout_window_ticks_before;
+  tc.time_start = m_current_window.time_start;
   tc.time_end =
-    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold + m_readout_window_ticks_after;
+    latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
   tc.type = TriggerCandidate::Type::kMichelElectron;
@@ -162,7 +152,7 @@ TriggerCandidateMakerMichelElectron::construct_tc() const
 }
 
 bool
-TriggerCandidateMakerMichelElectron::check_adjacency() const
+TCMakerMichelElectronAlgorithm::check_adjacency() const
 {
   // FIX ME: An adjacency check on the channels which have hits.
   return true;
@@ -170,14 +160,14 @@ TriggerCandidateMakerMichelElectron::check_adjacency() const
 
 // Functions below this line are for debugging purposes.
 void
-TriggerCandidateMakerMichelElectron::add_window_to_record(Window window)
+TCMakerMichelElectronAlgorithm::add_window_to_record(Window window)
 {
   m_window_record.push_back(window);
   return;
 }
 
 void
-TriggerCandidateMakerMichelElectron::dump_window_record()
+TCMakerMichelElectronAlgorithm::dump_window_record()
 {
   // FIX ME: Need to index this outfile in the name by detid or something similar.
   std::ofstream outfile;
@@ -201,7 +191,7 @@ TriggerCandidateMakerMichelElectron::dump_window_record()
 
 /*
 void
-TriggerCandidateMakerMichelElectron::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
+TCMakerMichelElectronAlgorithm::flush(timestamp_t, std::vector<TriggerCandidate>& output_tc)
 {
   // Check the status of the current window, construct TC if conditions are met. Regardless
   // of whether the conditions are met, reset the window.
@@ -222,4 +212,4 @@ reset."; m_current_window.clear();
   return;
 }*/
 
-REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TriggerCandidateMakerMichelElectron)
+REGISTER_TRIGGER_CANDIDATE_MAKER(TRACE_NAME, TCMakerMichelElectronAlgorithm)

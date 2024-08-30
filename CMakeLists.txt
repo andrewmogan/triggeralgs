@@ -38,16 +38,23 @@ add_library(triggeralgs SHARED
   src/TCMakerADCSimpleWindowAlgorithm.cpp
   src/TAMakerHorizontalMuonAlgorithm.cpp
   src/TCMakerHorizontalMuonAlgorithm.cpp
-  src/TriggerCandidateMakerPlaneCoincidence.cpp
-  src/TriggerActivityMakerPlaneCoincidence.cpp
-  src/TriggerActivityMakerMichelElectron.cpp
-  src/TriggerCandidateMakerMichelElectron.cpp
+  src/TCMakerPlaneCoincidenceAlgorithm.cpp
+  src/TAMakerPlaneCoincidenceAlgorithm.cpp
+  src/TAMakerMichelElectronAlgorithm.cpp
+  src/TCMakerMichelElectronAlgorithm.cpp
   src/TAMakerPrescaleAlgorithm.cpp
   src/TCMakerPrescaleAlgorithm.cpp
-  src/TriggerActivityMakerSupernova.cpp
-  src/TriggerCandidateMakerSupernova.cpp
-  src/TriggerDecisionMakerSupernova.cpp
-  src/TriggerActivityMakerDBSCAN.cpp
+  src/TAMakerSupernovaAlgorithm.cpp
+  src/TCMakerSupernovaAlgorithm.cpp
+  src/TDMakerSupernovaAlgorithm.cpp
+  src/TAMakerDBSCANAlgorithm.cpp
+  src/TCMakerDBSCANAlgorithm.cpp
+  src/TAMakerChannelDistanceAlgorithm.cpp
+  src/TCMakerChannelDistanceAlgorithm.cpp
+  src/TAMakerBundleNAlgorithm.cpp
+  src/TCMakerBundleNAlgorithm.cpp
+  src/TAMakerChannelAdjacencyAlgorithm.cpp
+  src/TCMakerChannelAdjacencyAlgorithm.cpp
   src/TAWindow.cpp
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp
