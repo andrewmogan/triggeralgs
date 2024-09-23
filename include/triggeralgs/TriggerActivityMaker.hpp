@@ -115,8 +115,8 @@ public:
 
     if (config.contains("prescale"))
       m_prescale = config["prescale"];
-    if (config.contains("max_tot"))
-      m_max_time_over_threshold = config["max_tot"];
+    if (config.contains("max_time_over_threshold"))
+      m_max_time_over_threshold = config["max_time_over_threshold"];
 
     TLOG() << "[TAM]: max tot   : " << m_max_time_over_threshold;
     TLOG() << "[TAM]: prescale  : " << m_prescale;
