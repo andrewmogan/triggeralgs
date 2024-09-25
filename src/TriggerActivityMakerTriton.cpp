@@ -43,10 +43,6 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
     return;
   }
 
-  //check_triton_server_liveness(m_inference_url);
-  //check_model_inputs(m_model_name, m_model_version);
-  TLOG_DEBUG(TLVL_DEBUG_INFO) << "TA size is now " << m_current_ta.inputs.size();
-  TLOG_DEBUG(TLVL_DEBUG_INFO) << "Starting model checks..." << m_current_ta.inputs.size();
   check_model_inputs(m_model_name, m_model_version);
 
   // Reset the current.
@@ -143,10 +139,8 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   // The inference settings. Will be using default for now.
   tc::InferOptions options(model_name);
   options.model_version_ = model_version;
-  options.client_timeout_ = m_client_timeout_microseconds;
+  options.client_timeout_ = 0;
   
-  TLOG_DEBUG(TLVL_DEBUG_INFO) << "Client timetout is set to " << m_client_timeout_microseconds;
-
   std::vector<tc::InferInput*> inputs = {input0_ptr.get(), input1_ptr.get()};
   std::vector<const tc::InferRequestedOutput*> outputs = {
       output0_ptr.get(), output1_ptr.get()
@@ -198,6 +192,29 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
     }
   }
 
+    // Get full response
+    TLOG() << results_ptr->DebugString();
+
+    tc::InferStat infer_stat;
+    client->ClientInferStat(&infer_stat);
+    TLOG() << "======Client Statistics======";
+    TLOG() << "completed_request_count "
+              << infer_stat.completed_request_count;
+    TLOG() << "cumulative_total_request_time_ns "
+              << infer_stat.cumulative_total_request_time_ns;
+    TLOG() << "cumulative_send_time_ns "
+              << infer_stat.cumulative_send_time_ns;
+    TLOG() << "cumulative_receive_time_ns "
+              << infer_stat.cumulative_receive_time_ns;
+
+    inference::ModelStatisticsResponse model_stat;
+    client->ModelInferenceStatistics(&model_stat, model_name);
+    TLOG() << "======Model Statistics======";
+    TLOG() << model_stat.DebugString();
+
+
+    TLOG() << "PASS : Infer";
+
   return;
 }
 
@@ -206,7 +223,7 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 {
   if (config.is_object() && config.contains("number_tps_per_request")) {
     m_number_tps_per_request = config["number_tps_per_request"];
-    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Emitting Triton TA with " << m_current_ta.inputs.size() << " TPs.";
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Configured TPs per request: " << m_number_tps_per_request;
   }
   if (config.is_object() && config.contains("inference_url")) {
     m_inference_url = config["inference_url"];
