@@ -147,13 +147,52 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   };
 
   tc::InferResult* results;
+  /*
   fail_if_error(
     client->Infer(&results, options, inputs, outputs), 
     "Unable to run model");
+  */
   std::shared_ptr<tc::InferResult> results_ptr;
   results_ptr.reset(results);
 
+  std::mutex mtx;
+  std::condition_variable cv;
+  bool callback_invoked = false;
+  std::shared_ptr<tc::InferResult> result_placeholder;
+  fail_if_error(
+    client->AsyncInfer(
+      [&](tc::InferResult* result) {
+        {
+          std::shared_ptr<tc::InferResult> result_ptr;
+          result_ptr.reset(result);
+          // Defer the response retrieval to main thread
+          std::lock_guard<std::mutex> lk(mtx);
+          callback_invoked = true;
+          result_placeholder = std::move(result_ptr);
+        }
+        cv.notify_all();
+      },
+      options, inputs, outputs),
+    "unable to run model"
+  );
+
+  // Ensure callback is completed
+  {
+    std::unique_lock<std::mutex> lk(mtx);
+    cv.wait(lk, [&]() { return callback_invoked; });
+  }
+
+  // Get deferred response
+  std::cout << "Getting results from deferred response" << std::endl;
+  if (result_placeholder->RequestStatus().IsOk()) {
+    ValidateSimpleResult(result_placeholder, input0_data, input1_data);
+  } else {
+    std::cerr << "error: Inference failed: "
+              << result_placeholder->RequestStatus() << std::endl;
+    exit(1);
+  }
   // Get pointers to the result returned...
+  /*
   int32_t* output0_data;
   size_t output0_byte_size;
   fail_if_error(
@@ -191,29 +230,30 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
       exit(1);
     }
   }
+  */
 
-    // Get full response
-    TLOG() << results_ptr->DebugString();
+  // Get full response
+  //TLOG() << results_ptr->DebugString();
 
-    tc::InferStat infer_stat;
-    client->ClientInferStat(&infer_stat);
-    TLOG() << "======Client Statistics======";
-    TLOG() << "completed_request_count "
-              << infer_stat.completed_request_count;
-    TLOG() << "cumulative_total_request_time_ns "
-              << infer_stat.cumulative_total_request_time_ns;
-    TLOG() << "cumulative_send_time_ns "
-              << infer_stat.cumulative_send_time_ns;
-    TLOG() << "cumulative_receive_time_ns "
-              << infer_stat.cumulative_receive_time_ns;
+  tc::InferStat infer_stat;
+  client->ClientInferStat(&infer_stat);
+  TLOG() << "======Client Statistics======";
+  TLOG() << "completed_request_count "
+            << infer_stat.completed_request_count;
+  TLOG() << "cumulative_total_request_time_ns "
+            << infer_stat.cumulative_total_request_time_ns;
+  TLOG() << "cumulative_send_time_ns "
+            << infer_stat.cumulative_send_time_ns;
+  TLOG() << "cumulative_receive_time_ns "
+            << infer_stat.cumulative_receive_time_ns;
 
-    inference::ModelStatisticsResponse model_stat;
-    client->ModelInferenceStatistics(&model_stat, model_name);
-    TLOG() << "======Model Statistics======";
-    TLOG() << model_stat.DebugString();
+  inference::ModelStatisticsResponse model_stat;
+  client->ModelInferenceStatistics(&model_stat, model_name);
+  TLOG() << "======Model Statistics======";
+  TLOG() << model_stat.DebugString();
 
 
-    TLOG() << "PASS : Infer";
+  TLOG() << "PASS : Infer";
 
   return;
 }
@@ -230,11 +270,11 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
     TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Inference URL is " << m_inference_url;
   }
   if (config.is_object() && config.contains("model_name")) {
-    m_inference_url = config["model_name"];
+    m_model_name = config["model_name"];
     TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Model name is " << m_model_name;
   }
   if (config.is_object() && config.contains("model_version")) {
-    m_inference_url = config["model_version"];
+    m_model_version = config["model_version"];
     TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Model version is " << m_model_version;
   }
   if (config.is_object() && config.contains("client_timeout_microseconds")) {
@@ -259,11 +299,90 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
   check_model_readiness(m_model_name, m_model_version);
 }
 
-void TriggerActivityMakerTriton::fail_if_error(const tc::Error& err, const std::string& msg) const {
+void TriggerActivityMakerTriton::fail_if_error(const tc::Error& err, const std::string& msg) const 
+{
   if (!err.IsOk()) {
     TLOG() << "[TA:Triton] ERROR: " << msg << ": " << err << std::endl;
   exit(1);
   }
+}
+
+void
+TriggerActivityMakerTriton::ValidateSimpleShapeAndDatatype(
+    const std::string& name, std::shared_ptr<tc::InferResult> result) const
+{
+  std::vector<int64_t> shape;
+  fail_if_error(
+      result->Shape(name, &shape), "unable to get shape for '" + name + "'");
+  // Validate shape
+  if ((shape.size() != 2) || (shape[0] != 1) || (shape[1] != 16)) {
+    std::cerr << "error: received incorrect shapes for '" << name << "'"
+              << std::endl;
+    exit(1);
+  }
+  std::string datatype;
+  fail_if_error(
+      result->Datatype(name, &datatype),
+      "unable to get datatype for '" + name + "'");
+  // Validate datatype
+  if (datatype.compare("INT32") != 0) {
+    std::cerr << "error: received incorrect datatype for '" << name
+              << "': " << datatype << std::endl;
+    exit(1);
+  }
+}
+
+void TriggerActivityMakerTriton::ValidateSimpleResult(
+    const std::shared_ptr<tc::InferResult> result,
+    std::vector<int32_t>& input0_data, std::vector<int32_t>& input1_data) const
+{
+  // Validate the results...
+  ValidateSimpleShapeAndDatatype("OUTPUT0", result);
+  ValidateSimpleShapeAndDatatype("OUTPUT1", result);
+
+  // Get pointers to the result returned...
+  int32_t* output0_data;
+  size_t output0_byte_size;
+  fail_if_error(
+      result->RawData(
+          "OUTPUT0", (const uint8_t**)&output0_data, &output0_byte_size),
+      "unable to get result data for 'OUTPUT0'");
+  if (output0_byte_size != 64) {
+    std::cerr << "error: received incorrect byte size for 'OUTPUT0': "
+              << output0_byte_size << std::endl;
+    exit(1);
+  }
+
+  int32_t* output1_data;
+  size_t output1_byte_size;
+  fail_if_error(
+      result->RawData(
+          "OUTPUT1", (const uint8_t**)&output1_data, &output1_byte_size),
+      "unable to get result data for 'OUTPUT1'");
+  if (output0_byte_size != 64) {
+    std::cerr << "error: received incorrect byte size for 'OUTPUT1': "
+              << output0_byte_size << std::endl;
+    exit(1);
+  }
+
+  for (size_t i = 0; i < 16; ++i) {
+    std::cout << input0_data[i] << " + " << input1_data[i] << " = "
+              << *(output0_data + i) << std::endl;
+    std::cout << input0_data[i] << " - " << input1_data[i] << " = "
+              << *(output1_data + i) << std::endl;
+
+    if ((input0_data[i] + input1_data[i]) != *(output0_data + i)) {
+      std::cerr << "error: incorrect sum" << std::endl;
+      exit(1);
+    }
+    if ((input0_data[i] - input1_data[i]) != *(output1_data + i)) {
+      std::cerr << "error: incorrect difference" << std::endl;
+      exit(1);
+    }
+  }
+
+  // Get full response
+  std::cout << result->DebugString() << std::endl;
 }
 
 REGISTER_TRIGGER_ACTIVITY_MAKER(TRACE_NAME, TriggerActivityMakerTriton)
