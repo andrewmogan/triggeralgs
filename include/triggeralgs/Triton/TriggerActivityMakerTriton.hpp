@@ -15,6 +15,8 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 
 namespace tc = triton::client;
 namespace triggeralgs {
@@ -30,6 +32,11 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     //void check_model_readiness(const std::string model_name, const std::string model_version) const;
     void check_model_readiness(const std::string model_name, const std::string model_version) const;
     void check_model_inputs(const std::string model_name, const std::string model_version) const;
+    void ValidateSimpleShapeAndDatatype(const std::string& name, std::shared_ptr<tc::InferResult> result) const;
+    void ValidateSimpleResult(
+      const std::shared_ptr<tc::InferResult> result, 
+      std::vector<int32_t>& input0_data, 
+      std::vector<int32_t>& input1_data) const;
     //void query_triton_server(const TriggerActivity& trigger_activity, const std::string& inference_url);
 
   private:
