@@ -52,7 +52,10 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
   bool live;
-  fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
+  //fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
+  if (!client->IsServerLive(&live).IsOK) {
+    throw ServerNotLive(ERS_HERE)
+  }
 
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
