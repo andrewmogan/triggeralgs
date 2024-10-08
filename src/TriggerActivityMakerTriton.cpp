@@ -43,7 +43,12 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
     return;
   }
 
-  check_model_inputs(m_model_name, m_model_version);
+  //check_model_inputs(m_model_name, m_model_version);
+  std::vector<std::vector<std::vector<int>>> adc_values = get_adcs_from_trigger_primitives(
+    m_number_tps_per_request, 
+    m_number_time_ticks, 
+    m_number_wires
+  );
 
   // Reset the current.
   m_current_ta = TriggerActivity();
@@ -53,8 +58,8 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
   bool live;
   //fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
-  if (!client->IsServerLive(&live).IsOK) {
-    throw ServerNotLive(ERS_HERE)
+  if (!client->IsServerLive(&live).IsOk()) {
+    throw triggeralgs::ServerNotLive(ERS_HERE);
   }
 
   // Server metadata
@@ -261,12 +266,40 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   return;
 }
 
-void
+std::vector<std::vector<std::vector<int>>>
+TriggerActivityMakerTriton::get_adcs_from_trigger_primitives(
+  const uint64_t number_tps,
+  const uint64_t number_time_ticks,
+  const uint64_t number_wires) {
+
+  std::vector<std::vector<std::vector<int>>> adc_values(
+    number_tps,
+    std::vector<std::vector<int>>(
+      number_time_ticks, 
+      std::vector<int>(number_wires, 0)
+    )
+  );
+  return adc_values;
+}
+
+void 
 TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 {
   if (config.is_object() && config.contains("number_tps_per_request")) {
     m_number_tps_per_request = config["number_tps_per_request"];
     TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Configured TPs per request: " << m_number_tps_per_request;
+  }
+  if (config.is_object() && config.contains("batch_size")) {
+    m_batch_size = config["batch_size"];
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Configured batch size: " << m_batch_size;
+  }
+  if (config.is_object() && config.contains("number_time_ticks")) {
+    m_number_time_ticks = config["number_time_ticks"];
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Configured time ticks per TP: " << m_number_time_ticks;
+  }
+  if (config.is_object() && config.contains("number_wires")) {
+    m_number_wires = config["number_wires"];
+    TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Configured number of wires per TP: " << m_number_wires;
   }
   if (config.is_object() && config.contains("inference_url")) {
     m_inference_url = config["inference_url"];

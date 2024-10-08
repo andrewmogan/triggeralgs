@@ -20,14 +20,14 @@
 #include <condition_variable>
 
 namespace tc = triton::client;
-namespace triggeralgs {
 
 ERS_DECLARE_ISSUE(
   triggeralgs,
   ServerNotLive,
-  "Could not get server liveness"
+  "Could not get server liveness",
 )
 
+namespace triggeralgs {
 class TriggerActivityMakerTriton : public TriggerActivityMaker
 {
   public:
@@ -39,6 +39,10 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     //void check_model_readiness(const std::string model_name, const std::string model_version) const;
     void check_model_readiness(const std::string model_name, const std::string model_version) const;
     void check_model_inputs(const std::string model_name, const std::string model_version) const;
+    std::vector<std::vector<std::vector<int>>> get_adcs_from_trigger_primitives(
+      const uint64_t number_tps, 
+      const uint64_t time_ticks, 
+      const uint64_t number_wires);
     void ValidateSimpleShapeAndDatatype(const std::string& name, std::shared_ptr<tc::InferResult> result) const;
     void ValidateSimpleResult(
       const std::shared_ptr<tc::InferResult> result, 
@@ -48,6 +52,9 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
 
   private:
     uint64_t m_number_tps_per_request = 100;
+    uint64_t m_batch_size = 1;
+    uint64_t m_number_time_ticks = 128;
+    uint64_t m_number_wires = 128;
     std::string m_inference_url = "localhost:8001";
     std::string m_model_name = "simple";
     // The model version is a number representing a directory, so it's declared as a string here
