@@ -12,7 +12,8 @@
 #include "triggeralgs/TriggerActivityFactory.hpp"
 #include "grpc_client.h"
 #include "triggeralgs/Triton/json_utils.h"
-#include "ers/Issue.hpp"
+//#include "ers/Issue.hpp"
+#include "triggeralgs/Triton/TritonIssues.hpp"
 
 #include <vector>
 #include <string>
@@ -20,12 +21,6 @@
 #include <condition_variable>
 
 namespace tc = triton::client;
-
-ERS_DECLARE_ISSUE(
-  triggeralgs,
-  ServerNotLive,
-  "Could not get server liveness",
-)
 
 namespace triggeralgs {
 class TriggerActivityMakerTriton : public TriggerActivityMaker

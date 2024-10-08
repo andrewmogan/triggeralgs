@@ -57,18 +57,21 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
 
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
   bool live;
-  //fail_if_error(client->IsServerLive(&live), "Unable to get server liveness");
   if (!client->IsServerLive(&live).IsOk()) {
     throw triggeralgs::ServerNotLive(ERS_HERE);
   }
 
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
-  fail_if_error(client->ServerMetadata(&server_metadata), "Unable to get server metadata");
+  //fail_if_error(client->ServerMetadata(&server_metadata), "Unable to get server metadata");
+  if (!client->ServerMetadata(&server_metadata).IsOk()) {
+    throw triggeralgs::CantGetServerMetadata(ERS_HERE);
+  }
   if (server_metadata.name().compare("triton") != 0) {
-    std::cerr << "Error: unexpected server metadata: "
-              << server_metadata.DebugString() << std::endl;
-    exit(1);
+    throw triggeralgs::UnexpectedServerMetadata(ERS_HERE, server_metadata.name());
+    //std::cerr << "Error: unexpected server metadata: " 
+    //          << server_metadata.DebugString() << std::endl;
+    //exit(1);
   }
 
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Server metadata debug string: " << server_metadata.DebugString();
