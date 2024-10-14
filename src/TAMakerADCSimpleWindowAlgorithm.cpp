@@ -9,7 +9,7 @@
 #include "triggeralgs/ADCSimpleWindow/TAMakerADCSimpleWindowAlgorithm.hpp"
 
 #include "TRACE/trace.h"
-#define TRACE_NAME "TAMakerADCSimpleWindowAlgorithmPlugin"
+#define TRACE_NAME "TAMakerADCSimpleWindowAlgorithm"
 
 #include <vector>
 
