@@ -64,6 +64,7 @@ add_library(triggeralgs SHARED
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp
   src/dbscan/Hit.cpp
+  include/triggeralgs/Triton/TritonIssues.hpp
   )
 
 target_include_directories(triggeralgs PUBLIC
