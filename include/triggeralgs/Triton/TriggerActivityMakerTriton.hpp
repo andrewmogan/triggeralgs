@@ -22,6 +22,15 @@
 
 namespace tc = triton::client;
 
+/*
+ERS_DECLARE_ISSUE(
+  triggeralgs,
+  ModelNotReady,
+  "Can't get readiness for model: " << model_name,
+  ((std::string)model_name)
+)
+*/
+
 namespace triggeralgs {
 class TriggerActivityMakerTriton : public TriggerActivityMaker
 {

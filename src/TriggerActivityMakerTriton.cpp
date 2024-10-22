@@ -43,12 +43,14 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
     return;
   }
 
-  //check_model_inputs(m_model_name, m_model_version);
+  check_model_inputs(m_model_name, m_model_version);
+  /*
   std::vector<std::vector<std::vector<int>>> adc_values = get_adcs_from_trigger_primitives(
     m_number_tps_per_request, 
     m_number_time_ticks, 
     m_number_wires
   );
+  */
 
   // Reset the current.
   m_current_ta = TriggerActivity();
@@ -63,15 +65,11 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
 
   // Server metadata
   inference::ServerMetadataResponse server_metadata;
-  //fail_if_error(client->ServerMetadata(&server_metadata), "Unable to get server metadata");
   if (!client->ServerMetadata(&server_metadata).IsOk()) {
     throw triggeralgs::CantGetServerMetadata(ERS_HERE);
   }
   if (server_metadata.name().compare("triton") != 0) {
     throw triggeralgs::UnexpectedServerMetadata(ERS_HERE, server_metadata.name());
-    //std::cerr << "Error: unexpected server metadata: " 
-    //          << server_metadata.DebugString() << std::endl;
-    //exit(1);
   }
 
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Server metadata debug string: " << server_metadata.DebugString();
@@ -82,9 +80,13 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
 void TriggerActivityMakerTriton::check_model_readiness(const std::string model_name, const std::string model_version) const {
   bool model_ready;
   fail_if_error(client->IsModelReady(&model_ready, model_name, model_version), "Unable to get model readiness");
-  if (model_ready) {
-    TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
+  /*
+  if (!client->IsModelReady(&model_ready, model_name, model_version).IsOk()) {
+    //throw triggeralgs::ModelIsNotReady(ERS_HERE, model_name);
+    //throw triggeralgs::ModelNotReady(ERS_HERE, model_name);
   }
+  */
+  TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
 
   return;
 }
