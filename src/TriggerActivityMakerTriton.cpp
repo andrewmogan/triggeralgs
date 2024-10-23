@@ -334,7 +334,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Using configuration:\n" << config.dump(4);
 
   fail_if_error(tc::InferenceServerGrpcClient::Create(&client, m_inference_url), "Could not create Triton client");
-  TLOG(TLVL_DEBUG_INFO) << "Triton client is live and communicating with server on " << m_inference_url;
 
   check_triton_server_liveness(m_inference_url);
   check_model_readiness(m_model_name, m_model_version);
