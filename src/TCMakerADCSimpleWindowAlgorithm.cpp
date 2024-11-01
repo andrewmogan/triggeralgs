@@ -27,7 +27,7 @@ TCMakerADCSimpleWindowAlgorithm::process(const TriggerActivity& activity, std::v
   tc.time_end = activity.time_end;  
   tc.time_candidate = activity.time_activity;
   tc.detid = activity.detid;
-  tc.type = TriggerCandidate::Type::kADCSimpleWindow;
+  tc.type = m_tc_type_out; 
   tc.algorithm = TriggerCandidate::Algorithm::kADCSimpleWindow;
 
   tc.inputs = ta_list;

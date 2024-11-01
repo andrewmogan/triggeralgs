@@ -26,7 +26,7 @@ TCMakerPrescaleAlgorithm::process(const TriggerActivity& activity, std::vector<T
   tc.time_end = activity.time_end;
   tc.time_candidate = activity.time_start;
   tc.detid = activity.detid;
-  tc.type = TriggerCandidate::Type::kPrescale;
+  tc.type = m_tc_type_out;
   tc.algorithm = TriggerCandidate::Algorithm::kPrescale;
 
   tc.inputs = ta_list;

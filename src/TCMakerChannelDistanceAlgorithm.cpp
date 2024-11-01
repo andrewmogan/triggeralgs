@@ -44,7 +44,7 @@ TCMakerChannelDistanceAlgorithm::set_tc_attributes()
 
   m_current_tc.detid = first_ta.detid;
   m_current_tc.algorithm = TriggerCandidate::Algorithm::kChannelDistance;
-  m_current_tc.type = TriggerCandidate::Type::kChannelDistance;
+  m_current_tc.type = m_tc_type_out;
   return;
 }
 

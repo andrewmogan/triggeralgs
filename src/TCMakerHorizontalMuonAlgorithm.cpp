@@ -138,7 +138,7 @@ TCMakerHorizontalMuonAlgorithm::construct_tc() const
   tc.time_end = latest_ta_in_window.inputs.back().time_start;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
-  tc.type = TriggerCandidate::Type::kHorizontalMuon;
+  tc.type = m_tc_type_out;
   tc.algorithm = TriggerCandidate::Algorithm::kHorizontalMuon;
 
   // Take the list of triggeralgs::TriggerActivity in the current
