@@ -138,7 +138,7 @@ TCMakerMichelElectronAlgorithm::construct_tc() const
     latest_ta_in_window.inputs.back().time_start + latest_ta_in_window.inputs.back().time_over_threshold;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
-  tc.type = TriggerCandidate::Type::kMichelElectron;
+  tc.type = m_tc_type_out; 
   tc.algorithm = TriggerCandidate::Algorithm::kMichelElectron;
 
   // Take the list of triggeralgs::TriggerActivity in the current

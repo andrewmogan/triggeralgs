@@ -31,7 +31,7 @@ TCMakerSupernovaAlgorithm::process(const TriggerActivity& activity, std::vector<
     tc.time_end = activity.time_end;  // time_end; but that should probably be _at least_ this number
     tc.time_candidate = time;
     tc.detid = detid;
-    tc.type = TriggerCandidate::Type::kSupernova; // type ( flag that says what type of trigger might be (e.g. SN/Muon/Beam) )
+    tc.type = m_tc_type_out; // type ( flag that says what type of trigger might be (e.g. SN/Muon/Beam) )
     tc.algorithm = TriggerCandidate::Algorithm::kSupernova; // algorithm ( flag that says which algorithm created the trigger (e.g. SN/HE/Solar) )
     tc.inputs =  m_activity;
 

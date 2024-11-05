@@ -24,7 +24,7 @@ void TCMakerBundleNAlgorithm::set_tc_attributes() {
     m_current_tc.time_end = m_current_tc.inputs.back().time_end;
     m_current_tc.time_candidate = front_ta.time_start; // TODO: Conforming. Do we change this?
     m_current_tc.detid = front_ta.detid;
-    m_current_tc.type = TriggerCandidate::Type::kBundle;
+    m_current_tc.type = m_tc_type_out;
     m_current_tc.algorithm = TriggerCandidate::Algorithm::kBundle;
     return;
 }
