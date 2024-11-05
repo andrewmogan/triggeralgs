@@ -30,7 +30,7 @@ ERS_DECLARE_ISSUE(triggeralgs,
 
 ERS_DECLARE_ISSUE(triggeralgs,
                   InvalidConfiguration,
-                  "Invalid configuration error:" << conferror,
+                  "Invalid configuration error: " << conferror,
                   ((std::string)conferror))
 
 
