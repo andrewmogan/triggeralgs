@@ -9,12 +9,13 @@
 #ifndef TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGEROBJECTOVERLAY_HPP_
 #define TRIGGERALGS_INCLUDE_TRIGGERALGS_TRIGGEROBJECTOVERLAY_HPP_
 
-
 #include "trgdataformats/TriggerActivityData.hpp"
 #include "trgdataformats/TriggerObjectOverlay.hpp"
 
 #include "triggeralgs/TriggerPrimitive.hpp"
 #include "triggeralgs/TriggerActivity.hpp"
+#include "triggeralgs/TriggerPrimitivePDS.hpp"
+#include "triggeralgs/TriggerActivityPDS.hpp"
 #include "triggeralgs/TriggerCandidate.hpp"
 
 namespace triggeralgs {
@@ -31,6 +32,7 @@ namespace triggeralgs {
 template<class T>
 struct TypeToOverlayType;
 
+
 template<>
 struct TypeToOverlayType<TriggerActivity>
 {
@@ -43,6 +45,12 @@ struct TypeToOverlayType<TriggerCandidate>
 {
   using overlay_t = dunedaq::trgdataformats::TriggerCandidate;
   using data_t = dunedaq::trgdataformats::TriggerCandidateData;
+};
+template<>
+struct TypeToOverlayType<TriggerActivityPDS>
+{
+  using overlay_t = dunedaq::trgdataformats::TriggerActivityPDS;
+  using data_t = dunedaq::trgdataformats::TriggerActivityData;
 };
 
 // Populate a TriggerObjectOverlay in `buffer`, created from
