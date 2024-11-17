@@ -55,6 +55,7 @@ add_library(triggeralgs SHARED
   src/TCMakerBundleNAlgorithm.cpp
   src/TAMakerChannelAdjacencyAlgorithm.cpp
   src/TCMakerChannelAdjacencyAlgorithm.cpp
+  src/TAMakerPDSTimeClusteringAlgorithm.cpp
   src/TAWindow.cpp
   src/TPWindow.cpp
   src/dbscan/dbscan.cpp
