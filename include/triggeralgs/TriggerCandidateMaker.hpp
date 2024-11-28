@@ -105,10 +105,22 @@ public:
       return;
     }
 
-    if (config.contains("prescale"))
+    if (config.contains("prescale")) {
       m_prescale = config["prescale"];
+    }
 
-    TLOG() << "[TCM]: prescale  : " << m_prescale;
+    if (config.contains("tc_type_name")) {
+      m_tc_type_out = static_cast<TriggerCandidate::Type>(
+          dunedaq::trgdataformats::string_to_trigger_candidate_type(config["tc_type_name"]));
+    }
+
+    if (m_tc_type_out == TriggerCandidate::Type::kUnknown) {
+      throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: "
+              + std::string(config["tc_type_name"])));
+    }
+
+    TLOG() << "[TCM]: prescale   : " << m_prescale;
+    TLOG() << "[TCM]: TC type out: " << config["tc_type_name"];
   }
 
   std::atomic<uint64_t> m_data_vs_system_time = 0;
@@ -118,6 +130,10 @@ public:
   uint64_t m_prescale = 1;
   /// @brief TC made count for prescaling
   uint64_t m_tc_count = 0;
+
+  /// @brief Configurable TC type output
+  TriggerCandidate::Type m_tc_type_out = TriggerCandidate::Type::kUnknown;
+
 };
 
 } // namespace triggeralgs

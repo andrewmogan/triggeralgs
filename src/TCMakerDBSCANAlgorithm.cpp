@@ -44,7 +44,7 @@ TCMakerDBSCANAlgorithm::set_tc_attributes()
 
   m_current_tc.detid = first_ta.detid;
   m_current_tc.algorithm = TriggerCandidate::Algorithm::kDBSCAN;
-  m_current_tc.type = TriggerCandidate::Type::kDBSCAN;
+  m_current_tc.type = m_tc_type_out;
   return;
 }
 

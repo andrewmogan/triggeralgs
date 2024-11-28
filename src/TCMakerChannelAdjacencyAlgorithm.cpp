@@ -116,7 +116,7 @@ TCMakerChannelAdjacencyAlgorithm::construct_tc() const
   tc.time_end = latest_ta_in_window.inputs.back().time_start;
   tc.time_candidate = m_current_window.time_start;
   tc.detid = latest_ta_in_window.detid;
-  tc.type = TriggerCandidate::Type::kChannelAdjacency;
+  tc.type = m_tc_type_out;
   tc.algorithm = TriggerCandidate::Algorithm::kChannelAdjacency;
 
   // Take the list of triggeralgs::TriggerActivity in the current
