@@ -88,8 +88,8 @@ TAMakerADCSimpleWindowAlgorithm::construct_ta() const
   // The time_peak, time_activity, channel_* and adc_peak fields of this TA are irrelevent
   // for the purpose of this trigger alg.
   TriggerActivity ta;
-  ta.time_start = m_current_window.time_start;
-  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
+  ta.time_start = latest_tp_in_window.time_start;
+  ta.time_end = latest_tp_in_window.time_start;
   ta.time_peak = latest_tp_in_window.time_peak;
   ta.time_activity = latest_tp_in_window.time_peak;
   ta.channel_start = latest_tp_in_window.channel;
@@ -101,6 +101,19 @@ TAMakerADCSimpleWindowAlgorithm::construct_ta() const
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kADCSimpleWindow;
   ta.inputs = m_current_window.tp_list;
+
+  for (const auto& tp : ta.inputs) {
+    ta.time_start = std::min(ta.time_start, tp.time_start);
+    ta.time_end = std::max(ta.time_end, tp.time_start);
+    ta.channel_start = std::min(ta.channel_start, tp.channel);
+    ta.channel_end = std::max(ta.channel_end, tp.channel);
+    if (tp.adc_peak > ta.adc_peak) {
+      ta.time_peak = tp.time_peak;
+      ta.adc_peak = tp.adc_peak;
+      ta.channel_peak = tp.channel;
+    }
+  }
+
   return ta;
 }
 
