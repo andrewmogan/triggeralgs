@@ -17,6 +17,7 @@
 #include "triggeralgs/TriggerPrimitivePDS.hpp"
 #include "triggeralgs/TriggerActivityPDS.hpp"
 #include "triggeralgs/TriggerCandidate.hpp"
+#include "triggeralgs/TriggerCandidatePDS.hpp"
 
 namespace triggeralgs {
 
@@ -52,6 +53,14 @@ struct TypeToOverlayType<TriggerActivityPDS>
   using overlay_t = dunedaq::trgdataformats::TriggerActivityPDS;
   using data_t = dunedaq::trgdataformats::TriggerActivityData;
 };
+template<>
+
+struct TypeToOverlayType<TriggerCandidatePDS>
+{
+  using overlay_t = dunedaq::trgdataformats::TriggerCandidatePDS;
+  using data_t = dunedaq::trgdataformats::TriggerCandidateData;
+};
+
 
 // Populate a TriggerObjectOverlay in `buffer`, created from
 // `object`. The necessary size for the buffer can be found with
