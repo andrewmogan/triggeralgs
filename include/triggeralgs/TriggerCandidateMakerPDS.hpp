@@ -111,13 +111,13 @@ public:
 
     if (config.contains("tc_type_name")) {
       m_tc_type_out = static_cast<TriggerCandidate::Type>(
-          dunedaq::trgdataformats::string_to_trigger_candidate_type(config["tc_type_name"]));
+          dunedaq::trgdataformats::string_to_fragment_type_value(config["tc_type_name"]));
     }
 
-    if (m_tc_type_out == TriggerCandidate::Type::kUnknown) {
-      throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: "
-              + std::string(config["tc_type_name"])));
-    }
+  //  if (m_tc_type_out == TriggerCandidate::Type::kUnknown) {
+      //throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: "
+      //        + std::string(config["tc_type_name"])));
+  //  }
 
     TLOG() << "[TCM]: prescale   : " << m_prescale;
     TLOG() << "[TCM]: TC type out: " << config["tc_type_name"];
