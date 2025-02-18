@@ -55,6 +55,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     //void query_triton_server(const TriggerActivity& trigger_activity, const std::string& inference_url);
 
   private:
+    std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
     uint64_t m_number_tps_per_request = 100;
     uint64_t m_batch_size = 1;
     uint64_t m_number_time_ticks = 128;

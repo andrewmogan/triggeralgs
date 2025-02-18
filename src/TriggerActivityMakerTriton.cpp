@@ -23,8 +23,6 @@ using Logging::TLVL_DEBUG_INFO;
 using Logging::TLVL_DEBUG_HIGH;
 using Logging::TLVL_DEBUG_ALL;
 
-static std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
-
 void
 TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas)
 {
@@ -160,14 +158,13 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   };
 
   tc::InferResult* results;
-  /*
   fail_if_error(
     client->Infer(&results, options, inputs, outputs), 
     "Unable to run model");
-  */
   std::shared_ptr<tc::InferResult> results_ptr;
   results_ptr.reset(results);
 
+  /*
   std::mutex mtx;
   std::condition_variable cv;
   bool callback_invoked = false;
@@ -194,14 +191,17 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
     std::unique_lock<std::mutex> lk(mtx);
     cv.wait(lk, [&]() { return callback_invoked; });
   }
+  */
 
   // Get deferred response
-  std::cout << "Getting results from deferred response" << std::endl;
-  if (result_placeholder->RequestStatus().IsOk()) {
-    ValidateSimpleResult(result_placeholder, input0_data, input1_data);
+  //std::cout << "Getting results from deferred response" << std::endl;
+  std::cout << "Getting results from response" << std::endl;
+  //if (result_placeholder->RequestStatus().IsOk()) {
+  if (results_ptr->RequestStatus().IsOk()) {
+    ValidateSimpleResult(results_ptr, input0_data, input1_data);
   } else {
     std::cerr << "error: Inference failed: "
-              << result_placeholder->RequestStatus() << std::endl;
+              << results_ptr->RequestStatus() << std::endl;
     exit(1);
   }
   // Get pointers to the result returned...
@@ -246,7 +246,7 @@ void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name
   */
 
   // Get full response
-  //TLOG() << results_ptr->DebugString();
+  TLOG() << results_ptr->DebugString();
 
   tc::InferStat infer_stat;
   client->ClientInferStat(&infer_stat);
