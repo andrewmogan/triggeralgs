@@ -250,7 +250,6 @@ TAMakerPlaneCoincidenceAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile << input_tp.adc_integral << " ";        
   outfile << input_tp.adc_peak << " ";            
   outfile << input_tp.detid << " ";               // Det ID - Identifies detector element
-  outfile << input_tp.type << std::endl;        
   outfile.close();
 
   return;

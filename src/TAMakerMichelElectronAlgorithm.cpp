@@ -350,7 +350,6 @@ TAMakerMichelElectronAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile << input_tp.adc_integral << " ";        // ADC Sum
   outfile << input_tp.adc_peak << " ";            // ADC Peak Value
   outfile << input_tp.detid << " ";               // Det ID - Identifies detector element, APA or PDS part etc...
-  outfile << input_tp.type << std::endl;          // This should now write out TPs in the same 'coldBox' way.
   outfile.close();
 
   return;

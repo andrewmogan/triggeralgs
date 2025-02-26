@@ -28,8 +28,6 @@ BOOST_AUTO_TEST_CASE(test_macro_overview)
   std::vector<TriggerActivity> prescale_ta;
   TriggerPrimitive some_tp;
   for (int idx = 0; idx < 10; idx++) {
-    some_tp.type = TriggerPrimitive::Type::kTPC;
-    some_tp.algorithm = TriggerPrimitive::Algorithm::kSimpleThreshold;
     some_tp.time_start = idx;
     some_tp.time_peak = 1+idx;
     some_tp.time_over_threshold = 2;
