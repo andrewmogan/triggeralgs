@@ -115,8 +115,9 @@ public:
     }
 
     if (m_tc_type_out == TriggerCandidate::Type::kUnknown) {
-      throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: "
-              + std::string(config["tc_type_name"])));
+      throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: " +
+                                 (config.contains("tc_type_name") ?
+                                  std::string(config["tc_type_name"]) : "null")));
     }
 
     TLOG() << "[TCM]: prescale   : " << m_prescale;
