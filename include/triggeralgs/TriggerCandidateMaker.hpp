@@ -115,6 +115,8 @@ public:
     }
 
     if (m_tc_type_out == TriggerCandidate::Type::kUnknown) {
+      // 27-Feb-2025, KAB: moified the following statement to check whether the configuration
+      // contains the tc_type_name parameter before trying to add it do the exception message.
       throw(InvalidConfiguration(ERS_HERE, "Provided an unknown output TC type: " +
                                  (config.contains("tc_type_name") ?
                                   std::string(config["tc_type_name"]) : "null")));
