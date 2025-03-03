@@ -56,7 +56,6 @@ TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<Tr
 
       ta.adc_integral += prim.adc_integral;
 
-      ta.detid = prim.detid;
       if (prim.adc_peak > ta.adc_peak) {
         ta.adc_peak = prim.adc_peak;
         ta.channel_peak = prim.channel;

@@ -130,7 +130,6 @@ TAMakerPlaneCoincidenceAlgorithm::construct_ta(TPWindow m_current_window) const
   ta.channel_peak = latest_tp_in_window.channel;
   ta.adc_integral = m_current_window.adc_integral;
   ta.adc_peak = latest_tp_in_window.adc_peak;
-  ta.detid = latest_tp_in_window.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kPlaneCoincidence;
   ta.inputs = m_current_window.inputs;
@@ -249,7 +248,6 @@ TAMakerPlaneCoincidenceAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile << input_tp.channel << " ";             // Offline channel ID
   outfile << input_tp.adc_integral << " ";        
   outfile << input_tp.adc_peak << " ";            
-  outfile << input_tp.detid << " ";               // Det ID - Identifies detector element
   outfile.close();
 
   return;

@@ -170,7 +170,6 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
   ta.channel_peak = last_tp.channel;
   ta.adc_integral = m_current_window.adc_integral;
   ta.adc_peak = last_tp.adc_integral;
-  ta.detid = last_tp.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kHorizontalMuon;
   ta.inputs = m_current_window.inputs;
@@ -315,7 +314,6 @@ TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile << input_tp.channel << " "; // Offline channel ID
   outfile << input_tp.adc_integral << " ";
   outfile << input_tp.adc_peak << " ";
-  outfile << input_tp.detid << " "; // Det ID - Identifies detector element
   outfile.close();
 
   return;

@@ -97,7 +97,6 @@ TAMakerADCSimpleWindowAlgorithm::construct_ta() const
   ta.channel_peak = latest_tp_in_window.channel;
   ta.adc_integral = m_current_window.adc_integral;
   ta.adc_peak = latest_tp_in_window.adc_peak;
-  ta.detid = latest_tp_in_window.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kADCSimpleWindow;
   ta.inputs = m_current_window.tp_list;

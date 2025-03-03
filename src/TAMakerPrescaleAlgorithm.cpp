@@ -34,7 +34,6 @@ TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<
   ta.channel_peak = input_tp.channel;
   ta.adc_integral = input_tp.adc_integral;
   ta.adc_peak = input_tp.adc_peak;
-  ta.detid = input_tp.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kPrescale;
 

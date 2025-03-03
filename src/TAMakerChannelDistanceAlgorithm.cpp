@@ -81,8 +81,6 @@ TAMakerChannelDistanceAlgorithm::set_ta_attributes()
   m_current_ta.time_start = first_tp.time_start;
   m_current_ta.time_end = last_tp.time_start;
 
-  m_current_ta.detid = first_tp.detid;
-
   m_current_ta.algorithm = TriggerActivity::Algorithm::kChannelDistance;
   m_current_ta.type = TriggerActivity::Type::kTPC;
 

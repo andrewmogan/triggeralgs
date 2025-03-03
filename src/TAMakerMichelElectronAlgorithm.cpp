@@ -95,7 +95,6 @@ TAMakerMichelElectronAlgorithm::construct_ta() const
   ta.channel_peak = latest_tp_in_window.channel;
   ta.adc_integral = m_current_window.adc_integral;
   ta.adc_peak = latest_tp_in_window.adc_peak;
-  ta.detid = latest_tp_in_window.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kMichelElectron;
   ta.inputs = m_current_window.inputs;
@@ -349,7 +348,6 @@ TAMakerMichelElectronAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   outfile << input_tp.channel << " ";             // Offline channel ID
   outfile << input_tp.adc_integral << " ";        // ADC Sum
   outfile << input_tp.adc_peak << " ";            // ADC Peak Value
-  outfile << input_tp.detid << " ";               // Det ID - Identifies detector element, APA or PDS part etc...
   outfile.close();
 
   return;

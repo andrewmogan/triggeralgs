@@ -37,7 +37,6 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
     m_channel_peak = input_tp.channel;
     m_adc_integral = input_tp.adc_integral;
     m_adc_peak = input_tp.adc_peak;
-    m_detid = input_tp.detid;
     return;
   }
 
@@ -56,7 +55,6 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
     m_channel_peak = input_tp.channel;
     m_adc_integral = input_tp.adc_integral;
     m_adc_peak = input_tp.adc_peak;
-    m_detid = input_tp.detid;
     return;
   }
 
@@ -80,7 +78,6 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
 
   m_tp_list.push_back(input_tp);
   m_adc_integral += input_tp.adc_integral;
-  m_detid |= input_tp.detid;
 }
 
 // Register algo in TA Factory

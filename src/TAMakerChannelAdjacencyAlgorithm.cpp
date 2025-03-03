@@ -125,7 +125,6 @@ TAMakerChannelAdjacencyAlgorithm::construct_ta(TPWindow win_adj_max) const
   ta.channel_peak = last_tp.channel;
   ta.adc_integral = win_adj_max.adc_integral;
   ta.adc_peak = last_tp.adc_peak;
-  ta.detid = last_tp.detid;
   ta.type = TriggerActivity::Type::kTPC;
   ta.algorithm = TriggerActivity::Algorithm::kChannelAdjacency;
   ta.inputs = win_adj_max.inputs;
