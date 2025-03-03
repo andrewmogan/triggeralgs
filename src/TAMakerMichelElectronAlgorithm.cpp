@@ -257,11 +257,11 @@ TAMakerMichelElectronAlgorithm::check_kinks(std::vector<TriggerPrimitive> finalH
       // same channel hits at large time difference or vice versa due to kink topology or showers. Clearly we shouldn't be very far in 
       // channel number, but since we might later try to do this check in the time direction, leave the condition in.
       int diff = finalHits.at(i+2).time_start - finalHits.at(i).time_start;
-      if((std::abs(diff) > 1000) || ((std::abs(finalHits.at(i+2).channel - finalHits.at(i).channel) > 6))) { continue; } 
+      if((std::abs(diff) > 1000) || ((std::abs(channel_diff_t(finalHits.at(i+2).channel) - channel_diff_t(finalHits.at(i).channel)) > 6))) { continue; } 
 
       // Gradient is just change in z (collection) over change in x (drift). x is admitedly roughly converted from
       // hit start time, but I don't think diffusion effects are a huge concern over 20cm. Using mm for readability/visualisation 
-      float dz = (finalHits.at(i+2).channel - finalHits.at(i).channel)*4.67; // Change in collection wire z to separation in mm
+      float dz = (channel_diff_t(finalHits.at(i+2).channel) - channel_diff_t(finalHits.at(i).channel))*4.67; // Change in collection wire z to separation in mm
       long long int dt = finalHits.at(i+2).time_start - finalHits.at(i).time_start;
       float dx = dt*0.028; // Change time to separation in x mm
       float g = dz/dx;

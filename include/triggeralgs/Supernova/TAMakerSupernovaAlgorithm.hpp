@@ -38,8 +38,8 @@ class TAMakerSupernovaAlgorithm : public TriggerActivityMaker
   inline bool is_channel_consistent(const TriggerPrimitive& input_tp) const
   {
 
-    bool is_close_to_edge = (m_channel_tolerance > abs(input_tp.channel - m_channel_end) ||
-                             m_channel_tolerance > abs(input_tp.channel - m_channel_start));
+    bool is_close_to_edge = (m_channel_tolerance > abs(channel_diff_t(input_tp.channel) - channel_diff_t(m_channel_end)) ||
+                             m_channel_tolerance > abs(channel_diff_t(input_tp.channel) - channel_diff_t(m_channel_start)));
 
     bool is_in_between_edge = (input_tp.channel > m_channel_start && input_tp.channel < m_channel_end);
 
