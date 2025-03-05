@@ -178,8 +178,8 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
   for( const auto& tp : ta.inputs ) {
     ta.time_start = std::min(ta.time_start, tp.time_start);
     ta.time_end = std::max(ta.time_end, tp.time_start + tp.time_over_threshold);
-    ta.channel_start = std::min(ta.channel_start, tp.channel);
-    ta.channel_end = std::max(ta.channel_end, tp.channel);
+    ta.channel_start = std::min(ta.channel_start, channel_t(tp.channel));
+    ta.channel_end = std::max(ta.channel_end, channel_t(tp.channel));
     if (tp.adc_peak > ta.adc_peak) {
       ta.time_peak = tp.time_peak;
       ta.adc_peak = tp.adc_peak;
@@ -209,7 +209,7 @@ TAMakerHorizontalMuonAlgorithm::check_adjacency() const
   // Generate a channelID ordered list of hit channels for this window
   std::vector<int> chanList;
   for (auto tp : m_current_window.inputs) {
-    chanList.push_back(tp.channel);
+    chanList.push_back(channel_t(tp.channel));
   }
   std::sort(chanList.begin(), chanList.end());
 

@@ -133,8 +133,8 @@ TAMakerChannelAdjacencyAlgorithm::construct_ta(TPWindow win_adj_max) const
   for (const auto& tp : ta.inputs) {
     ta.time_start = std::min(ta.time_start, tp.time_start);
     ta.time_end = std::max(ta.time_end, tp.time_start);
-    ta.channel_start = std::min(ta.channel_start, tp.channel);
-    ta.channel_end = std::max(ta.channel_end, tp.channel);
+    ta.channel_start = std::min(ta.channel_start, channel_t(tp.channel));
+    ta.channel_end = std::max(ta.channel_end, channel_t(tp.channel));
     if (tp.adc_peak > ta.adc_peak) {
       ta.time_peak = tp.time_peak;
       ta.adc_peak = tp.adc_peak;
@@ -161,7 +161,7 @@ TAMakerChannelAdjacencyAlgorithm::check_adjacency()
   // Generate a channelID ordered list of hit channels for this window; second element of pair is tps
   std::vector<std::pair<int, TriggerPrimitive>> chanTPList;
   for (auto tp : m_current_window.inputs) {
-    chanTPList.push_back(std::make_pair(tp.channel, tp));
+    chanTPList.push_back(std::make_pair(channel_t(tp.channel), tp));
   }
   std::sort(chanTPList.begin(),
             chanTPList.end(),

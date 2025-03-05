@@ -51,8 +51,8 @@ TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<Tr
       ta.time_start = std::min(prim.time_start, ta.time_start);
       ta.time_end = std::max(prim.time_start + prim.time_over_threshold, ta.time_end);
 
-      ta.channel_start = std::min(prim.channel, ta.channel_start);
-      ta.channel_end = std::max(prim.channel, ta.channel_end);
+      ta.channel_start = std::min(channel_t(prim.channel), ta.channel_start);
+      ta.channel_end = std::max(channel_t(prim.channel), ta.channel_end);
 
       ta.adc_integral += prim.adc_integral;
 

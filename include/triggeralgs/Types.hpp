@@ -18,6 +18,7 @@ using timestamp_diff_t = dunedaq::trgdataformats::timestamp_diff_t;
 using detid_t = dunedaq::trgdataformats::detid_t;
 using trigger_number_t = dunedaq::trgdataformats::trigger_number_t;
 using channel_t = dunedaq::trgdataformats::channel_t;
+using channel_diff_t = dunedaq::trgdataformats::channel_diff_t;
 using version_t = dunedaq::trgdataformats::version_t;
 
 } // namespace triggeralgs

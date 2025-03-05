@@ -38,8 +38,8 @@ class TAMakerSupernovaAlgorithm : public TriggerActivityMaker
   inline bool is_channel_consistent(const TriggerPrimitive& input_tp) const
   {
 
-    bool is_close_to_edge = (m_channel_tolerance > abs(input_tp.channel - m_channel_end) ||
-                             m_channel_tolerance > abs(input_tp.channel - m_channel_start));
+    bool is_close_to_edge = (m_channel_tolerance > abs(channel_diff_t(input_tp.channel) - m_channel_end) ||
+                             m_channel_tolerance > abs(channel_diff_t(input_tp.channel) - m_channel_start));
 
     bool is_in_between_edge = (input_tp.channel > m_channel_start && input_tp.channel < m_channel_end);
 
@@ -83,9 +83,9 @@ private:
   timestamp_t m_time_end = 0;
   timestamp_t m_time_peak = 0;
   timestamp_t m_time_activity = 0;
-  channel_t m_channel_start = 0; // NOLINT(build/unsigned)
-  channel_t m_channel_end = 0;   // NOLINT(build/unsigned)
-  channel_t m_channel_peak = 0;  // NOLINT(build/unsigned)
+  channel_diff_t m_channel_start = 0; // NOLINT(build/unsigned)
+  channel_diff_t m_channel_end = 0;   // NOLINT(build/unsigned)
+  channel_diff_t m_channel_peak = 0;  // NOLINT(build/unsigned)
   uint64_t m_adc_integral = 0;  // NOLINT(build/unsigned)
   uint16_t m_adc_peak = 0;      // NOLINT(build/unsigned)
   detid_t m_detid = 0;         // NOLINT(build/unsigned)
