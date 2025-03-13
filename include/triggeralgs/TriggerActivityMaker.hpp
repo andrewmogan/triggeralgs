@@ -99,9 +99,9 @@ public:
           continue;
         }
 
-        TLOG(TLVL_DEBUG_10) << "Emitting prescaled TriggerActivity " << (m_ta_count-1)
-                            << " with time start/end/activity: " << iter->time_start
-                            << " " << iter->time_end << " " << iter->time_activity;
+        TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "Emitting prescaled TriggerActivity " << (m_ta_count-1)
+                                      << " with time start/end/activity: " << iter->time_start
+                                      << " " << iter->time_end << " " << iter->time_activity;
         ++iter;
       }
     }
