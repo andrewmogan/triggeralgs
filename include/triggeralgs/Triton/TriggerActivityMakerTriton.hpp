@@ -13,7 +13,7 @@
 #include "triggeralgs/Triton/Span.hpp"
 #include "triggeralgs/Triton/triton_utils.hpp"
 #include "triggeralgs/Triton/TritonData.hpp"
-//#include "triggeralgs/Triton/TritonClient.hpp"
+#include "triggeralgs/Triton/TritonClient.hpp"
 #include "triggeralgs/Triton/TritonIssues.hpp"
 #include "grpc_client.h"
 #include "triggeralgs/Triton/json_utils.h"
@@ -59,7 +59,8 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     template <typename T> std::string print_collection(triton_span::Span<const T> coll, const std::string& delim);
 
   private:
-    std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
+    //std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
+    std::unique_ptr<triggeralgs::TritonClient> client;
     uint64_t m_number_tps_per_request = 100;
     uint64_t m_batch_size = 1;
     uint64_t m_number_time_ticks = 128;
@@ -70,6 +71,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     std::string m_model_version = "1";
     uint64_t m_client_timeout_microseconds = 5000;
     uint64_t m_server_timeout_microseconds = 5000;
+    unsigned m_triton_allowed_tries = 0;
     bool m_print_tp_info = false;
     TriggerActivity m_current_ta;
 };
