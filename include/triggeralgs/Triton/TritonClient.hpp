@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "grpc_client.h"
+#include <nlohmann/json.hpp>
 
 namespace tc = triton::client;
 
