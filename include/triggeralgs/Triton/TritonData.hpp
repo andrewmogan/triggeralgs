@@ -4,7 +4,6 @@
 #include "triggeralgs/Triton/Span.hpp"
 #include "triggeralgs/Triton/triton_utils.hpp"
 #include "triggeralgs/Triton/TritonIssues.hpp"
-#include "triggeralgs/Triton/TriggerActivityMakerTriton.hpp"
 
 #include <algorithm>
 #include <any>
