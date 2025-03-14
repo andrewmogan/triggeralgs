@@ -10,9 +10,6 @@
 #include "triggeralgs/Triton/TriggerActivityMakerTriton.hpp"
 
 #include "TRACE/trace.h"
-//#include "grpc_client.h"
-//#include "triggeralgs/Triton/json_utils.h"
-//#include "rapidjson/document.h"
 #define TRACE_NAME "TriggerActivityMakerTritonPlugin"
 
 namespace tc = triton::client;
@@ -58,6 +55,7 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
   return;
 }
 
+/*
 void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string& inference_url) const {
   bool live;
   if (!client->IsServerLive(&live).IsOk()) {
@@ -77,20 +75,21 @@ void TriggerActivityMakerTriton::check_triton_server_liveness(const std::string&
 
   return;
 }
+*/
 
+/*
 void TriggerActivityMakerTriton::check_model_readiness(const std::string model_name, const std::string model_version) const {
   bool model_ready;
   fail_if_error(client->IsModelReady(&model_ready, model_name, model_version), "Unable to get model readiness");
-  /*
   if (!client->IsModelReady(&model_ready, model_name, model_version).IsOk()) {
     //throw triggeralgs::ModelIsNotReady(ERS_HERE, model_name);
     //throw triggeralgs::ModelNotReady(ERS_HERE, model_name);
   }
-  */
   TLOG(TLVL_DEBUG_INFO) << "Model " << model_name << " is ready.";
 
   return;
 }
+*/
 
 void TriggerActivityMakerTriton::check_model_inputs(const std::string model_name, const std::string model_version) const {
 
