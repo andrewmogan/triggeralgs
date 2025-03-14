@@ -6,6 +6,7 @@
  * received with this code.
  */
 
+
 #include "triggeralgs/Triton/TriggerActivityMakerTriton.hpp"
 
 #include "TRACE/trace.h"
@@ -18,6 +19,8 @@ namespace tc = triton::client;
 
 namespace triggeralgs {
 
+using triton_utils::fail_if_error;
+using triton_utils::warn_if_error;
 using Logging::TLVL_GENERAL;
 using Logging::TLVL_DEBUG_INFO;
 using Logging::TLVL_DEBUG_HIGH;
@@ -339,13 +342,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
   check_model_readiness(m_model_name, m_model_version);
 }
 
-void TriggerActivityMakerTriton::fail_if_error(const tc::Error& err, const std::string& msg) const 
-{
-  if (!err.IsOk()) {
-    TLOG() << "[TA:Triton] ERROR: " << msg << ": " << err << std::endl;
-  exit(1);
-  }
-}
 
 void
 TriggerActivityMakerTriton::ValidateSimpleShapeAndDatatype(

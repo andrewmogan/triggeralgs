@@ -10,10 +10,14 @@
 #define TRIGGERALGS_TRITON_TRIGGERACTIVITYMAKERTRITON_HPP_
 
 #include "triggeralgs/TriggerActivityFactory.hpp"
+#include "triggeralgs/Triton/Span.hpp"
+#include "triggeralgs/Triton/triton_utils.hpp"
+#include "triggeralgs/Triton/TritonData.hpp"
+//#include "triggeralgs/Triton/TritonClient.hpp"
+#include "triggeralgs/Triton/TritonIssues.hpp"
 #include "grpc_client.h"
 #include "triggeralgs/Triton/json_utils.h"
 //#include "ers/Issue.hpp"
-#include "triggeralgs/Triton/TritonIssues.hpp"
 
 #include <vector>
 #include <string>
@@ -22,14 +26,12 @@
 
 namespace tc = triton::client;
 
-/*
 ERS_DECLARE_ISSUE(
   triggeralgs,
   ModelNotReady,
   "Can't get readiness for model: " << model_name,
   ((std::string)model_name)
 )
-*/
 
 namespace triggeralgs {
 class TriggerActivityMakerTriton : public TriggerActivityMaker
@@ -37,7 +39,8 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
   public:
     void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
     void configure(const nlohmann::json& config);
-    void fail_if_error(const tc::Error& err, const std::string& msg) const;
+    //void fail_if_error(const tc::Error& err, const std::string& msg) const;
+    //bool warn_if_error(const tc::Error& err, const std::string& msg) const;
     void dump_config() const;
     void check_triton_server_liveness(const std::string& inference_url) const;
     //void check_model_readiness(const std::string model_name, const std::string model_version) const;
@@ -53,6 +56,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
       std::vector<int32_t>& input0_data, 
       std::vector<int32_t>& input1_data) const;
     //void query_triton_server(const TriggerActivity& trigger_activity, const std::string& inference_url);
+    template <typename T> std::string print_collection(triton_span::Span<const T> coll, const std::string& delim);
 
   private:
     std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
