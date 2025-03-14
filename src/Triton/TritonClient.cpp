@@ -1,6 +1,5 @@
+#include "TRACE/trace.h"
 #include "triggeralgs/Triton/TritonClient.hpp"
-#include "triggeralgs/Triton/TritonData.hpp"
-#include "triggeralgs/Triton/triton_utils.hpp"
 
 #include "grpc_client.h"
 

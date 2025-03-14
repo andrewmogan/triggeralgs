@@ -1,3 +1,4 @@
+#include "TRACE/trace.h"
 #include "triggeralgs/Triton/TritonData.hpp"
 
 #include <cstring>
