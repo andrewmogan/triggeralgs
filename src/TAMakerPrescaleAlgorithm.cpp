@@ -26,7 +26,7 @@ TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<
 
   TriggerActivity ta;
   ta.time_start = input_tp.time_start;
-  ta.time_end = input_tp.time_start + input_tp.time_over_threshold;
+  ta.time_end = input_tp.time_start + input_tp.samples_over_threshold * 32;  // FIXME: Replace the hard-coded SOT to TOT scaling.
   ta.time_peak = input_tp.samples_to_peak * 32 + input_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
   ta.time_activity = 0;
   ta.channel_start = input_tp.channel;

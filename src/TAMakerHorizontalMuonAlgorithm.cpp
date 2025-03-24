@@ -29,7 +29,7 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
   if (m_print_tp_info) {
     TLOG_DEBUG(TLVL_DEBUG_ALL) << "[TAM:HM] TP Start Time: " << input_tp.time_start
                                << ", TP ADC Sum: " << input_tp.adc_integral
-                               << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
+                               << ", TP SOT: " << input_tp.samples_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
                                << ", TP Offline Channel ID: " << input_tp.channel;
     TLOG_DEBUG(TLVL_DEBUG_ALL) << "[TAM:HM] Adjacency of current window is: " << check_adjacency();
   }
@@ -101,13 +101,13 @@ TAMakerHorizontalMuonAlgorithm::process(const TriggerPrimitive& input_tp,
     m_current_window.reset(input_tp);
   }
 
-  // Temporary triggering logic for Adam's large TOT TPs. Trigger on very large TOT TPs.
-  else if (m_trigger_on_tot && input_tp.time_over_threshold > m_tot_threshold) {
+  // Temporary triggering logic for Adam's large SOT TPs. Trigger on very large SOT TPs.
+  else if (m_trigger_on_sot && input_tp.samples_over_threshold > m_sot_threshold) {
 
     // If the incoming TP has a large time over threshold, we might have a cluster of
     // interesting physics activity surrounding it. Trigger on that.
-    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting a TA due to a TP with a very large time over threshold: "
-                                  << input_tp.time_over_threshold << " ticks and offline channel: " << input_tp.channel
+    TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "[TAM:HM] Emitting a TA due to a TP with a very large samples over threshold: "
+                                  << input_tp.samples_over_threshold << " ticks and offline channel: " << input_tp.channel
                                   << ", where the ADC integral of that TP is " << input_tp.adc_integral;
     output_ta.push_back(construct_ta());
     m_current_window.reset(input_tp);
@@ -145,10 +145,10 @@ TAMakerHorizontalMuonAlgorithm::configure(const nlohmann::json& config)
       m_adjacency_threshold = config["adjacency_threshold"];
     if (config.contains("print_tp_info"))
       m_print_tp_info = config["print_tp_info"];
-    if (config.contains("trigger_on_tot"))
-      m_trigger_on_tot = config["trigger_on_tot"];
-    if (config.contains("tot_threshold"))
-      m_tot_threshold = config["tot_threshold"];
+    if (config.contains("trigger_on_sot"))
+      m_trigger_on_sot = config["trigger_on_sot"];
+    if (config.contains("sot_threshold"))
+      m_sot_threshold = config["sot_threshold"];
  }
 
 }
@@ -162,7 +162,7 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
   TriggerPrimitive last_tp = m_current_window.inputs.back();
 
   ta.time_start = last_tp.time_start;
-  ta.time_end = last_tp.time_start + last_tp.time_over_threshold;
+  ta.time_end = last_tp.time_start + last_tp.samples_over_threshold * 32;  // FIXME: Replace the hard-coded SOT to TOT scaling.
   ta.time_peak = last_tp.samples_to_peak * 32 + last_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
   ta.time_activity = ta.time_peak;
   ta.channel_start = last_tp.channel;
@@ -177,7 +177,7 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
 
   for( const auto& tp : ta.inputs ) {
     ta.time_start = std::min(ta.time_start, tp.time_start);
-    ta.time_end = std::max(ta.time_end, tp.time_start + tp.time_over_threshold);
+    ta.time_end = std::max(ta.time_end, tp.time_start + tp.samples_over_threshold * 32);  // FIXME: Replace the hard-coded SOT to TOT scaling.
     ta.channel_start = std::min(ta.channel_start, channel_t(tp.channel));
     ta.channel_end = std::max(ta.channel_end, channel_t(tp.channel));
     if (tp.adc_peak > ta.adc_peak) {
@@ -292,7 +292,7 @@ TAMakerHorizontalMuonAlgorithm::dump_window_record()
     outfile << window.inputs.back().channel << ",";  // Last TP Channel ID
     outfile << window.inputs.front().channel << ","; // First TP Channel ID
     outfile << check_adjacency() << ",";             // New adjacency value for the window
-    outfile << check_tot() << std::endl;             // Summed window TOT
+    outfile << check_sot() << std::endl;             // Summed window SOT
   }
 
   outfile.close();
@@ -310,7 +310,7 @@ TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";
-  outfile << input_tp.time_over_threshold << " "; // 50MHz ticks
+  outfile << input_tp.samples_over_threshold << " "; // 50MHz ticks
   outfile << input_tp.samples_to_peak << " ";
   outfile << input_tp.channel << " "; // Offline channel ID
   outfile << input_tp.adc_integral << " ";
@@ -322,16 +322,16 @@ TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 }
 
 int
-TAMakerHorizontalMuonAlgorithm::check_tot() const
+TAMakerHorizontalMuonAlgorithm::check_sot() const
 {
-  // Here, we just want to sum up all the tot values for each TP within window,
-  // and return this tot of the window.
-  int window_tot = 0;
+  // Here, we just want to sum up all the sot values for each TP within window,
+  // and return this sot of the window.
+  int window_sot = 0;
   for (auto tp : m_current_window.inputs) {
-    window_tot += tp.time_over_threshold;
+    window_sot += tp.samples_over_threshold;
   }
 
-  return window_tot;
+  return window_sot;
 }
 
 // Register algo in TA Factory

@@ -26,7 +26,7 @@ TAMakerChannelAdjacencyAlgorithm::process(const TriggerPrimitive& input_tp,
   if (m_print_tp_info) {
     TLOG_DEBUG(TLVL_DEBUG_LOW) << " ########## m_current_window is reset ##########\n"
                                << " TP Start Time: " << input_tp.time_start << ", TP ADC Sum: " << input_tp.adc_integral
-                               << ", TP TOT: " << input_tp.time_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
+                               << ", TP SOT: " << input_tp.samples_over_threshold << ", TP ADC Peak: " << input_tp.adc_peak
                                << ", TP Offline Channel ID: " << input_tp.channel << "\n";
   }
 

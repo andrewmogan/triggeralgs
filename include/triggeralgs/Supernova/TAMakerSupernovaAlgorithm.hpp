@@ -22,7 +22,7 @@ class TAMakerSupernovaAlgorithm : public TriggerActivityMaker
   /// This activity maker makes an activity with all the trigger primitives
   inline bool is_time_consistent(const TriggerPrimitive& input_tp) const
   {
-    timestamp_t tend = input_tp.time_start + input_tp.time_over_threshold;
+    timestamp_t tend = input_tp.time_start + input_tp.samples_over_threshold * 32; // FIXME: Replace the hard-coded SOT to TOT scaling.
 
     bool is_close_to_edge = (m_time_tolerance > abs(timestamp_diff_t(input_tp.time_start) - timestamp_diff_t(m_time_end))) ||
       m_time_tolerance > abs(timestamp_diff_t(input_tp.time_start) - timestamp_diff_t(m_time_start)) ||

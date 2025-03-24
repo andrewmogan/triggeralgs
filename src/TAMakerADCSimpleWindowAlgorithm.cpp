@@ -89,8 +89,8 @@ TAMakerADCSimpleWindowAlgorithm::construct_ta() const
   // for the purpose of this trigger alg.
   TriggerActivity ta;
   ta.time_start = m_current_window.time_start;
-  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
-  ta.time_peak = latest_tp_in_window.samples_to_peak * 32 + last_tp_in_window.time_start;  // FIXME: Replace STP to `time_peak` conversion.
+  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.samples_over_threshold * 32;  // FIXME: Replace the hard-coded SOT to TOT scaling.
+  ta.time_peak = latest_tp_in_window.samples_to_peak * 32 + latest_tp_in_window.time_start;  // FIXME: Replace STP to `time_peak` conversion.
   ta.time_activity = ta.time_peak;
   ta.channel_start = latest_tp_in_window.channel;
   ta.channel_end = latest_tp_in_window.channel;
