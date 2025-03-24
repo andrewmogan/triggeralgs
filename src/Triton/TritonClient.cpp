@@ -22,17 +22,17 @@ namespace triggeralgs {
   using triton_utils::warn_if_error;
 
   TritonClient::TritonClient(const nlohmann::json& client_config)
-    : allowedTries_(client_config.value("allowedTries", 0))
-    , serverURL_(client_config.at("serverURL"))
+    : allowed_tries_(client_config.value("allowed_tries", 0))
+    , inference_url_(client_config.at("inference_url"))
     , verbose_(client_config.value("verbose", 0))
     , ssl_(client_config.value("ssl", false))
     , sslRootCertificates_(client_config.value("sslRootCertificates", ""))
     , sslPrivateKey_(client_config.value("sslPrivateKey", ""))
     , sslCertificateChain_(client_config.value("sslCertificateChain", ""))
-    , options_(client_config.at("modelName"))
+    , options_(client_config.at("model_name"))
   {
     //get appropriate server for this model
-    if (verbose_) TLOG() << "[TritonClient] Server URL: " << serverURL_;
+    if (verbose_) TLOG() << "[TritonClient] Server URL: " << inference_url_;
 
     //connect to the server
     if (ssl_) {
@@ -42,19 +42,19 @@ namespace triggeralgs {
       ssl_options.certificate_chain = sslCertificateChain_;
       fail_if_error(
         tc::InferenceServerGrpcClient::Create(
-          &client_, serverURL_, verbose_, true, ssl_options, tc::KeepAliveOptions(), true),
+          &client_, inference_url_, verbose_, true, ssl_options, tc::KeepAliveOptions(), true),
         "TritonClient(): unable to create inference context");
     }
     else {
       fail_if_error(
-        tc::InferenceServerGrpcClient::Create(&client_, serverURL_, verbose_, false),
+        tc::InferenceServerGrpcClient::Create(&client_, inference_url_, verbose_, false),
         "TritonClient(): unable to create inference context");
     }
 
     //set options
-    options_.model_version_ = client_config.at("modelVersion");
+    options_.model_version_ = client_config.at("model_version");
     //convert seconds to microseconds
-    options_.client_timeout_ = client_config.value("timeout", 0) * 1e6;
+    options_.client_timeout_ = client_config.value("client_timeout_microseconds", 0);
 
     //config needed for batch size
     inference::ModelConfigResponse modelConfigResponse;
@@ -112,8 +112,7 @@ namespace triggeralgs {
     }
 
     //allow selecting only some outputs from server
-    //const auto& v_outputs = client_config.at("outputs");
-    const auto& v_outputs = client_config.at("outputs").get<std::vector<std::string>>();
+    const auto& v_outputs = client_config.value("outputs", std::vector<std::string>{});
     std::unordered_set<std::string> s_outputs(v_outputs.begin(), v_outputs.end());
 
     //setup output map
@@ -262,7 +261,7 @@ namespace triggeralgs {
     if (!success) {
       ++tries_;
       //if max retries has not been exceeded, call evaluate again
-      if (tries_ < allowedTries_) {
+      if (tries_ < allowed_tries_) {
         evaluate();
         //avoid calling doneWaiting() twice
         return;
