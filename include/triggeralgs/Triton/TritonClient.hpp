@@ -30,6 +30,8 @@ namespace triggeralgs {
     //constructor
     TritonClient(const nlohmann::json& client_config);
 
+    void dump_config();
+
     //accessors
     TritonInputMap& input() { return input_; }
     const TritonOutputMap& output() const { return output_; }
@@ -64,8 +66,8 @@ namespace triggeralgs {
     //members
     TritonInputMap input_;
     TritonOutputMap output_;
-    unsigned allowedTries_, tries_;
-    std::string serverURL_;
+    unsigned allowed_tries_, tries_;
+    std::string inference_url_;
     unsigned maxBatchSize_;
     unsigned batch_size_;
     bool noBatch_;
