@@ -103,7 +103,7 @@ This struct represent hits, it contains:
 | Variable              | Type       | Comment                                                                   |
 |-----------------------|------------|---------------------------------------------------------------------------|
 | `time_start`          | `int64_t`  | Start time                                                                |
-| `time_peak`           | `int64_t`  | Time of the peak ADC                                                      |
+| `samples_to_peak`     | `uint16_t` | Number of samples from the `time_start` to the ADC peak                   |
 | `time_over_threshold` | `int32_t`  | Time over threshold                                                       |
 | `channel`             | `uint32_t` | Channel number                                                            |
 | `adc_integral`        | `uint16_t` | ADC integral                                                              |

@@ -90,8 +90,8 @@ TAMakerADCSimpleWindowAlgorithm::construct_ta() const
   TriggerActivity ta;
   ta.time_start = m_current_window.time_start;
   ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
-  ta.time_peak = latest_tp_in_window.time_peak;
-  ta.time_activity = latest_tp_in_window.time_peak;
+  ta.time_peak = latest_tp_in_window.samples_to_peak * 32 + last_tp_in_window.time_start;  // FIXME: Replace STP to `time_peak` conversion.
+  ta.time_activity = ta.time_peak;
   ta.channel_start = latest_tp_in_window.channel;
   ta.channel_end = latest_tp_in_window.channel;
   ta.channel_peak = latest_tp_in_window.channel;

@@ -60,7 +60,7 @@ TAMakerDBSCANAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<Tr
       if (prim.adc_peak > ta.adc_peak) {
         ta.adc_peak = prim.adc_peak;
         ta.channel_peak = prim.channel;
-        ta.time_peak = prim.time_peak;
+        ta.time_peak = prim.samples_to_peak * 32 + prim.time_start;  // FIXME: Replace hard-coded STP to `time_peak` conversion.
       }
     }
     ta.time_activity = ta.time_peak;

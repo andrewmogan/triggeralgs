@@ -88,8 +88,8 @@ TAMakerMichelElectronAlgorithm::construct_ta() const
   TriggerActivity ta;
   ta.time_start = m_current_window.time_start;
   ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
-  ta.time_peak = latest_tp_in_window.time_peak;
-  ta.time_activity = latest_tp_in_window.time_peak;
+  ta.time_peak = latest_tp_in_window.samples_to_peak * 32 + latest_tp_in_window.time_start;  // FIXME: Replace STP to `time_peak` conversion.
+  ta.time_activity = ta.time_peak;
   ta.channel_start = latest_tp_in_window.channel;
   ta.channel_end = latest_tp_in_window.channel;
   ta.channel_peak = latest_tp_in_window.channel;
@@ -345,7 +345,7 @@ TAMakerMichelElectronAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";          // Start time of TP
   outfile << input_tp.time_over_threshold << " "; // in multiples of 25
-  outfile << input_tp.time_peak << " ";           //
+  outfile << input_tp.samples_to_peak << " ";           //
   outfile << input_tp.channel << " ";             // Offline channel ID
   outfile << input_tp.adc_integral << " ";        // ADC Sum
   outfile << input_tp.adc_peak << " ";            // ADC Peak Value

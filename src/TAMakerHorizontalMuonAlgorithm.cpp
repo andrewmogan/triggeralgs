@@ -163,8 +163,8 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
 
   ta.time_start = last_tp.time_start;
   ta.time_end = last_tp.time_start + last_tp.time_over_threshold;
-  ta.time_peak = last_tp.time_peak;
-  ta.time_activity = last_tp.time_peak;
+  ta.time_peak = last_tp.samples_to_peak * 32 + last_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
+  ta.time_activity = ta.time_peak;
   ta.channel_start = last_tp.channel;
   ta.channel_end = last_tp.channel;
   ta.channel_peak = last_tp.channel;
@@ -181,7 +181,7 @@ TAMakerHorizontalMuonAlgorithm::construct_ta() const
     ta.channel_start = std::min(ta.channel_start, channel_t(tp.channel));
     ta.channel_end = std::max(ta.channel_end, channel_t(tp.channel));
     if (tp.adc_peak > ta.adc_peak) {
-      ta.time_peak = tp.time_peak;
+      ta.time_peak = tp.samples_to_peak * 32 + tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
       ta.adc_peak = tp.adc_peak;
       ta.channel_peak = tp.channel;
     }
@@ -311,7 +311,7 @@ TAMakerHorizontalMuonAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";
   outfile << input_tp.time_over_threshold << " "; // 50MHz ticks
-  outfile << input_tp.time_peak << " ";
+  outfile << input_tp.samples_to_peak << " ";
   outfile << input_tp.channel << " "; // Offline channel ID
   outfile << input_tp.adc_integral << " ";
   outfile << input_tp.adc_peak << " ";

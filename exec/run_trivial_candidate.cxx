@@ -53,7 +53,7 @@ GetRandomTP(std::chrono::time_point<std::chrono::steady_clock>& now)
 
   tp.time_start = pd_clock(tp_start_time).count();
   tp.time_over_threshold = pd_clock(tot_time).count();
-  tp.time_peak = pd_clock(tp_start_time + peak_time).count();
+  tp.samples_to_peak = pd_clock(peak_time).count();
   tp.channel = rdm_channel(generator);
   tp.adc_integral = rdm_adc(generator);
   tp.adc_peak = rdm_adc(generator);

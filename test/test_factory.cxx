@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_macro_overview)
   TriggerPrimitive some_tp;
   for (int idx = 0; idx < 10; idx++) {
     some_tp.time_start = idx;
-    some_tp.time_peak = 1+idx;
+    some_tp.samples_to_peak = 1+idx;
     some_tp.time_over_threshold = 2;
     some_tp.adc_integral = 1000+idx;
     some_tp.adc_peak = 1000+idx;

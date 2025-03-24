@@ -31,7 +31,7 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
     m_tp_list.push_back(input_tp);
     m_time_start = input_tp.time_start;
     m_time_end = tend;
-    m_time_peak = input_tp.time_peak;
+    m_time_peak = input_tp.samples_to_peak * 32 + input_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
     m_channel_start = input_tp.channel;
     m_channel_end = input_tp.channel;
     m_channel_peak = input_tp.channel;
@@ -50,7 +50,7 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
     m_tp_list.push_back(input_tp);
     m_time_start = input_tp.time_start;
     m_time_end = tend;
-    m_time_peak = input_tp.time_peak;
+    m_time_peak = input_tp.samples_to_peak * 32 + input_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
     m_channel_start = input_tp.channel;
     m_channel_end = input_tp.channel;
     m_channel_peak = input_tp.channel;
@@ -67,7 +67,7 @@ TAMakerSupernovaAlgorithm::process(const TriggerPrimitive& input_tp, std::vector
     m_time_end = tend;
 
   if (input_tp.adc_peak > m_adc_peak) {
-    m_time_peak = input_tp.time_peak;
+    m_time_peak = input_tp.samples_to_peak * 32 + input_tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
     m_adc_peak = input_tp.adc_peak;
     m_channel_peak = input_tp.channel;
   }
