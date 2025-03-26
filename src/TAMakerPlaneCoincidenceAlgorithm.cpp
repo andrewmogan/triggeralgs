@@ -122,9 +122,9 @@ TAMakerPlaneCoincidenceAlgorithm::construct_ta(TPWindow m_current_window) const
 
   TriggerActivity ta;
   ta.time_start = m_current_window.time_start;
-  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.time_over_threshold;
-  ta.time_peak = latest_tp_in_window.time_peak;
-  ta.time_activity = latest_tp_in_window.time_peak;
+  ta.time_end = latest_tp_in_window.time_start + latest_tp_in_window.samples_over_threshold * 32;  // FIXME: Replace the hard-coded SOT to TOT scaling.
+  ta.time_peak = latest_tp_in_window.samples_to_peak * 32 + latest_tp_in_window.time_start;  // FIXME: Replace hard-coded STP to `time_peak` conversion.
+  ta.time_activity = ta.time_peak;
   ta.channel_start = latest_tp_in_window.channel;
   ta.channel_end = latest_tp_in_window.channel;
   ta.channel_peak = latest_tp_in_window.channel;
@@ -226,7 +226,7 @@ TAMakerPlaneCoincidenceAlgorithm::dump_window_record()
     outfile << window.inputs.front().channel << ",";       // First TP Channel ID
     outfile << window.inputs.front().time_start << ",";    // First TP start time 
     outfile << check_adjacency(window) << ",";             // New adjacency value for the window
-    outfile << check_tot(window) << std::endl;             // Summed window TOT
+    outfile << check_sot(window) << std::endl;             // Summed window SOT
   }
 
   outfile.close();
@@ -244,29 +244,28 @@ TAMakerPlaneCoincidenceAlgorithm::dump_tp(TriggerPrimitive const& input_tp)
 
   // Output relevant TP information to file
   outfile << input_tp.time_start << " ";          
-  outfile << input_tp.time_over_threshold << " "; // 50MHz ticks
-  outfile << input_tp.time_peak << " ";           
+  outfile << input_tp.samples_over_threshold << " "; // 50MHz ticks
+  outfile << input_tp.samples_to_peak << " ";           
   outfile << input_tp.channel << " ";             // Offline channel ID
   outfile << input_tp.adc_integral << " ";        
   outfile << input_tp.adc_peak << " ";            
   outfile << input_tp.detid << " ";               // Det ID - Identifies detector element
-  outfile << input_tp.type << std::endl;        
   outfile.close();
 
   return;
 }
 
 int
-TAMakerPlaneCoincidenceAlgorithm::check_tot(TPWindow m_current_window) const
+TAMakerPlaneCoincidenceAlgorithm::check_sot(TPWindow m_current_window) const
 {
-  // Here, we just want to sum up all the tot values for each TP within window,
-  // and return this tot of the window.
-  int window_tot = 0; 
+  // Here, we just want to sum up all the sot values for each TP within window,
+  // and return this sot of the window.
+  int window_sot = 0; 
   for (auto tp : m_current_window.inputs) {
-    window_tot += tp.time_over_threshold;
+    window_sot += tp.samples_over_threshold;
   }
 
-  return window_tot;
+  return window_sot;
 }
 
 // Regiser algo in TA Factory
