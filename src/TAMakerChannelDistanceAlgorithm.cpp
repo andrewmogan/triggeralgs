@@ -51,7 +51,7 @@ TAMakerChannelDistanceAlgorithm::process(const TriggerPrimitive& input_tp,
 
   m_current_ta.inputs.push_back(input_tp);
   m_current_lower_bound = std::min(m_current_lower_bound, channel_diff_t(input_tp.channel) - m_max_channel_distance);
-  m_current_upper_bound = std::max(m_current_upper_bound, input_tp.channel + m_max_channel_distance);
+  m_current_upper_bound = std::max(m_current_upper_bound, channel_diff_t(input_tp.channel) + m_max_channel_distance);
 }
 
 void
