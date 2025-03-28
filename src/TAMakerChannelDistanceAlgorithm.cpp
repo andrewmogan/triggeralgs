@@ -50,8 +50,8 @@ TAMakerChannelDistanceAlgorithm::process(const TriggerPrimitive& input_tp,
     return;
 
   m_current_ta.inputs.push_back(input_tp);
-  m_current_lower_bound = std::min(m_current_lower_bound, input_tp.channel - m_max_channel_distance);
-  m_current_upper_bound = std::max(m_current_upper_bound, input_tp.channel + m_max_channel_distance);
+  m_current_lower_bound = std::min(m_current_lower_bound, channel_diff_t(input_tp.channel) - m_max_channel_distance);
+  m_current_upper_bound = std::max(m_current_upper_bound, channel_diff_t(input_tp.channel) + m_max_channel_distance);
 }
 
 void
@@ -93,7 +93,7 @@ TAMakerChannelDistanceAlgorithm::set_ta_attributes()
       continue;
     m_current_ta.adc_peak = tp.adc_peak;
     m_current_ta.channel_peak = tp.channel;
-    m_current_ta.time_peak = tp.time_peak;
+    m_current_ta.time_peak = tp.samples_to_peak * 32 + tp.time_start;  // FIXME: Replace STP to `time_peak` conversion.
   }
   m_current_ta.time_activity = m_current_ta.time_peak;
 }

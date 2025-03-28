@@ -35,7 +35,7 @@ private:
 
   TPWindow m_current_window;             // Possibly redundant for this alg?
   uint64_t m_primitive_count = 0;
-  int check_tot(TPWindow m_current_window) const;
+  int check_sot(TPWindow m_current_window) const;
   //void clearWindows(TriggerPrimitive const input_tp); // Function to clear or reset all windows, according to TP channel 
  
   // Make 3 instances of the Window class. One for each view plane.
@@ -47,7 +47,7 @@ private:
   std::string m_channel_map_name = "VDColdboxChannelMap";  // Default is coldbox
   uint16_t m_adjacency_threshold = 15;   // Default is 15 wire track for testing
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
-  uint32_t m_tot_threshold = 2000;       // Work out good values for this
+  uint32_t m_sot_threshold = 2000;       // Work out good values for this
   uint32_t m_adc_threshold = 300000;     // AbsRunningSum HF Alg Finds Induction ADC ~10x higher
   uint16_t m_adj_tolerance = 5;          // Adjacency tolerance - default is 3 from coldbox testing.
   int index = 0;

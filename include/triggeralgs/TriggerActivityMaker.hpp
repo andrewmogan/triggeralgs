@@ -57,7 +57,7 @@ public:
    * Takes a TP and returns true or false depending whether we want to process
    * that TP into a TA algorithm.
    *
-   * @todo: Implement tp-filtering, e.g. TOT, plane, channel and whatnot
+   * @todo: Implement tp-filtering, e.g. SOT, plane, channel and whatnot
    * @todo: Implement something smarter & more efficient if no filtering: vector of functions, or c-o-c
    *
    * @param[in] intput_tp input TP reference for filtering
@@ -65,7 +65,7 @@ public:
    */
   virtual bool preprocess(const TriggerPrimitive& input_tp)
   {
-    if (input_tp.time_over_threshold > m_max_time_over_threshold) {
+    if (input_tp.samples_over_threshold > m_max_samples_over_threshold) {
       return false;
     }
 
@@ -99,9 +99,9 @@ public:
           continue;
         }
 
-        TLOG(TLVL_DEBUG_10) << "Emitting prescaled TriggerActivity " << (m_ta_count-1)
-                            << " with time start/end/activity: " << iter->time_start
-                            << " " << iter->time_end << " " << iter->time_activity;
+        TLOG_DEBUG(TLVL_DEBUG_MEDIUM) << "Emitting prescaled TriggerActivity " << (m_ta_count-1)
+                                      << " with time start/end/activity: " << iter->time_start
+                                      << " " << iter->time_end << " " << iter->time_activity;
         ++iter;
       }
     }
@@ -117,10 +117,10 @@ public:
 
     if (config.contains("prescale"))
       m_prescale = config["prescale"];
-    if (config.contains("max_time_over_threshold"))
-      m_max_time_over_threshold = config["max_time_over_threshold"];
+    if (config.contains("max_samples_over_threshold"))
+      m_max_samples_over_threshold = config["max_samples_over_threshold"];
 
-    TLOG() << "[TAM]: max tot   : " << m_max_time_over_threshold;
+    TLOG() << "[TAM]: max sot   : " << m_max_samples_over_threshold;
     TLOG() << "[TAM]: prescale  : " << m_prescale;
   }
   
@@ -133,7 +133,7 @@ public:
   uint64_t m_ta_count = 0;
 
   /// @brief Time-over-threshold TP filtering
-  uint32_t m_max_time_over_threshold = std::numeric_limits<uint32_t>::max();
+  uint32_t m_max_samples_over_threshold = std::numeric_limits<uint32_t>::max();
 };
 
 } // namespace triggeralgs

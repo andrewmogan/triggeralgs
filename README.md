@@ -100,19 +100,19 @@ Note all the times here refer to 50 MHz clock (since epoch), as is now standard 
 
 ### TriggerPrimitive
 This struct represent hits, it contains:
-| Variable              | Type       | Comment                                                                   |
-|-----------------------|------------|---------------------------------------------------------------------------|
-| `time_start`          | `int64_t`  | Start time                                                                |
-| `time_peak`           | `int64_t`  | Time of the peak ADC                                                      |
-| `time_over_threshold` | `int32_t`  | Time over threshold                                                       |
-| `channel`             | `uint32_t` | Channel number                                                            |
-| `adc_integral`        | `uint16_t` | ADC integral                                                              |
-| `adc_peak`            | `uint16_t` | ADC peak (could be 12 bits, strictly)                                     |
-| `detid`               | `uint32_t` | detid (a flag that represents the detector which created the TP)          |
-| `type`                | `uint32_t` | some flag that says what it think it is (PDS/TPC for example)             |
-| `algorithm`           | `uint32_t` | some flag that says which algorithm created it (CPU/Firmware for example) |
-| `version`             | `uint16_t` | version of above                                                          |
-| `flag`                | `uint32_t` | extra flags.                                                              |
+| Variable                 | Type       | Comment                                                                   |
+|--------------------------|------------|---------------------------------------------------------------------------|
+| `time_start`             | `int64_t`  | Start time                                                                |
+| `samples_to_peak`        | `uint16_t` | Number of samples from the `time_start` to the ADC peak                   |
+| `samples_over_threshold` | `uint16_t` | Number of samples over threshold                                          |
+| `channel`                | `uint32_t` | Channel number                                                            |
+| `adc_integral`           | `uint16_t` | ADC integral                                                              |
+| `adc_peak`               | `uint16_t` | ADC peak (could be 12 bits, strictly)                                     |
+| `detid`                  | `uint32_t` | detid (a flag that represents the detector which created the TP)          |
+| `type`                   | `uint32_t` | some flag that says what it think it is (PDS/TPC for example)             |
+| `algorithm`              | `uint32_t` | some flag that says which algorithm created it (CPU/Firmware for example) |
+| `version`                | `uint16_t` | version of above                                                          |
+| `flag`                   | `uint32_t` | extra flags.                                                              |
 
 ### TriggerActivity
 Represents a cluster of hits, it contains:
