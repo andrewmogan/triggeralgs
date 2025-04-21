@@ -6,10 +6,11 @@
  * received with this code.
  */
 
-#ifndef TRIGGERALGS_TRITON_TRITONISSUES_HPP_
-#define TRIGGERALGS_TRITON_TRITONISSUES_HPP_
+#ifndef TRIGGERALGS_INCLUDE_TRITON_TRITONISSUES_HPP_
+#define TRIGGERALGS_INCLUDE_TRITON_TRITONISSUES_HPP_
 
 #include "ers/Issue.hpp"
+#include "logging/Logging.hpp"
 
 #include <string>
 
@@ -30,13 +31,15 @@ ERS_DECLARE_ISSUE(
   ((std::string)meta_string)
 )
 // TODO: Add name_, data_in.size(), and batch_size_ to this message
+/*
 ERS_DECLARE_ISSUE(
-  triggeralgs,
-  TritonDataMismatch,
-  "There is a mismatch between the size of the input vector and the batch size",
-  //name_ << " input(): input vector has size " << data_in.size()
-  //<< " but specified batch size is " << batchSize_;,
+    triggeralgs,
+    TritonDataMismatch,
+    "TritonData batch size mismatch: expected " << expected << ", got " << got,
+    ((size_t)expected)
+    ((size_t)got)
 )
+*/
 // TODO: Add sizeof(DT), byte_size_, and dname_ to this message
 ERS_DECLARE_ISSUE(
   triggeralgs,
@@ -46,4 +49,4 @@ ERS_DECLARE_ISSUE(
   //<< byteSize_ << " for " << dname_ << ")";
 )
 
-#endif  // TRIGGERALGS_TRITON_TRITONISSUES_HPP_
+#endif  // TRIGGERALGS_INCLUDE_TRITON_TRITONISSUES_HPP_
