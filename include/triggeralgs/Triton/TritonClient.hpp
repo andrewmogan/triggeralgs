@@ -1,5 +1,5 @@
-#ifndef NuSonic_Triton_TritonClient
-#define NuSonic_Triton_TritonClient
+#ifndef TRIGGERALGS_INCLUDE_TRITON_TRITONCLIENT_HPP
+#define TRIGGERALGS_INCLUDE_TRITON_TRITONCLIENT_HPP
 
 #include "triggeralgs/Triton/TritonData.hpp"
 
@@ -38,6 +38,8 @@ namespace triggeralgs {
     unsigned get_batch_size() const { return batch_size_; }
     bool verbose() const { return verbose_; }
     bool set_batch_size(unsigned bsize);
+
+    const std::string& get_model_name() const {return options_.model_name_;}
 
     //main operation
     void dispatch()
