@@ -67,6 +67,9 @@ add_library(triggeralgs SHARED
   src/Triton/TritonData.cpp
   src/Triton/TritonClient.cpp
   src/Triton/triton_utils.cpp
+  src/Triton/triton_utils.cpp
+  src/Triton/ModelIOHandler.cpp
+  include/triggeralgs/Triton/Span.hpp
   include/triggeralgs/Triton/TritonIssues.hpp
   )
 
