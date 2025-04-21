@@ -88,9 +88,9 @@ namespace triggeralgs {
         msg << name_ << " set_shape(): attempt to change value of non-variable shape dimension "
             << loc;
         if (canThrow)
-          throw TritonDataMismatch(ERS_HERE);
+          throw TritonDataByteSizeError(ERS_HERE);
         else {
-          throw TritonDataMismatch(ERS_HERE);
+          throw TritonDataByteSizeError(ERS_HERE);
           return false;
         }
       }
@@ -113,11 +113,11 @@ namespace triggeralgs {
   TritonOutput<DT> TritonOutputData::from_server() const
   {
     if (!result_) {
-      throw TritonDataMismatch(ERS_HERE);
+      throw triggeralgs::TritonDataByteSizeError(ERS_HERE);
     }
 
     if (byte_size_ != sizeof(DT)) {
-      throw TritonDataMismatch(ERS_HERE);
+      throw triggeralgs::TritonDataByteSizeError(ERS_HERE);
     }
 
     uint64_t n_output = sizeShape();
@@ -128,7 +128,7 @@ namespace triggeralgs {
     triton_utils::fail_if_error(result_->RawData(name_, &r0, &content_byte_size),
                                 "output(): unable to get raw");
     if (content_byte_size != expected_content_byte_size) {
-      throw TritonDataMismatch(ERS_HERE);
+      throw triggeralgs::TritonDataByteSizeError(ERS_HERE);
     }
 
     const DT* r1 = reinterpret_cast<const DT*>(r0);
@@ -162,5 +162,6 @@ namespace triggeralgs {
   template void TritonInputData::to_server(std::shared_ptr<TritonInput<int64_t>> data_in);
 
   template TritonOutput<float> TritonOutputData::from_server() const;
+  template TritonOutput<int32_t> TritonOutputData::from_server() const;
 
 }
