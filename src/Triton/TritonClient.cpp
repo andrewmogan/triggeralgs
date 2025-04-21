@@ -95,9 +95,9 @@ namespace triggeralgs {
     if (!msg_str.empty()) throw triggeralgs::CantGetServerMetadata(ERS_HERE);
 
     //setup input map
-    std::ostringstream io_msg;
     if (verbose_)
-      io_msg << "Model inputs: "
+      //io_msg << "Model inputs: "
+      TLOG() << "Model inputs: "
              << "\n";
     inputsTriton_.reserve(nicInputs.size());
     for (const auto& nicInput : nicInputs) {
@@ -106,7 +106,7 @@ namespace triggeralgs {
       auto& curr_input = curr_itr->second;
       inputsTriton_.push_back(curr_input.data());
       if (verbose_) {
-        io_msg << "  " << iname << " (" << curr_input.get_dname() << ", " << curr_input.get_byte_size()
+        TLOG() << "  " << iname << " (" << curr_input.get_dname() << ", " << curr_input.get_byte_size()
                << " b) : " << triton_utils::print_collection(curr_input.get_shape()) << "\n";
       }
     }
@@ -117,7 +117,7 @@ namespace triggeralgs {
 
     //setup output map
     if (verbose_)
-      io_msg << "Model outputs: "
+      TLOG() << "Model outputs: "
              << "\n";
     outputsTriton_.reserve(nicOutputs.size());
     for (const auto& nicOutput : nicOutputs) {
@@ -127,7 +127,7 @@ namespace triggeralgs {
       auto& curr_output = curr_itr->second;
       outputsTriton_.push_back(curr_output.data());
       if (verbose_) {
-        io_msg << "  " << oname << " (" << curr_output.get_dname() << ", " << curr_output.get_byte_size()
+        TLOG() << "  " << oname << " (" << curr_output.get_dname() << ", " << curr_output.get_byte_size()
                << " b) : " << triton_utils::print_collection(curr_output.get_shape()) << "\n";
       }
       if (!s_outputs.empty()) s_outputs.erase(oname);
@@ -147,7 +147,7 @@ namespace triggeralgs {
     //print model info
     if (verbose_) {
       std::ostringstream model_msg;
-      model_msg << "Model name: " << options_.model_name_ << "\n"
+      TLOG() << "Model name: " << options_.model_name_ << "\n"
                 << "Model version: " << options_.model_version_ << "\n"
                 << "Model max batch size: " << (noBatch_ ? 0 : maxBatchSize_) << "\n";
       //MF_LOG_INFO("TritonClient") << model_msg.str() << io_msg.str();
