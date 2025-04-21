@@ -46,6 +46,8 @@ template std::string triggeralgs::triton_utils::print_collection(
 template std::string triggeralgs::triton_utils::print_collection(
   const std::vector<uint8_t>& coll,const std::string& delim);
 template std::string triggeralgs::triton_utils::print_collection(
+  const std::vector<int32_t>& coll,const std::string& delim);
+template std::string triggeralgs::triton_utils::print_collection(
   const std::vector<float>& coll,const std::string& delim);
 template std::string triggeralgs::triton_utils::print_collection(
   const std::unordered_set<std::string>& coll, const std::string& delim);
