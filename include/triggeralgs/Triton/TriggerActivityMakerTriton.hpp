@@ -15,6 +15,7 @@
 #include "triggeralgs/Triton/TritonData.hpp"
 #include "triggeralgs/Triton/TritonClient.hpp"
 #include "triggeralgs/Triton/TritonIssues.hpp"
+#include "triggeralgs/Triton/ModelIOHandler.hpp"
 #include "grpc_client.h"
 #include "triggeralgs/Triton/json_utils.h"
 //#include "ers/Issue.hpp"
@@ -22,16 +23,10 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <typeinfo>
 #include <condition_variable>
 
 namespace tc = triton::client;
-
-ERS_DECLARE_ISSUE(
-  triggeralgs,
-  ModelNotReady,
-  "Can't get readiness for model: " << model_name,
-  ((std::string)model_name)
-)
 
 namespace triggeralgs {
 class TriggerActivityMakerTriton : public TriggerActivityMaker
@@ -39,17 +34,13 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
   public:
     void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
     void configure(const nlohmann::json& config);
-    //void fail_if_error(const tc::Error& err, const std::string& msg) const;
-    //bool warn_if_error(const tc::Error& err, const std::string& msg) const;
     void dump_config() const;
     std::vector<std::vector<std::vector<int>>> get_adcs_from_trigger_primitives(
       const uint64_t number_tps, 
       const uint64_t time_ticks, 
       const uint64_t number_wires);
-    template <typename T> std::string print_collection(triton_span::Span<const T> coll, const std::string& delim);
 
   private:
-    //std::unique_ptr<triton::client::InferenceServerGrpcClient> client;
     std::unique_ptr<triggeralgs::TritonClient> triton_client;
     uint64_t m_number_tps_per_request = 100;
     uint64_t m_number_time_ticks = 128;
@@ -57,6 +48,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
     uint64_t m_batch_size = 1;
     std::vector<std::string> m_outputs;
     bool m_print_tp_info = false;
+    bool m_verbose = false;
     TriggerActivity m_current_ta;
     /* Triton config params should now be taken care of in TritonClient class*/
     //std::string m_inference_url = "localhost:8001";
