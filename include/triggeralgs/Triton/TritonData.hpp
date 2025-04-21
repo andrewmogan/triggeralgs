@@ -1,5 +1,5 @@
-#ifndef TRIGGERALGS_TRITON_TRITON_DATA_HPP
-#define TRIGGERALGS_TRITON_TRITON_DATA_HPP
+#ifndef TRIGGERALGS_INCLUDE_TRITON_TRITONDATA_HPP
+#define TRIGGERALGS_INCLUDE_TRITON_TRITONDATA_HPP
 
 #include "triggeralgs/Triton/Span.hpp"
 #include "triggeralgs/Triton/triton_utils.hpp"
@@ -18,8 +18,15 @@
 
 namespace tc = triton::client;
 
-namespace triggeralgs {
+ERS_DECLARE_ISSUE(
+  triggeralgs,
+  TritonDataMismatch,
+  "TritonData batch size mismatch: expected " << expected << ", got " << got,
+  ((size_t)expected)
+  ((size_t)got)
+)
 
+namespace triggeralgs {
   class TritonClient;
 
   template <typename DT>
@@ -51,7 +58,7 @@ namespace triggeralgs {
 
       // Check batch size
       if (data_in.size() != batch_size_) {
-        throw triggeralgs::TritonDataMismatch(ERS_HERE);
+        throw triggeralgs::TritonDataMismatch(ERS_HERE, batch_size_, data_in.size());
       }
 
       //shape must be specified for variable dims or if batch size changes
