@@ -58,32 +58,7 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
   triton_client->dispatch();
 
   handler.handle_output(*triton_client);
-  /*
-  const std::unordered_map<std::string, InputPreparer> preparers = triggeralgs::get_input_preparers();
 
-  //std::map<std::string, InputPreparer>::iterator preparer = preparers.find(model_name);
-  auto preparer = preparers.find(model_name);
-  if (preparer == preparers.end()) {
-    std::cerr << "No input preparer registered for model: " << model_name << std::endl;
-    exit(1);
-  }
-
-  preparer->second(*triton_client);
-
-  triton_client->dispatch();
-
-  const auto& out0 = triton_client->output().at("OUTPUT0").from_server<int32_t>();
-  const auto& out1 = triton_client->output().at("OUTPUT1").from_server<int32_t>();
-
-  for (size_t i = 0; i < out0[0].size(); ++i) {
-    //TLOG() << input0_data[i] << " + " << input1_data[i] << " = " << out0[0][i];
-    //TLOG() << input0_data[i] << " - " << input1_data[i] << " = " << out1[0][i];
-    TLOG() << "Sum: " << out0[0][i];
-    TLOG() << "Diff: " << out1[0][i];
-  }
-  */
-
-  // Reset the current.
   triton_client->reset();
   m_current_ta = TriggerActivity();
   return;

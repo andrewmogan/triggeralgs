@@ -31,8 +31,7 @@ namespace triggeralgs {
     , sslCertificateChain_(client_config.value("sslCertificateChain", ""))
     , options_(client_config.at("model_name"))
   {
-    //get appropriate server for this model
-    if (verbose_) TLOG() << "[TritonClient] Server URL: " << inference_url_;
+    if (verbose_) TLOG() << "Server URL: " << inference_url_;
 
     //connect to the server
     if (ssl_) {
@@ -43,7 +42,7 @@ namespace triggeralgs {
       fail_if_error(
         tc::InferenceServerGrpcClient::Create(
           &client_, inference_url_, verbose_, true, ssl_options, tc::KeepAliveOptions(), true),
-        "TritonClient(): unable to create inference context");
+          "TritonClient(): unable to create inference context");
     }
     else {
       fail_if_error(
@@ -51,9 +50,7 @@ namespace triggeralgs {
         "TritonClient(): unable to create inference context");
     }
 
-    //set options
     options_.model_version_ = client_config.at("model_version");
-    //convert seconds to microseconds
     options_.client_timeout_ = client_config.value("client_timeout_microseconds", 0);
 
     //config needed for batch size
@@ -71,13 +68,11 @@ namespace triggeralgs {
     noBatch_ = maxBatchSize_ == 0;
     maxBatchSize_ = std::max(1u, maxBatchSize_);
 
-    //get model info
     inference::ModelMetadataResponse modelMetadata;
     fail_if_error(
       client_->ModelMetadata(&modelMetadata, options_.model_name_, options_.model_version_),
       "TritonClient(): unable to get model metadata");
 
-    //get input and output (which know their sizes)
     const auto& nicInputs = modelMetadata.inputs();
     const auto& nicOutputs = modelMetadata.outputs();
 
@@ -95,9 +90,9 @@ namespace triggeralgs {
     if (!msg_str.empty()) throw triggeralgs::CantGetServerMetadata(ERS_HERE);
 
     //setup input map
+    std::ostringstream io_msg;
     if (verbose_)
-      //io_msg << "Model inputs: "
-      TLOG() << "Model inputs: "
+      io_msg << "Model inputs: "
              << "\n";
     inputsTriton_.reserve(nicInputs.size());
     for (const auto& nicInput : nicInputs) {
@@ -106,7 +101,7 @@ namespace triggeralgs {
       auto& curr_input = curr_itr->second;
       inputsTriton_.push_back(curr_input.data());
       if (verbose_) {
-        TLOG() << "  " << iname << " (" << curr_input.get_dname() << ", " << curr_input.get_byte_size()
+        io_msg << "  " << iname << " (" << curr_input.get_dname() << ", " << curr_input.get_byte_size()
                << " b) : " << triton_utils::print_collection(curr_input.get_shape()) << "\n";
       }
     }
@@ -117,7 +112,7 @@ namespace triggeralgs {
 
     //setup output map
     if (verbose_)
-      TLOG() << "Model outputs: "
+      io_msg << "Model outputs: "
              << "\n";
     outputsTriton_.reserve(nicOutputs.size());
     for (const auto& nicOutput : nicOutputs) {
@@ -127,7 +122,7 @@ namespace triggeralgs {
       auto& curr_output = curr_itr->second;
       outputsTriton_.push_back(curr_output.data());
       if (verbose_) {
-        TLOG() << "  " << oname << " (" << curr_output.get_dname() << ", " << curr_output.get_byte_size()
+        io_msg << "  " << oname << " (" << curr_output.get_dname() << ", " << curr_output.get_byte_size()
                << " b) : " << triton_utils::print_collection(curr_output.get_shape()) << "\n";
       }
       if (!s_outputs.empty()) s_outputs.erase(oname);
@@ -147,10 +142,10 @@ namespace triggeralgs {
     //print model info
     if (verbose_) {
       std::ostringstream model_msg;
-      TLOG() << "Model name: " << options_.model_name_ << "\n"
+      model_msg << "Model name: " << options_.model_name_ << "\n"
                 << "Model version: " << options_.model_version_ << "\n"
                 << "Model max batch size: " << (noBatch_ ? 0 : maxBatchSize_) << "\n";
-      //MF_LOG_INFO("TritonClient") << model_msg.str() << io_msg.str();
+      TLOG() << model_msg.str() << io_msg.str();
     }
   }
 
@@ -238,9 +233,7 @@ namespace triggeralgs {
     }
 
     auto t2 = std::chrono::steady_clock::now();
-    //MF_LOG_DEBUG("TritonClient")
-    TLOG() << "[TritonClient]"
-      << "Remote time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    TLOG() << "\n\tRemote time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
     const auto& end_status = getServerSideStatus();
 
@@ -257,16 +250,14 @@ namespace triggeralgs {
 
   void TritonClient::finish(bool success)
   {
-    //retries are only allowed if no exception was raised
     if (!success) {
       ++tries_;
-      //if max retries has not been exceeded, call evaluate again
       if (tries_ < allowed_tries_) {
         evaluate();
-        //avoid calling doneWaiting() twice
+        // Avoid calling doneWaiting() twice
         return;
       }
-      //prepare an exception if exceeded
+      // Prepare an exception if exceeded
       // TODO Make this an exception
       //throw cet::exception("TritonClient")
       TLOG() << "THIS SHOULD BE AN ERROR"
