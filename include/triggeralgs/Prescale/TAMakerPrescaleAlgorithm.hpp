@@ -21,7 +21,9 @@ public:
   void process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta);
   
   void configure(const nlohmann::json &config);
-  
+
+  ~TAMakerPrescaleAlgorithm() override;  // Declare the custom destructor
+
 private:  
 };
 } // namespace triggeralgs

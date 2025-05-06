@@ -18,6 +18,10 @@ using namespace triggeralgs;
 using Logging::TLVL_DEBUG_MEDIUM;
 using Logging::TLVL_IMPORTANT;
 
+TAMakerPrescaleAlgorithm::~TAMakerPrescaleAlgorithm() {
+  TLOG() << "THIS IS TAMAKER DESTRUCTOR";
+}
+
 void
 TAMakerPrescaleAlgorithm::process(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_ta)
 {

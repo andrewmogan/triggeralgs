@@ -15,6 +15,11 @@
 
 using namespace triggeralgs;
 
+TCMakerPrescaleAlgorithm::~TCMakerPrescaleAlgorithm()
+{
+  TLOG() << "THIS IS TCMAKER DESTRUCTOR";
+}
+
 void
 TCMakerPrescaleAlgorithm::process(const TriggerActivity& activity, std::vector<TriggerCandidate>& cand)
 { 

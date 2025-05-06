@@ -23,6 +23,8 @@ public:
   
   void configure(const nlohmann::json &config);
   
+  ~TCMakerPrescaleAlgorithm() override;
+
 private:
 
 };
