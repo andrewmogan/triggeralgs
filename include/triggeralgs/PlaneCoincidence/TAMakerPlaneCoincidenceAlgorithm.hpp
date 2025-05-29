@@ -56,7 +56,7 @@ private:
   timestamp_t m_window_length = 3000;    // Shouldn't exceed the max drift
 
   // Channel map object, for separating TPs by the plane view they come from
-  std::shared_ptr<dunedaq::detchannelmaps::TPCChannelMap> channelMap = dunedaq::detchannelmaps::make_map(m_channel_map_name);
+  std::shared_ptr<dunedaq::detchannelmaps::TPCChannelMap> channelMap = dunedaq::detchannelmaps::make_tpc_map(m_channel_map_name);
 
   // For debugging and performance study purposes.
   void add_window_to_record(TPWindow window);
