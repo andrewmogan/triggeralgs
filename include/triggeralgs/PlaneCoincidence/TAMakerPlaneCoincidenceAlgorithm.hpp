@@ -44,7 +44,7 @@ private:
   TPWindow m_induction2_window; // Y
 
   // Configurable parameters.
-  std::string m_channel_map_name = "VDColdboxChannelMap";  // Default is coldbox
+  std::string m_channel_map_name = "VDColdboxTPCChannelMap";  // Default is coldbox
   uint16_t m_adjacency_threshold = 15;   // Default is 15 wire track for testing
   int m_max_adjacency = 0;               // The maximum adjacency seen so far in any window
   uint32_t m_sot_threshold = 2000;       // Work out good values for this
