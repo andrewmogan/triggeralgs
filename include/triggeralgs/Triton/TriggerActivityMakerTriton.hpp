@@ -33,6 +33,7 @@ class TriggerActivityMakerTriton : public TriggerActivityMaker
 {
   public:
     void operator()(const TriggerPrimitive& input_tp, std::vector<TriggerActivity>& output_tas);
+    ~TriggerActivityMakerTriton() { triton_client.reset(); }
     void configure(const nlohmann::json& config);
     void dump_config() const;
     std::vector<std::vector<std::vector<int>>> get_adcs_from_trigger_primitives(
