@@ -29,6 +29,7 @@ namespace triggeralgs {
 
     //constructor
     TritonClient(const nlohmann::json& client_config);
+    ~TritonClient();
 
     void dump_config();
 
@@ -78,6 +79,12 @@ namespace triggeralgs {
     std::string sslRootCertificates_;
     std::string sslPrivateKey_;
     std::string sslCertificateChain_;
+    // For reporting stats
+    uint64_t first_inference_count_;
+    uint64_t last_inference_count_;
+    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::time_point<std::chrono::steady_clock> end_time_;
+    std::vector<uint64_t> request_latencies_;
 
     //IO pointers for triton
     std::vector<tc::InferInput*> inputsTriton_;

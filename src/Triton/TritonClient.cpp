@@ -128,7 +128,6 @@ namespace triggeralgs {
       if (!s_outputs.empty()) s_outputs.erase(oname);
     }
 
-    //check if any requested outputs were not available
     if (!s_outputs.empty())
       // TODO Add this as an exception
       //throw cet::exception("MissingOutput")
@@ -147,15 +146,24 @@ namespace triggeralgs {
                 << "Model max batch size: " << (noBatch_ ? 0 : maxBatchSize_) << "\n";
       TLOG() << model_msg.str() << io_msg.str();
     }
+
+    first_inference_count_ = 0;
+  }
+
+  TritonClient::~TritonClient() {
+    TLOG() << "Delta inference count: " << last_inference_count_ << ", " << first_inference_count_;
+    double seconds = std::chrono::duration<double>(end_time_ - start_time_).count();
+    TLOG() << "Seconds: " << seconds;
+    double throughput = (last_inference_count_ - first_inference_count_) / seconds;
+    TLOG() << "\n\tAverage throughput: " << throughput << " inferences/second";
   }
 
   bool TritonClient::set_batch_size(unsigned bsize)
   {
     if (bsize > maxBatchSize_) {
       //MF_LOG_WARNING("TritonClient")
-      TLOG() << "[TritonClient]"
-        << "Requested batch size " << bsize << " exceeds server-specified max batch size "
-        << maxBatchSize_ << ". Batch size will remain as" << batch_size_;
+      TLOG() << "Requested batch size " << bsize << " exceeds server-specified max batch size "
+             << maxBatchSize_ << ". Batch size will remain as" << batch_size_;
       return false;
     }
     batch_size_ = bsize;
@@ -212,11 +220,15 @@ namespace triggeralgs {
       return;
     }
 
-    // Get the status of the server prior to the request being made.
     const auto& start_status = getServerSideStatus();
 
-    //blocking call
+    // Blocking call
     auto t1 = std::chrono::steady_clock::now();
+    //if (start_time_ == 0) start_time_ = t1;
+    if (first_inference_count_ == 0) {
+      first_inference_count_ = start_status.inference_count();
+      start_time_ = t1;
+    }
     tc::InferResult* results;
 
     tc::Headers http_headers;
@@ -234,8 +246,10 @@ namespace triggeralgs {
 
     auto t2 = std::chrono::steady_clock::now();
     TLOG() << "\n\tRemote time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    end_time_ = t2;
 
     const auto& end_status = getServerSideStatus();
+    last_inference_count_ = end_status.inference_count();
 
     if (verbose()) {
       const auto& stats = summarizeServerStats(start_status, end_status);
@@ -271,9 +285,9 @@ namespace triggeralgs {
 
     // https://github.com/triton-inference-server/server/blob/v2.3.0/src/clients/c++/perf_client/inference_profiler.cc
     const uint64_t count = stats.success_count_;
-    msg << "  Inference count: " << stats.inference_count_ << "\n";
-    msg << "  Execution count: " << stats.execution_count_ << "\n";
-    msg << "  Successful request count: " << count << "\n";
+    msg << "\n\tInference count: " << stats.inference_count_ << "\n";
+    msg << "\n\tExecution count: " << stats.execution_count_ << "\n";
+    msg << "\n\tSuccessful request count: " << count << "\n";
 
     if (count > 0) {
       auto get_avg_us = [count](uint64_t tval) {
@@ -301,8 +315,7 @@ namespace triggeralgs {
           << "compute output " << compute_output_avg_us << " usec)" << std::endl;
     }
 
-    //MF_LOG_DEBUG("TritonClient") << msg.str();
-    TLOG() << "[TritonClient]" << msg.str();
+    TLOG() << msg.str();
   }
 
   TritonClient::ServerSideStats TritonClient::summarizeServerStats(
