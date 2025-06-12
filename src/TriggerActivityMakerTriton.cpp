@@ -43,6 +43,7 @@ TriggerActivityMakerTriton::operator()(const TriggerPrimitive& input_tp, std::ve
   }
 
   const std::string model_name = triton_client->get_model_name();
+  triton_client->set_batch_size(m_batch_size);
 
   const std::unordered_map<std::string, ModelIOHandler> handlers = triggeralgs::get_model_io_handlers();
   //std::map<std::string, ModelIOHandler>::iterator handler = handlers.find(model_name);
@@ -109,7 +110,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
       TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Verbose output enabled";
     }
     if (config.contains("outputs")) {
-      //m_outputs = config["outputs"];
       m_outputs.emplace_back(config["outputs"]);
       TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Outputs";
     }
@@ -117,7 +117,6 @@ TriggerActivityMakerTriton::configure(const nlohmann::json& config)
 
   TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TA:Triton] Using configuration:\n" << config.dump(4);
 
-  //std::unique_ptr<TritonClient> triton_client;
   triton_client = std::make_unique<TritonClient>(config);
 }
 
