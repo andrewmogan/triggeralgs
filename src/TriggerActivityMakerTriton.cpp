@@ -8,7 +8,6 @@
 
 
 #include "triggeralgs/Triton/TriggerActivityMakerTriton.hpp"
-#include "triggeralgs/Triton/ModelInputPreparer.hpp"
 
 #include "TRACE/trace.h"
 #define TRACE_NAME "TriggerActivityMakerTritonPlugin"
