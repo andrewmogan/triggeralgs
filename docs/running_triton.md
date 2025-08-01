@@ -30,8 +30,31 @@ nanorc --partition-number 7 triton_config test-session boot conf wait 10 start_r
 ```
 
 > [!WARNING]
-> Note that this creates a directory called `RunConf_<run_number>`. If you attempt another run with the same run number, nanorc will complain. Either delete your old directory or use a different run number to fix this. 
+> Note that this creates a directory called `RunConf_<run_number>`. If you attempt another run with the same run number, nanorc will complain. Either delete your old directory or use a different run number to fix this.
 
 You can see in the output, under the Looking for services line, that there are paths to output logs for each DAQ application. The trigger log (`log_trigger_<port_number>.txt` in this case) is where the Triton plugin writes its output, so that's your go-to debugging log. 
 
 Congratulations, you've now run DUNE DAQ!
+
+## Examining the Output HDF5 Files
+
+The command in the previous step will output two HDF5 files, one whose name starts with `swtest` and another with `tpstream`. These correspond to the raw data stream and the trigger primitive stream, respectively. DUNE DAQ comes with two command-line tools to help examine these files:
+
+```
+HDF5LIBS_TestDumpRecord <filename>
+h5dump-shared -H <filename>
+```
+
+`HDF5LIBS_TestDumpRecord` will print information about the objects stored in the file, such as TimeSlices and TriggerPrimitives:
+
+```
+TimeSliceHeader: check_word: 55556666, version: 2, timeslice_number: 1, run_number: 111, element_id: { subsystem: TR_Builder id: 1 }
+Trigger_Primitive fragment with SourceID Trigger_0x00000000 from subdetector DAQ has size = 192600 -----
+        Number of TPs in this fragment=3438, size of TP data structure=56, size of Fragment Header=72
+        First TP type = 1, TP algorithm = 1
+        First TP start time=79554162068740423, peak time=79554162068740423, and time over threshold=32
+```
+
+while `h5dump-shared` will print an overview of the file structure, i.e., the available groups and datasets. For our case, these tools are mostly useful for understanding how and what TP information is stored. 
+
+
