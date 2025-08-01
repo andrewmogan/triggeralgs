@@ -1,23 +1,34 @@
-# triggeralgs
-A place to put the trigger algorithms for DUNE. This code can then be
-linked inside ArtDAQ and LArSoft, so that we can run the exact same
-code in simulation and on real data.
-
-### TOC
- - [Preface](#preface)
- - [Future](#future)
- - [Organisation](#organisation)
- - [Compile](#compile)
- - [Contribute](#contribute)
- - [Data structures](#structs)
-
 <a name="preface">
 
  ## Preface
 
 This repository is a fork of [DUNE-DAQ/triggeralgs](https://github.com/DUNE-DAQ/triggeralgs) for developing trigger algorithms using the SONIC framework to run in the Iceberg cold electronics test stand. This fork is based off the tag `fddaq-v4.4.8-a9`, which is significantly older than the latest DUNE-DAQ version. We use `fddaq-v4.4.8-a9` because the v4 line has been used previously in Iceberg.
 
+The following documents explain how to install, run, and develop in the Triton/SONIC framework for DUNE DAQ:
+
+[Conceptual overview](conceptual_overview.md)
+
+[Triton installation in a DUNE DAQ environment](triton_installation.md)
+
+[Configuring DUNE DAQ for Triton](configuring_dunedaq.md)
+
+[Running Triton in DUNE DAQ](running_triton.md)
+
+[Modifying/Developing the Triton trigger algorithm](contributing.md)
+
 The remainder of this README is simply copied from the upstream `triggeralgs` repo, and may be outdated or not relevant to the current SONIC work.
+
+# triggeralgs
+A place to put the trigger algorithms for DUNE. This code can then be
+linked inside ArtDAQ and LArSoft, so that we can run the exact same
+code in simulation and on real data.
+
+### TOC
+ - [Future](#future)
+ - [Organisation](#organisation)
+ - [Compile](#compile)
+ - [Contribute](#contribute)
+ - [Data structures](#structs)
 
 <a name="future">
 
