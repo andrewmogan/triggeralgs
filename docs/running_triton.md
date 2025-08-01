@@ -57,4 +57,69 @@ Trigger_Primitive fragment with SourceID Trigger_0x00000000 from subdetector DAQ
 
 while `h5dump-shared` will print an overview of the file structure, i.e., the available groups and datasets. For our case, these tools are mostly useful for understanding how and what TP information is stored. 
 
+## Using trace for Output Logging
+
+`trace` is a low-memory-overhead logging package used in DUNE DAQ. Note that trace effectively replaces std::cout. You can read an overview in the setup instructions; here, I'm just going to talk about how to use it. 
+
+First, to enable trace logging, you need to set the environment variable `TRACE_FILE` to point to your local area:
+
+```
+export TRACE_FILE=$DBT_AREA_ROOT/log/${USER}_dunedaq.trace
+```
+
+Note that this command needs to be re-run each time you start a new shell. You can then run tlvls to see the available names known to trace. For example,
+
+```
+mode:                                                        M=1                S=1
+ TID                                     NAME              maskM              maskS              maskT
+---- ---------------------------------------- ------------------ ------------------ ------------------
+  12                             RestEndpoint 0x00000000000001ff 0x00000000000000ff 0x0000000000000000
+  13                          AbstractFactory 0x00000000000001ff 0x00000000000000ff 0x0000000000000000
+  30                          PD2HDChannelMap 0x00000000000001ff 0x00000000000000ff 0x0000000000000000
+  34                                 TABuffer 0x00000000000001ff 0x00000000000000ff 0x0000000000000000
+```
+
+If you run `tlvls | grep Triton`, you should see something like
+
+```
+568               TriggerActivityMakerTriton 0x00000000000001ff 0x00000000000000ff 0x0000000000000000
+```
+
+To enable logging output from the Triton plugin, you need to select the level of output. You can see the available levels in triggeralgs/include/triggeralgs/Logging.hpp:
+
+```
+enum Logging
+{
+  TLVL_VERY_IMPORTANT = 1,
+  TLVL_IMPORTANT      = 2,
+  TLVL_GENERAL        = 3,
+  TLVL_DEBUG_INFO     = 4,
+  TLVL_DEBUG_LOW      = 5,
+  TLVL_DEBUG_MEDIUM   = 10,
+  TLVL_DEBUG_HIGH     = 15,
+  TLVL_DEBUG_ALL      = 20
+};
+```
+
+Basically, this means that if you want to enable, say, `TLVL_DEBUG_INFO` output, you run
+
+```
+tonS -n TriggerActivityMakerTritonPlugin DEBUG+4
+```
+
+Or, to enable `TLVL_DEBUG_ALL`, 
+
+```
+tonS -n TriggerActivityMakerTritonPlugin DEBUG+20
+```
+
+Then, for example, you would be able to see lines like
+
+```
+TLOG_DEBUG(TLVL_DEBUG_INFO) << "[TAM:Triton] Server metadata debug string: " << server_metadata.DebugString();
+```
+
+printed to the trigger log file. 
+
+
 
