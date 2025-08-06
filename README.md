@@ -1,3 +1,19 @@
+<a name="preface">
+
+ ## Preface
+
+This repository is a fork of [DUNE-DAQ/triggeralgs](https://github.com/DUNE-DAQ/triggeralgs) for developing trigger algorithms using NVIDIA Triton through the SONIC framework to run in the Iceberg cold electronics test stand. This fork is based off the tag `fddaq-v4.4.8-a9`, which is significantly older than the latest DUNE-DAQ version. We use `fddaq-v4.4.8-a9` because the v4 line has been used previously in Iceberg.
+
+For information on developing a trigger algorithm in the SONIC framework, see the following documents 
+
+- [Conceptual Overview](docs/conceptual_overview.md) for a high-level summary of the goals
+- [Triton Installation](docs/triton_installation.md) for information on how to install Triton in a DUNE DAQ environment
+- [Configuring DUNE DAQ](docs/configuring_dunedaq.md) to see how to configure DUNE DAQ to run your trigger algorithm
+- [Running Triton](docs/running_triton.md) for information on running and troubleshooting your trigger algorithm
+- [Contributing](docs/contributing.md) for information on how to develop your algorithm
+
+The remainder of this README is simply copied from the upstream `triggeralgs` repo, and may be outdated or not relevant to the current SONIC work.
+
 # triggeralgs
 A place to put the trigger algorithms for DUNE. This code can then be
 linked inside ArtDAQ and LArSoft, so that we can run the exact same
@@ -10,14 +26,6 @@ code in simulation and on real data.
  - [Compile](#compile)
  - [Contribute](#contribute)
  - [Data structures](#structs)
-
-<a name="preface">
-
- ## Preface
-
-This repository is a fork of [DUNE-DAQ/triggeralgs](https://github.com/DUNE-DAQ/triggeralgs) for developing trigger algorithms using the SONIC framework to run in the Iceberg cold electronics test stand. This fork is based off the tag `fddaq-v4.4.8-a9`, which is significantly older than the latest DUNE-DAQ version. We use `fddaq-v4.4.8-a9` because the v4 line has been used previously in Iceberg.
-
-The remainder of this README is simply copied from the upstream `triggeralgs` repo, and may be outdated or not relevant to the current SONIC work.
 
 <a name="future">
 
