@@ -1,36 +1,22 @@
 #include "triggeralgs/Triton/ModelIOHandler.hpp"
-
+#include "triggeralgs/TriggerPrimitive.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
 #include <unordered_map>
 
+
 namespace triggeralgs {
 
 const std::unordered_map<std::string, ModelIOHandler>& get_model_io_handlers() {
   static std::unordered_map<std::string, ModelIOHandler> handlers = {
-    {
-      "simple",
-      {
-        simple_input_preparer,
-        simple_output_handler
-      }
-    },
-    {
-      "another_model",
-      {
-        [](TritonClient& client) {
-          // Prepare inputs for fancy_model
-        },
-        [](TritonClient& client) {
-          // Handle outputs for fancy_model
-        }
-      }
-    }
+    { "simple",  { simple_input_preparer, simple_output_handler } },
+    { "adc_cm",  { adc_cm_input_preparer, adc_cm_output_handler } },
+    { "adc_tm",  { adc_tm_input_preparer, adc_tm_output_handler } },
   };
-
   return handlers;
 }
+
 
 void simple_input_preparer(TritonClient& triton_client) {
     // This toy model checks the sum and difference of two vectors length 16
@@ -85,24 +71,35 @@ void simple_output_handler(TritonClient& client)
   }
 }
 
-// Complex model input preparation logic
-void complex_model_preparer(TritonClient& triton_client, const std::string& model_name) {
-    std::vector<int64_t> input_data(100); 
-    for (size_t i = 0; i < 100; ++i) {
-        input_data[i] = i * 2;  // Example data manipulation
-    }
+// Channel-major: shape = {1280, 2000}
+void adc_cm_input_preparer(TritonClient& client)
+{
+  client.set_batch_size(1);
 
-    triton_client.set_batch_size(1);
+  std::vector<std::vector<int32_t>> batch(1);
+  batch[0].assign(1280 * 2000, 0);  // synthetic payload
 
-    TritonData<tc::InferInput>& input0 = triton_client.input().at("INPUT0");
-
-    auto data0 = std::make_shared<triggeralgs::TritonInput<int64_t>>();
-    data0->reserve(1);
-
-    data0->emplace_back(input_data);
-    input0.to_server(data0);
-
-    std::cout << "Prepared inputs for ComplexModel" << std::endl;
+  auto& in0 = client.input().at("INPUT0");
+  in0.set_shape({1280, 2000});
+  in0.to_server<int32_t>(std::make_shared<decltype(batch)>(std::move(batch)));
 }
+
+void adc_cm_output_handler(TritonClient&) {}
+
+// Time-major: shape = {2000, 1280}
+void adc_tm_input_preparer(TritonClient& client)
+{
+  client.set_batch_size(1);
+
+  std::vector<std::vector<int32_t>> batch(1);
+  batch[0].assign(1280 * 2000, 0);  // synthetic payload
+
+  auto& in0 = client.input().at("INPUT0");
+  in0.set_shape({2000, 1280});
+  in0.to_server<int32_t>(std::make_shared<decltype(batch)>(std::move(batch)));
+}
+
+void adc_tm_output_handler(TritonClient&){}
+
 
 } // namespace triggeralgs
